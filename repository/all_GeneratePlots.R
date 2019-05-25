@@ -8,19 +8,27 @@
 ##
 ##########################################################################################
 
-if(!require("GenomicRanges")) install.packages("GenomicRanges")
-if(!require("devEMF")) install.packages("devEMF")
 library(GenomicRanges)
 library(devEMF)
 
 DefineChromSizes = function(GenomeVersion)
 {
+  if(species=="Human")
+  {
+  chrom.sizes = c(248956422,242193529,198295559,190214555,181538259,170805979,159345973,145138636,
+                  138394717,133797422,135086622,133275309,114364328,107043718,101991189,90338345,
+                  83257441,80373285,58617616,64444167,46709983,50818468)
+  names(chrom.sizes) = c(1:22)
+  }
+
+  if(species=="Mouse")
+  {
   chrom.sizes = c(195471971,182113224,160039680,156508116,151834684,149736546,145441459,129401213,124595110,
-               130694993,122082543,120129022,120421639,124902244,104043685,98207768,94987271,90702639,61431566)
+                  130694993,122082543,120129022,120421639,124902244,104043685,98207768,94987271,90702639,61431566)
   names(chrom.sizes) = c(1:19)
+  }
   return(chrom.sizes)
 }
-
 
 FindCordsChromNames = function(ChromBorders)
 {
@@ -50,14 +58,18 @@ ConvertGenomicCords = function(dat,chrom.sizes,Start,CopyNumber,Chromosome)
   for(i in names(chrom.sizes))
   {
     cur <- dat[dat[,Chromosome]==i,c(Start,CopyNumber)]
-    cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
+    if (cur > 0) 
+    {
+       cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
+    } else {
+       cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
+    }
     borders <- c(borders,last)
     last = last + chrom.sizes[i]
     ChromBorders = c(ChromBorders,last)
     FirstPosition = c(FirstPosition,min(dat[dat[,Chromosome]==i,Start]))
   }
   names(ChromBorders) = names(chrom.sizes)
-  print(ChromBorders)
   Outlist[["CN"]]=cn
   Outlist[["ChromosomeBorders"]] = ChromBorders
   Outlist[["FirstChromPosition"]] = FirstPosition
@@ -124,18 +136,18 @@ ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
   FirstPosition = c()
   segmentdata = read.table(segmentdata,header=T,sep="\t")
   SetVariableNamesSegments(method)
-  print(SegmentChromosome)
   cnSeg <- data.frame()
   borders <- c()
   last = 0
   for(i in names(chrom.sizes))
   {
     cur <- segmentdata[segmentdata[,SegmentChromosome]==i,c(SegmentChromosome,SegmentStart,SegmentStop,SegmentMean)]
+    cur[cur[,SegmentMean]<=(-5),SegmentMean]=-4.9
+    cur[cur[,SegmentMean]>=(5),SegmentMean]=4.9
     cnSeg <- rbind(cnSeg,data.frame(Chromosome=cur[,SegmentChromosome],start=cur[,SegmentStart]+last,
                     stop=cur[,SegmentStop]+last,copy=cur[,SegmentMean]))
     borders <- c(borders,last)
     last = last + chrom.sizes[i]
-    print(cnSeg)
   }
   Outlist[["CN"]] = cnSeg
   Outlist[["NonProcessed"]] = segmentdata
@@ -178,7 +190,6 @@ ValueRange = c(ValueRange,max(ValueRange)+20000000)
 if((SliceStart=="") & (SliceStop==""))
   {
     Xmax = as.numeric(chrom.sizes[chromosome])
-    print(Xmax)
     Xmax <<- min(ValueRange[ValueRange>=Xmax])
     Xmin <<- 0
     StepSize <<- 20000000
@@ -186,7 +197,6 @@ if((SliceStart=="") & (SliceStop==""))
     Xmax <<- SliceStop
     Xmin <<- SliceStart
     StepSize <<- 0.1* (Xmax-Xmin)
-    print(StepSize)
   }
 }
 
@@ -199,6 +209,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   ChromNamePos = FindCordsChromNames(ChromBorders)
   ChromBorders=c(0,ChromBorders)
   YaxisPosition = min(ChromBorders)-130000000
+  LastEntry = length(ChromBorders)
   if(normalization != "")
   {
     normalization=paste(".",normalization,sep="")
@@ -214,7 +225,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   par(mar=c(4, 4, 0, 0))
   plot(cn$position,cn$copy,pch=20,cex=Cex,
       ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
-
+  segments(min(ChromBorders),0,ChromBorders[LastEntry],col="#A9A9A9",lwd=2)
   axis(2,las=1,pos=YaxisPosition, outer=T, at=ypos,labels=ylabels)
   axis(1,las=1, labels=rep("",length(ChromBorders)),at=ChromBorders)
   mtext(side=1,line=1,at=ChromNamePos,names(ChromNamePos))
@@ -222,7 +233,6 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   {
     segments(cnSeg$start,cnSeg$copy,cnSeg$stop,cnSeg$copy,col="#FF4D4D",lwd=4)
   }
-  LastEntry = length(ChromBorders)
   ChromBordersReduced = ChromBorders[-c(1,LastEntry)]
   if(method == "CNV")
   {
@@ -270,6 +280,9 @@ plotChromosomalRatioProfile = function(cn=cn,chrom.sizes,cnSeg="",samplename="",
   if(method=="CNV")
   {
     cnSeg = cnSeg[cnSeg[,SegmentChromosome]==chromosome,]
+    cnSeg[cnSeg[,SegmentMean]<=(-5),SegmentMean]=-4.9
+    cnSeg[cnSeg[,SegmentMean]>=(5),SegmentMean]=4.9
+    segments(cnSeg[1,SegmentStart],0,cnSeg[nrow(cnSeg),SegmentStop],col="#5C5C5C",lwd=4)
     segments(cnSeg[,SegmentStart],cnSeg[,SegmentMean],
              cnSeg[,SegmentStop],cnSeg[,SegmentMean],col="#FFFFFF",lwd=6)
     usr = par("usr")
@@ -277,10 +290,9 @@ plotChromosomalRatioProfile = function(cn=cn,chrom.sizes,cnSeg="",samplename="",
     segments(cnSeg[,SegmentStart],cnSeg[,SegmentMean],
              cnSeg[,SegmentStop],cnSeg[,SegmentMean],col="#FF4D4D",lwd=6)
   }
-  print(Xmin)
-  print(Xmax)
   YAxisScaling = (Xmax-Xmin)*0.015
   axis(1,at=seq(Xmin,Xmax,StepSize),labels=(seq(Xmin,Xmax,StepSize) / 1000000))
   axis(2,las=1,pos=Xmin-YAxisScaling, outer=T, at=ypos,labels=ylabels)
+  title(main = paste(chromosome,sep=""), line = -3, font.main = 1)
   dev.off()
 }

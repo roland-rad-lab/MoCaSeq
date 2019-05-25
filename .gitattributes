@@ -1,0 +1,2 @@
+*.fastq.gz filter=lfs diff=lfs merge=lfs -text
+*.bed filter=lfs diff=lfs merge=lfs -text

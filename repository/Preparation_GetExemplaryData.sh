@@ -25,17 +25,18 @@ download=$1
 if [ $download = 'all' ] || [ $download = 'WES' ]; then
 
 	# https://www.ebi.ac.uk/ena/data/view/ERS2066588
-	wget -O S821-WES.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_1.fastq.gz
-	wget -O S821-WES.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_2.fastq.gz
+	wget -nv -O S821-WES.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_1.fastq.gz
+	wget -nv -O S821-WES.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_2.fastq.gz
 	# https://www.ebi.ac.uk/ena/data/view/ERS2066550
-	wget -O S821-WES.Tumor.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/008/ERR2230828/ERR2230828_1.fastq.gz
-	wget -O S821-WES.Tumor.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/008/ERR2230828/ERR2230828_2.fastq.gz
+	wget -nv -O S821-WES.Tumor.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/008/ERR2230828/ERR2230828_1.fastq.gz
+	wget -nv -O S821-WES.Tumor.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/008/ERR2230828/ERR2230828_2.fastq.gz
+fi
 
-elif [ $download = 'all' ] || [ $download = 'WGS' ]; then
+if [ $download = 'all' ] || [ $download = 'WGS' ]; then
 	# https://www.ebi.ac.uk/ena/data/view/ERS1980539
-	wget -O S821-WGS.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_1.fastq.gz
-	wget -O S821-WGS.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_2.fastq.gz
+	wget -nv -O S821-WGS.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_1.fastq.gz
+	wget -nv -O S821-WGS.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_2.fastq.gz
 	# https://www.ebi.ac.uk/ena/data/view/ERS1980538
-	wget -O S821-WGS.Tumor.R1.fastq.gz  ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/008/ERR2210078/ERR2210078_1.fastq.gz
-	wget -O S821-WGS.Tumor.R2.fastq.gz  ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/008/ERR2210078/ERR2210078_2.fastq.gz
+	wget -nv -O S821-WGS.Tumor.R1.fastq.gz  ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/008/ERR2210078/ERR2210078_1.fastq.gz
+	wget -nv -O S821-WGS.Tumor.R2.fastq.gz  ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/008/ERR2210078/ERR2210078_2.fastq.gz
 fi

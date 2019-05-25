@@ -8,8 +8,6 @@
 ##
 ##########################################################################################
 
-if(!require("GenomicRanges")) install.packages("GenomicRanges")
-if(!require("Biostrings")) install.packages("Biostrings")
 library("GenomicRanges")
 library("Biostrings")
 
@@ -20,7 +18,6 @@ LOH_FilterReads = function(data)
 	data[,"MapQ"]=as.numeric(as.character(data[,"MapQ"]))
 	data[,"Frequency"]=as.numeric(as.character(data[,"Frequency"]))
 	data=data[data[,"RefCount"] + data[,"AltCount"] >= 10,]
-	data=data[data[,"Strand_Art_F"] < 0.05 & data[,"Strand_Art_R"] < 0.05,]
 	data=data[data[,"MapQ"]>=60,]
 	return(data)
 }

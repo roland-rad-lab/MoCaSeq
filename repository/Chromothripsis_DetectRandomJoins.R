@@ -11,7 +11,7 @@
 message("\n###Random Fragment Order and Orientation###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),
@@ -44,7 +44,7 @@ if(!opt$format %in% c("tif","emf")) stop("The output format has to be either tif
 
 # main program
 if(!require("devEMF")) install.packages("devEMF")
-library(devEMF)
+suppressMessages(library(devEMF))
 
 # extract DELLY breakpoint list from rearrangement file
 delly_breaks <- data.frame(input_list$donPos,input_list$accPos,as.character(input_list$Type),stringsAsFactors=F)

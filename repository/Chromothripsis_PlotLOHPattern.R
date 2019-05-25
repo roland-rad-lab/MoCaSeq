@@ -11,7 +11,7 @@
 message("\n###LOH vs CN Comparison###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-s", "--segments"),type="character",default=NULL,help="file containing copy number segments"),
@@ -93,7 +93,7 @@ if(is.null(opt$organism)){
 
 # main program
 if(!require("devEMF")) install.packages("devEMF")
-library(devEMF)
+suppressMessages(library(devEMF))
 
 #print(varFile[1:4,])
 table_draw <- CNdatapoints[CNdatapoints$Chrom==chr & !is.na(CNdatapoints$log2Ratio),]

@@ -12,7 +12,7 @@
 message("\n###Simulate Progressive Tumor###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),
@@ -72,8 +72,8 @@ verboseLevel = opt$verbose # this variable controls how much information is disp
 
 
 if(!require("devEMF")) install.packages("devEMF")
-library(devEMF)
-library(GenomicRanges)
+suppressMessages(library(devEMF))
+suppressMessages(library(GenomicRanges))
 start_chrom <- data.frame(start=1,end=chromlength)
 
 # auxiliary functions

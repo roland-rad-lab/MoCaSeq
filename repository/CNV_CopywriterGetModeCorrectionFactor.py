@@ -45,6 +45,5 @@ def CalculateMode(name):
     f.write(name+"\t"+str(myPeak)+"\n")
     f.close()
 
-
 name = sys.argv[1]
 CalculateMode(name)

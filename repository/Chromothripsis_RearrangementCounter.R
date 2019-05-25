@@ -10,7 +10,7 @@
 
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),

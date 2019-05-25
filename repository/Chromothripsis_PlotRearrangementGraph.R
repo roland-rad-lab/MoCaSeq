@@ -11,7 +11,7 @@
 message("\n###Rearrangement Graph###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),
@@ -56,8 +56,8 @@ if(!opt$format %in% c("tif","emf")) stop("The output format has to be either tif
 # main program
 if(!require("ggplot2")) install.packages("ggplot2")
 if(!require("devEMF")) install.packages("devEMF")
-library(ggplot2)
-library(devEMF)
+suppressMessages(library(ggplot2))
+suppressMessages(library(devEMF))
 
 table_draw <- CNdatapoints[CNdatapoints$Chrom==opt$chrom & !is.na(CNdatapoints$log2Ratio),]
 Max = max(table_draw$End)

@@ -21,8 +21,8 @@ tumor = read.table(paste(name,"/results/Mutect2/",name,".Tumor.Mutect2.Positions
 normal = read.table(paste(name,"/results/Mutect2/",name,".Normal.Mutect2.Positions.txt", sep=""), header=T, sep="\t")
 
 #adjust column names
-colnames(tumor) = c("Chrom", "Pos", "Ref", "Alt", "Frequency", "RefCount", "AltCount", "MapQ", "BaseQ", "Strand_Art_F", "Strand_Art_R")
-colnames(normal) = c("Chrom", "Pos", "Ref", "Alt", "Frequency", "RefCount", "AltCount", "MapQ", "BaseQ", "Strand_Art_F", "Strand_Art_R")
+colnames(tumor) = c("Chrom", "Pos", "Ref", "Alt", "Frequency", "RefCount", "AltCount", "MapQ", "BaseQ")
+colnames(normal) = c("Chrom", "Pos", "Ref", "Alt", "Frequency", "RefCount", "AltCount", "MapQ", "BaseQ")
 
 #filter reads
 tumor=LOH_FilterReads(tumor)

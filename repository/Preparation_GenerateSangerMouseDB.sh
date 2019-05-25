@@ -14,15 +14,15 @@ temp_dir=$2
 
 temp_dir=$(realpath $temp_dir)
 
-wget -c -r -P $temp_dir ftp://ftp-mouse.sanger.ac.uk//REL-1505-SNPs_Indels/strain_specific_vcfs/
+wget -nv -c -r -P $temp_dir ftp://ftp-mouse.sanger.ac.uk//REL-1505-SNPs_Indels/strain_specific_vcfs/
 mkdir $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/CAST_EiJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/  $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ZALENDE_EiJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ / $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/MOLF_EiJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/  $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/SPRET_EiJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/  $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/PWK_PhJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/  $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/LEWES_EiJ.mgp.v5.*
-mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/  $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/WSB_EiJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ZALENDE_EiJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/MOLF_EiJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/SPRET_EiJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/PWK_PhJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/LEWES_EiJ.mgp.v5.*
+mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/WSB_EiJ.mgp.v5.*
 
 find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs -name  "*.mgp.v5.snps.dbSNP142.vcf.gz" | parallel --eta --load 80% --noswap 'bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z'
 
@@ -49,8 +49,19 @@ tabix -p vcf "$temp_dir"/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz
 
 bcftools concat -a -O z -o $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz $temp_dir/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz
 
-bcftools sort -O z -o Genomes/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
+bcftools sort -O z -o ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
 
-tabix -p vcf Genomes/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
+tabix -p vcf ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
 
-rm -r $temp_dir
+vcf-sort -c ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz > ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.chromosomal_sort.vcf
+
+bgzip ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.chromosomal_sort.vcf
+
+tabix -p vcf ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.chromosomal_sort.vcf.gz
+
+rm -r $temp_dir/ftp-mouse.sanger.ac.uk/
+rm $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
+rm $temp_dir/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz
+rm $temp_dir/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz
+rm $temp_dir/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz.tbi
+rm $temp_dir/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz.tbi

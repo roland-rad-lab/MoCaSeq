@@ -11,6 +11,8 @@
 args <- commandArgs(TRUE)
 
 name = args[1]
+runmode = args[2]
+type = args[3]
 
 # Keep track of working directory
 path = getwd()
@@ -21,11 +23,17 @@ setwd(paste(path,"/",name,"/results/Copywriter/CNAprofiles/",sep=""))
 #load raw segment data from file, change around coluns and export them
 load("segment.Rdata")
 segmentData = segment.CNA.object$output
-Selection = unique(grep("Normal",grep("Tumor",segmentData$ID,value=T),value=T))
+
+if (runmode == "MS") {
+	Selection = unique(grep("Normal",grep("Tumor",segmentData$ID,value=T),value=T))
+} else if (runmode == "SS") {
+	Selection = paste("log2.",gsub("-",".",name),".",type,".bam.vs.none",sep="")
+} 
+
 segmentData = segmentData[segmentData$ID==Selection,]
 chromosomes = unique(segmentData$chrom)
 # Exclude sex chromosomes
-chromosomes = chromosomes[chromosomes<=19]
+chromosomes = chromosomes[chromosomes<=22]
 for(chromosome in chromosomes)
    {
    segmentMean = as.numeric(segmentData[segmentData$chrom==chromosome,"seg.mean"])

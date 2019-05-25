@@ -11,7 +11,7 @@
 message("\n##Breakpoint Cluster Analysis###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),
@@ -45,8 +45,8 @@ if(!opt$format %in% c("tif","emf")) stop("The output format has to be either tif
 # main program
 if(!require("zoo")) install.packages("zoo")
 if(!require("devEMF")) install.packages("devEMF")
-library(zoo)
-library(devEMF)
+suppressMessages(library(zoo))
+suppressMessages(library(devEMF))
 
 # extract DELLY breakpoint list from rearrangement file
 delly_breaks <- data.frame(input_list$donPos,input_list$accPos,as.character(input_list$Type),stringsAsFactors=F)

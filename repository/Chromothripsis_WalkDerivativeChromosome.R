@@ -11,7 +11,7 @@
 message("\n###HT Sequencer###")
 options(warn=-1)
 if(!require("optparse")) install.packages("optparse")
-library(optparse)
+suppressMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),
@@ -46,9 +46,9 @@ if(!opt$format %in% c("tif","emf")) stop("The output format has to be either tif
 if(!require("randtests")) install.packages("randtests")
 if(!require("ggplot2")) install.packages("ggplot2")
 if(!require("devEMF")) install.packages("devEMF")
-library(randtests)
-library(ggplot2)
-library(devEMF)
+suppressMessages(library(randtests))
+suppressMessages(library(ggplot2))
+suppressMessages(library(devEMF))
 
 # DELLY Breakpoint List
 delly_breaks <- data.frame(input_list$donPos,input_list$accPos,as.character(input_list$Type),stringsAsFactors=F)
