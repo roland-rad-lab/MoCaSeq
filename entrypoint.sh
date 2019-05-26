@@ -18,4 +18,4 @@ if [ ${USERID:-0} -ne 0 ] && [ ${GRPID:-0} -ne 0 ]; then \
     exec gosu docker ${PACKAGE_DIR}/MoCaSeq/MoCaSeq.sh "$@" \
 ;fi
 
-exec ${PACKAGE_DIR}/DNA/MoCaSeq.sh "$@"
+exec ${PACKAGE_DIR}/MoCaSeq/MoCaSeq.sh "$@"

@@ -90,7 +90,7 @@ while [ "$1" != "" ]; do case $1 in
 esac; shift; done
 
 if [ -z $config_file ]; then
-	config_file=/opt/DNA/config_docker.sh
+	config_file=/opt/MoCaSeq/config_docker.sh
 fi
 
 test_dir=${config_file%/*}/test
@@ -181,7 +181,7 @@ mkdir $name/results/msisensor
 # log memory and cpu usage
 logstats(){
 	echo -e "date \t timestamp \t memory_usage_bytes \t cumulative_cpu_nanoseconds \t cores" > $name/results/memstats.txt
-	while sleep $memstats; do (${PACKAGE_DIR}/DNA/repository/Meta_logstats.sh >> $name/results/memstats.txt &) ; done
+	while sleep $memstats; do ($repository_dir/Meta_logstats.sh >> $name/results/memstats.txt &) ; done
 }
 
 if [ $memstats -gt 0 ]; then
