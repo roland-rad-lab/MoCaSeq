@@ -346,11 +346,11 @@ RUN	cd ${TEMP_DIR} \
 WORKDIR /var/pipeline/
 
 RUN cd ${PACKAGE_DIR} \
-	&& git clone https://github.com/roland-rad-lab/DNA.git \
-	&& cd ${PACKAGE_DIR}/DNA/ \
+	&& git clone https://github.com/roland-rad-lab/MoCaSeq.git \
+	&& cd ${PACKAGE_DIR}/MoCaSeq/ \
     && chmod 775 entrypoint.sh \
     && chmod 775 MoCaSeq.sh \
     && chmod 775 repository/Meta_logstats.sh
 
-ENTRYPOINT ["/opt/DNA/entrypoint.sh"]
+ENTRYPOINT ["/opt/MoCaSeq/entrypoint.sh"]
 CMD ["-h"]

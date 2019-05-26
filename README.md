@@ -86,7 +86,7 @@ rolandradlab/mocaseq:latest \
 -nr '/var/pipeline/S821-WES.Normal.R2.fastq.gz' \
 -tf '/var/pipeline/S821-WES.Tumor.R1.fastq.gz' \
 -tr '/var/pipeline/S821-WES.Tumor.R2.fastq.gz' \
---temp_dir /var/pipeline/temp --config /opt/DNA/config_docker.sh \
+--temp_dir /var/pipeline/temp --config /opt/MoCaSeq/config_docker.sh \
 --name S821-WES --species Mouse --threads <threads> --ram <ram> --sequencing_type WES \
 --artefact GT --filtering hard --Delly no --Mutect2 yes
 ```
@@ -141,12 +141,12 @@ This will run the pipeline with your current UID and GID and set the permissions
 
 The complete pipeline is wrapped inside a shell-script. During the analysis, the fastq-files are automatically copied to the target directory.
 ```
-sh DNA/CancerGenomeAnalysis.sh \
+sh MoCaSeq/CancerGenomeAnalysis.sh \
 -nf '/media/rad/HDD2/examples/S821/S821-WES.Normal.R1.fastq.gz' \
 -nr '/media/rad/HDD2/examples/S821/S821-WES.Normal.R2.fastq.gz'  \
 -tf '/media/rad/HDD2/examples/S821/S821-WES.Tumor.R1.fastq.gz'  \
 -tr '/media/rad/HDD2/examples/S821/S821-WES.Tumor.R2.fastq.gz' \
---name S821-WES --species Mouse --sequencing_type WES --config /media/rad/SSD1/DNA/configadapted.sh \
+--name S821-WES --species Mouse --sequencing_type WES --config /media/rad/SSD1/MoCaSeq/configadapted.sh \
 --artefact none --filtering all --phred phred33 --Delly no --Chromothripsis no --Mutect2 yes --Titan yes 
 
 sh MouseCancerGenomeAnalysis.sh <name> \

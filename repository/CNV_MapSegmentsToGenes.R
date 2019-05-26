@@ -8,8 +8,6 @@
 ##
 ##########################################################################################
 
-#parallel 'Rscript /media/rad/SSD1/DNA/repository/CNV_MapSegmentsToGenes.R {} Mouse 20000 Copywriter' ::: $(ls)
-
 args <- commandArgs(TRUE)
 
 name = args[1]

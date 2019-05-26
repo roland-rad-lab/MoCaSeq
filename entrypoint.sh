@@ -15,7 +15,7 @@ if [ ${USERID:-0} -ne 0 ] && [ ${GRPID:-0} -ne 0 ]; then \
     chown --silent --no-dereference --recursive \
           --from=0:0 ${USERID}:${GRPID} \
         /var/pipeline &&\
-    exec gosu docker ${PACKAGE_DIR}/DNA/MoCaSeq.sh "$@" \
+    exec gosu docker ${PACKAGE_DIR}/MoCaSeq/MoCaSeq.sh "$@" \
 ;fi
 
 exec ${PACKAGE_DIR}/DNA/MoCaSeq.sh "$@"
