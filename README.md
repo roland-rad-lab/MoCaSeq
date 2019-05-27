@@ -51,13 +51,12 @@ This protocol takes 2-7 days, depending on the desired analyses.
 ```
 mkdir MoCaSeq && cd MoCaSeq
 ```
-2. Replace `<your_working_directory>` and run 
+2. Replace `<your_working_directory>` and `<mocaseq_version>` run 
 ```
 sudo docker run \
 -v <your_working_directory>/:/var/pipeline/ \
-rolandradlab/mocaseq:latest \
---test yes \
---species Mouse
+rolandradlab/mocaseq:<mocaseq_version> \
+--test yes
 ``` 
 This automatically downloads the container, downloads all required reference files and tests the pipeline. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
 
@@ -76,12 +75,12 @@ sh MoCaSeq/repository/Preparation_GetExemplaryData.sh WES
 
 The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
-5. Replace `<your_working_directory>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data Depending on the available CPU and RAM, this will take approximately 24 hours.
+5. Replace `<your_working_directory>` and `<mocaseq_version>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
 -v <your_working_directory>:/var/pipeline/ \
-rolandradlab/mocaseq:latest \
+rolandradlab/mocaseq:<mocaseq_version>  \
 -nf '/var/pipeline/S821-WES.Normal.R1.fastq.gz' \
 -nr '/var/pipeline/S821-WES.Normal.R2.fastq.gz' \
 -tf '/var/pipeline/S821-WES.Tumor.R1.fastq.gz' \

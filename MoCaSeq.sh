@@ -96,7 +96,6 @@ fi
 test_dir=${config_file%/*}/test
 
 if [ $test = 'yes' ]; then
-	if [ $species = 'Mouse' ]; then
 		name=MoCaSeq_Test
 		fastq_normal_1=$test_dir/Mouse.Normal.R1.fastq.gz
 		fastq_normal_2=$test_dir/Mouse.Normal.R2.fastq.gz
