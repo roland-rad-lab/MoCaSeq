@@ -34,7 +34,7 @@ if (species=="Mouse")
 	dataset="hsapiens_gene_ensembl"
 }
 
-mart=useMart(biomart = 'ensembl', dataset = dataset)
+mart=useMart(biomart = 'ensembl', dataset = dataset, host="useast.ensembl.org", ensemblRedirect = FALSE)
 
 cnv=data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
 segment=read.delim(segment)
