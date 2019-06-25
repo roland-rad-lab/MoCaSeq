@@ -4,17 +4,18 @@
 
 ## MoCaSeq: Computational pipelines for the analysis of mouse cancers
 
-__Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,2,3</sup>, Sebastian Mueller<sup>1,2,3</sup>, Roman Maresch<sup>1,2,3</sup>, Maximilian Zwiebel<sup>1,2,3</sup>, Laura Gonzalez-Silva<sup>4</sup>, Günter Schneider<sup>2</sup>, George S. Vassiliou<sup>5,6,7</sup>, Mathias J. Friedrich<sup>1,2,3</sup>, Dieter Saur<sup>2,3,8</sup>, Ignacio Varela<sup>4</sup>, Roland Rad<sup>1,2,3,8</sup>__
+__Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,2,3</sup>, Sebastian Mueller<sup>1,2,3</sup>, Roman Maresch<sup>1,2,3</sup>, Maximilian Zwiebel<sup>1,2,3</sup>, Laura Gonzalez-Silva<sup>4</sup>, Günter Schneider<sup>2</sup>, Ruby Banerjee<sup>5</sup>, Fengtang Yang<sup>5</sup>, George S. Vassiliou<sup>5,6,7</sup>, Mathias J. Friedrich<sup>1,2,3</sup>, Dieter Saur<sup>2,3,8,9</sup>, Ignacio Varela<sup>4</sup>, Roland Rad<sup>1,2,3,8</sup>__
 <br>
 <sub>
-	1 Institute of Molecular Oncology and Functional Genomics, TUM School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
+	1 Institute of Molecular Oncology and Functional Genomics, School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
 	2 Department of Medicine II, Klinikum rechts der Isar, Technische Universität München, 81675 Munich, Germany<br>
-	3 Center for Translational Cancer Research (TranslaTUM), TUM School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
+	3 Center for Translational Cancer Research (TranslaTUM), School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
 	4 Instituto de Biomedicina y Biotecnología de Cantabria. Universidad de Cantabria-CSIC. 39012 Santander, Spain<br>
 	5 The Wellcome Trust Sanger Institute, Genome Campus, Hinxton, CB10 1SA Cambridge, UK<br>
 	6 Wellcome Trust-MRC Stem Cell Institute, Cambridge Biomedical Campus, University of Cambridge, CB2 0SL Cambridge, UK<br>
 	7 Department of Haematology, Cambridge University Hospitals NHS Trust, CB2 0QQ Cambridge, UK<br>
 	8 German Cancer Consortium (DKTK), German Cancer Research Center (DKFZ), 69120 Heidelberg, Germany<br>
+	9 Chair of Translational Cancer Research and Institute for Experimental Cancer Therapy, School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
 </sub>
 
 ### Contents
@@ -51,7 +52,7 @@ This protocol takes 2-7 days, depending on the desired analyses.
 ```
 mkdir MoCaSeq && cd MoCaSeq
 ```
-2. Replace `<your_working_directory>` and `<mocaseq_version>` run 
+2. Replace `<your_working_directory>` and `<mocaseq_version>`, then run 
 ```
 sudo docker run \
 -v <your_working_directory>/:/var/pipeline/ \
@@ -69,7 +70,10 @@ wget https://github.com/rolandradlab/MoCaSeq/archive/master.zip \
 ```
 4. Use the provided script to download both tumor and matched normal fastq-files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model.
 ```
-sh MoCaSeq/repository/Preparation_GetExemplaryData.sh WES
+mkdir raw
+&& cd raw
+&& sh ../MoCaSeq/repository/Preparation_GetExemplaryData.sh WES
+&& cd ..
 ```
 `all` will download both WES (100x) and WGS (30x) data, using 100 GB of disk space. Use `WES` or `WGS` to only download the respective files.
 
@@ -80,15 +84,18 @@ The raw data is available from the [European Nucleotide Archive](https://www.ebi
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
 -v <your_working_directory>:/var/pipeline/ \
+-v <your_ref_directory>:/var/pipeline/ref/ \
+-v <your_raw_directory>:/var/pipeline/raw/ \
 rolandradlab/mocaseq:<mocaseq_version>  \
--nf '/var/pipeline/S821-WES.Normal.R1.fastq.gz' \
--nr '/var/pipeline/S821-WES.Normal.R2.fastq.gz' \
--tf '/var/pipeline/S821-WES.Tumor.R1.fastq.gz' \
--tr '/var/pipeline/S821-WES.Tumor.R2.fastq.gz' \
+-nf '/var/pipeline/rwa/S821-WES.Normal.R1.fastq.gz' \
+-nr '/var/pipeline/raw/S821-WES.Normal.R2.fastq.gz' \
+-tf '/var/pipeline/raw/S821-WES.Tumor.R1.fastq.gz' \
+-tr '/var/pipeline/raw/S821-WES.Tumor.R2.fastq.gz' \
 --temp_dir /var/pipeline/temp --config /opt/MoCaSeq/config_docker.sh \
---name S821-WES --species Mouse --threads <threads> --ram <ram> --sequencing_type WES \
---artefact GT --filtering hard --Delly no --Mutect2 yes
+--name S821-WES --threads <threads> --ram <ram> --sequencing_type WES \
+--artefact GT
 ```
+
 6. Browse the results located in `S821/results/`.
 
 ## System Requirements
