@@ -251,7 +251,7 @@ visualizeChrom <- function(chroms,file){
 CNstatesAll <- setNames(data.frame(matrix(ncol=MC_steps,nrow=0)),paste0("step_",c(1:MC_steps)))
 chromosomes <- list() # a list storing all chromosomal rearrangements (for debugging)
 savePath = paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,"_simulation_chr",opt$chrom)
-system(paste0("mkdir ",savePath))
+system(paste0("mkdir -p ",savePath))
 stop_flag = F
 
 if(verboseLevel>0) message(paste0(nrow(rearrangementList)," rearrangements to simulate.\n"))

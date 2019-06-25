@@ -98,7 +98,9 @@ elif [ $filtering = 'none' ]; then
 	cp $name/results/Mutect2/$name.m2.postprocessed.vcf.gz $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz
 fi
 
-bcftools norm -m -any $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz -O z -o $name/results/Mutect2/$name.Mutect2.vcf.gz
+bcftools norm -m -any \
+$name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz \
+-O z -o $name/results/Mutect2/$name.Mutect2.vcf.gz
 
 gunzip -f $name/results/Mutect2/$name.Mutect2.vcf.gz
 

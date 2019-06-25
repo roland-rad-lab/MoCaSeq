@@ -18,7 +18,7 @@ source(paste(repository_dir,"/all_GeneratePlots.R",sep=""))
 
 setwd(paste(name,"/results/Copywriter",sep=""))
 
-system(paste("mkdir ",name,"_Chromosomes",sep=""))
+system(paste("mkdir -p ",name,"_Chromosomes",sep=""))
 
 chrom.sizes = DefineChromSizes(species)
 

@@ -15,7 +15,7 @@ temp_dir=$2
 temp_dir=$(realpath $temp_dir)
 
 wget -nv -c -r -P $temp_dir ftp://ftp-mouse.sanger.ac.uk//REL-1505-SNPs_Indels/strain_specific_vcfs/
-mkdir $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/
+mkdir -p $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/CAST_EiJ.mgp.v5.*
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ZALENDE_EiJ.mgp.v5.*
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/MOLF_EiJ.mgp.v5.*

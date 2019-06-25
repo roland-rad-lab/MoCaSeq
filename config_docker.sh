@@ -25,7 +25,6 @@ vep_dir=/opt/vep-96
 	
 if [ $species = 'Mouse' ]; then
 	genome_dir=$genomes_dir/GRCm38.p6
-	# only edit fields below if you did not use the initialisation script
 	snp_file=$genome_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
 	alternate_snp_file=$genome_dir/MGP.v6.snp_and_indels.exclude_wild.vcf.gz
 	genome_file=$genome_dir/GRCm38.p6.fna

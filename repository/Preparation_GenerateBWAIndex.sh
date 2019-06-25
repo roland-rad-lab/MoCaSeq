@@ -22,7 +22,7 @@ samtools faidx ref/$VersionMouse/$VersionMouse.fna $(grep -P -o '>[0-9XY]+' ref/
 
 perl $fasta_to_fastq"/fasta_to_fastq.pl" "ref/"$VersionMouse"/"$VersionMouse"_alt.fna" > "ref/"$VersionMouse"/haplotypes.fastq"
 
-mkdir ref/$VersionMouse/primary_index
+mkdir -p ref/$VersionMouse/primary_index
 
 bwa index -p "ref/"$VersionMouse"/primary_index/bwa_index" -a bwtsw "ref/"$VersionMouse"/"$VersionMouse"_primary.fna"
 
@@ -32,7 +32,7 @@ samtools sort -O sam -o ref/$VersionMouse/alt_mapping_nosup.sam ref/$VersionMous
 
 samtools view -h -o ref/$VersionMouse/alt_mapping.sam -F 0x800 ref/$VersionMouse/alt_mapping_nosup.sam
 
-mkdir ref/$VersionMouse/tmp
+mkdir -p ref/$VersionMouse/tmp
 
 grep '^@SQ' ref/$VersionMouse/alt_mapping.sam > ref/$VersionMouse/tmp/header
 grep '^[^@]' ref/$VersionMouse/alt_mapping.sam > ref/$VersionMouse/tmp/data
@@ -50,7 +50,7 @@ do
 	echo '255' >> ref/$VersionMouse/tmp/mapq
 done
 
-mkdir ref/$VersionMouse/bwa_index
+mkdir -p ref/$VersionMouse/bwa_index
 
 paste ref/$VersionMouse/tmp/name ref/$VersionMouse/tmp/zero ref/$VersionMouse/tmp/ref_pos ref/$VersionMouse/tmp/mapq ref/$VersionMouse/tmp/cigar ref/$VersionMouse/tmp/asterisk ref/$VersionMouse/tmp/zero ref/$VersionMouse/tmp/zero ref/$VersionMouse/tmp/asterisk ref/$VersionMouse/tmp/asterisk ref/$VersionMouse/tmp/dist | cat ref/$VersionMouse/tmp/header - > ref/$VersionMouse/bwa_index/$VersionMouse'.alt'
 

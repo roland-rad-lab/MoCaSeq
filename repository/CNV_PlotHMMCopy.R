@@ -25,6 +25,10 @@ library(GenomeInfoDb)
 library(naturalsort)
 library(GenomicRanges)
 
+# choose correct map_file and gc_file
+map_file=gsub("20000",resolution,map_file)
+gc_file=gsub("20000",resolution,gc_file)
+
 # read in wig files and correct for GC and mappability bias
 normal <- as.data.frame(correctReadcount(wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)))
 tumor <- as.data.frame(correctReadcount(wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)))
@@ -80,7 +84,7 @@ source(paste(repository_dir,"/all_GeneratePlots.R",sep=""))
 
 setwd(paste(name,"/results/HMMCopy",sep=""))
 
-system(paste("mkdir ",name,"_Chromosomes",sep=""))
+system(paste("mkdir -p ",name,"_Chromosomes",sep=""))
 
 chrom.sizes = DefineChromSizes(species)
 

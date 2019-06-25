@@ -18,9 +18,9 @@ species=Mouse
 
 VersionMouse=GRCm38.p6
 
-mkdir ref
-mkdir "ref/"$VersionMouse
-mkdir "ref/"$VersionMouse/VEP
+mkdir -p ref
+mkdir -p "ref/"$VersionMouse
+mkdir -p "ref/"$VersionMouse/VEP
 
 echo '---- Get reference data ----' | tee "ref/"$VersionMouse"/GetReferenceData.txt"
 echo '---- Generate reference data for Version '$VersionMouse' ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"

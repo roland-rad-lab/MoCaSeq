@@ -23,7 +23,7 @@ getLines () {
 	grep -P -o 'CT=\dto\d' $1 | sed -r 's/CT=([35]to[35])/\1/g' > part9
 }
 
-mkdir tmpData
+mkdir -p tmpData
 cd tmpData
 inFile=$name/results/Delly/$name.pre.vcf
 

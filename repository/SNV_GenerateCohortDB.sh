@@ -15,8 +15,8 @@ species=$2
 
 . $config_file
 
-mkdir CohortDatabase
-mkdir CohortDatabase/vcf
+mkdir -p CohortDatabase
+mkdir -p CohortDatabase/vcf
 
 parallel --eta --load 80% --noswap \
  'java -jar '$GATK_dir'/gatk.jar FilterMutectCalls \
