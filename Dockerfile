@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
-LABEL org.label-schema.name="Mouse Cancer Genome Sequencing"
-LABEL org.label-schema.vcs-url="https://github.com/roland-rad-lab/Mouse-Cancer-Genome-Sequencing"
+LABEL org.label-schema.name="MoCaSeq"
+LABEL org.label-schema.vcs-url="https://github.com/roland-rad-lab/MoCaSeq"
 
 LABEL author="mathias.friedrich [@] tum.de"
 LABEL maintainer="sebastian.lange [@] tum.de"
@@ -32,10 +32,7 @@ RUN	apt update \
 	&& sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
 	&& dpkg-reconfigure --frontend=noninteractive locales \
 	&& update-locale LANG=en_US.UTF-8 \
-	&& mkdir -p ${TARGET_DIR}/ref \
-	&& mkdir ${TARGET_DIR}/temp \
-	&& mkdir ${TARGET_DIR}/raw \
-	&& mkdir ${PACKAGE_DIR}/bin \
+	&& mkdir -p ${PACKAGE_DIR}/bin \
 	&& apt upgrade -y \
 	&& apt install -y --no-install-recommends \
 		apt-utils \
@@ -210,7 +207,7 @@ RUN	cd ${TEMP_DIR} \
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.2.0/gatk-4.1.2.0.zip' \
 	&& unzip gatk-4.1.2.0.zip \
-	&& mkdir ${PACKAGE_DIR}/gatk-4.1.2.0 \
+	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.2.0 \
 	&& cp ./gatk-4.1.2.0/gatk-package-4.1.2.0-local.jar ${PACKAGE_DIR}/gatk-4.1.2.0/ \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.2.0/gatk-package-4.1.2.0-local.jar ${PACKAGE_DIR}/bin/gatk.jar \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.2.0/gatk-package-4.1.2.0-local.jar ${PACKAGE_DIR}/gatk-4.1.2.0/gatk.jar \
@@ -229,7 +226,7 @@ RUN	cd ${TEMP_DIR} \
 	&& cd hmmcopy_utils \
 	&& cmake . \
 	&& make \
-	&& mkdir ${PACKAGE_DIR}/hmmcopy_utils \
+	&& mkdir -p ${PACKAGE_DIR}/hmmcopy_utils \
 	&& cp -R ./bin ./util ${PACKAGE_DIR}/hmmcopy_utils/ \
 	&& cd ${TEMP_DIR} \
 	&& rm -rf hmmcopy_utils \
@@ -244,7 +241,7 @@ RUN	cd ${TEMP_DIR} \
 # Picard v2.20.0 (https://broadinstitute.github.io/picard)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/picard/releases/download/2.20.0/picard.jar' \
-	&& mkdir ${PACKAGE_DIR}/picard-2.20.0 \
+	&& mkdir -p ${PACKAGE_DIR}/picard-2.20.0 \
 	&& mv picard.jar ${PACKAGE_DIR}/picard-2.20.0 \
 # SnpEff v4.3T (http://snpeff.sourceforge.net)
 	&& cd ${TEMP_DIR} \
@@ -255,7 +252,7 @@ RUN	cd ${TEMP_DIR} \
 	&& rm snpEff_v4_3t_core.zip \
 	&& wget -nv -O snpEff_v4_3_GRCh38.92.zip 'https://downloads.sourceforge.net/project/snpeff/databases/v4_3/snpEff_v4_3_GRCh38.92.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fsnpeff%2Ffiles%2Fdatabases%2Fv4_3%2FsnpEff_v4_3_GRCh38.92.zip%2Fdownload&ts=1556478741' \
 	&& unzip snpEff_v4_3_GRCh38.92.zip -d snpEff_v4_3_GRCh38.92 \
-	&& mkdir ${PACKAGE_DIR}/snpEff-4.3T/data \
+	&& mkdir -p ${PACKAGE_DIR}/snpEff-4.3T/data \
 	&& mv snpEff_v4_3_GRCh38.92/data/GRCh38.92 ${PACKAGE_DIR}/snpEff-4.3T/data/GRCh38.92 \
 	&& echo 'GRCh38.92.genome : Homo_sapiens' >> ${PACKAGE_DIR}/snpEff-4.3T/snpEff.config \
 	&& echo 'GRCh38.92.reference : ftp://ftp.ensembl.org/pub/release-92/gtf/' >> ${PACKAGE_DIR}/snpEff-4.3T/snpEff.config \
@@ -314,7 +311,7 @@ RUN	cd ${TEMP_DIR} \
 	&& cd ${TEMP_DIR} \
 	&& git clone git://github.com/pezmaster31/bamtools.git \
 	&& cd bamtools/ \
-	&& mkdir build \
+	&& mkdir -p build \
 	&& cd build/ \
 	&& cmake -DCMAKE_INSTALL_PREFIX=${TEMP_DIR}/bamtools .. \
 	&& make \
