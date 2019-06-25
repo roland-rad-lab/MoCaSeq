@@ -1,6 +1,6 @@
 #!/bin/sh
 datetime=$(date);
 timestamp=$(date +%s);
-mem=$(cat /sys/fs/cgroup/memory/memory.usage_in_bytes);
-cpu=$(cat /sys/fs/cgroup/cpuacct/cpuacct.usage_all | awk 'BEGIN{FS=" "};{a=a + $2};END{printf "%.0f", a; print "\t" NR-1}');
+mem=`free -mh | awk '{print $3}'|sed -n 2p|grep -Eo '[+-]?[0-9]+([.][0-9]+)?'`
+cpu=`iostat | grep -A 2 'avg-cpu'|sed -n 2p| awk '{print $1}'`
 echo "$datetime \t $timestamp \t $mem \t $cpu"
