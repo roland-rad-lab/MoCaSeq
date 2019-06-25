@@ -19,14 +19,14 @@ usage()
 	echo "	-nb, --bam_normal        Path to normal BAM. Do NOT use in combination with -nf or -nr. When used, -rb MUST be specified."
 	echo "	-tb, --bam_tumor         Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, -rb MUST be specified."
 	echo "	-rm, --repeat_mapping    If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no')."
-	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'."
+	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'. Defaults to WES."
 	echo "	-c, --config             Path to configuration file."
 	echo "	-qc, --quality_control   Determines wheter QC is done ('yes') or skipped ('no'). Optional."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --ram                Amount of Gb RAM. Optional. Defaults to 32."
 	echo "	-temp, --temp_dir        Path to temporary directory. Optional. Defaults to current working directory."
 	echo "	-art, --artefact         Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes'. Defaults to none."
-	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'all'"
+	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'"
 	echo "	-p, --phred              If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional."
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
@@ -45,13 +45,14 @@ fastq_tumor_2=
 bam_normal=
 bam_tumor=
 repeat_mapping=yes
+sequencing_type=WES
 species=Mouse
 quality_control=yes
 threads=8
 RAM=32
 temp_dir=$(pwd)/temp
 artefact_type=none
-filtering=all
+filtering=hard
 phred=
 Mutect2=yes
 Delly=no
@@ -167,15 +168,14 @@ echo -e "$(date) \t timestamp: $(date +%s)"
 
 echo '---- Creating directories ----'
 echo -e "$(date) \t timestamp: $(date +%s)"
-mkdir $name/
-mkdir $name/pipeline/
-mkdir $name/fastq/
-mkdir $name/results/
-mkdir $name/results/QC
-mkdir $name/results/bam
-mkdir $name/results/Manta
-mkdir $name/results/Strelka
-mkdir $name/results/msisensor
+mkdir -p $name/
+mkdir -p $name/pipeline/
+mkdir -p $name/fastq/
+mkdir -p $name/results/QC
+mkdir -p $name/results/bam
+mkdir -p $name/results/Manta
+mkdir -p $name/results/Strelka
+mkdir -p $name/results/msisensor
 
 # log memory and cpu usage
 logstats(){
@@ -211,36 +211,36 @@ else
 fi
 
 if [ ! -d $temp_dir ]; then
-  mkdir $temp_dir/
+  mkdir -p $temp_dir/
 fi
 
 if [ $sequencing_type = 'WES' ]; then
-	mkdir $name/results/Copywriter
+	mkdir -p $name/results/Copywriter
 fi
 
 if [ $runmode = 'MS' ]; then
-	mkdir $name/results/HMMCopy
+	mkdir -p $name/results/HMMCopy
 fi
 
 if [ $Mutect2 = 'yes' ]; then
-	mkdir $name/results/Mutect2
+	mkdir -p $name/results/Mutect2
 fi
 
 if [ $Mutect2 = 'yes' ] && [ $runmode = 'MS' ]; then
-	mkdir $name/results/LOH
+	mkdir -p $name/results/LOH
 fi
 
 if [ $Titan = 'yes' ] && [ $Mutect2 = 'yes' ] && [ $runmode = 'MS' ]; then
-	mkdir $name/results/Titan
+	mkdir -p $name/results/Titan
 fi
 
 if [ $Delly = 'yes' ] && [ $runmode = 'MS' ] && [ $sequencing_type = 'WGS' ]; then
-	mkdir $name/results/Delly
-	mkdir $name/results/Chromothripsis
+	mkdir -p $name/results/Delly
+	mkdir -p $name/results/Chromothripsis
 fi
 
 if [ $species = 'Mouse' ]; then
-	mkdir $name/results/Genotype
+	mkdir -p $name/results/Genotype
 fi
 
 if [ $RAM -ge 16 ]; then
@@ -303,7 +303,7 @@ echo '---- Copying repository ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 cp -r $repository_dir/ $name/pipeline/
-cp $repository_dir/../CancerGenomeAnalysis.sh $name/pipeline/
+cp $repository_dir/../MoCaSeq.sh $name/pipeline/
 cp $config_file $name/pipeline/
 
 echo '---- Copying raw data ----' | tee -a $name/results/QC/$name.report.txt
@@ -455,8 +455,8 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		bwa mem -v 1 -t $threads $genomeindex_dir \
-		-Y -K $bwainputbases -v 2 \
+		bwa mem -t $threads $genomeindex_dir \
+		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq \
 		$temp_dir/$name.$type.R2.passed.fastq \
 		> $temp_dir/$name.$type.sam & PIDS="$PIDS $!"
@@ -898,7 +898,8 @@ if [ $runmode = "MS" ]; then
 	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 20000 $mapWig_file $gcWig_file $centromere_file $varregions_file
+	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 20000 \
+	$mapWig_file $gcWig_file $centromere_file $varregions_file
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000
 fi
 
@@ -908,7 +909,8 @@ if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 1000 $mapWig_file $gcWig_file $centromere_file $varregions_file
+	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 1000 \
+	$mapWig_file $gcWig_file $centromere_file $varregions_file
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 1000
 fi
 
@@ -983,7 +985,7 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	for chr in $( seq $chromosomes ); do
 		if [ $(Rscript $repository_dir/Chromothripsis_RearrangementCounter.R -i $name/results/Delly/$name.breakpoints.filtered.tab -c $chr) -ge 4 ]; then
 			echo 'Analysing Chromosome '$chr
-			mkdir $name'/results/Chromothripsis/Chr'$chr
+			mkdir -p $name'/results/Chromothripsis/Chr'$chr
 			echo '---- Hallmark: Clustering of breakpoints for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
 			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
