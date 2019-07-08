@@ -51,7 +51,7 @@ $vep_dir/./vep --cache --species $species \
 --shift_hgvs 1 --check_existing --total_length --allele_number \
 --no_escape --xref_refseq --failed 1 --vcf --flag_pick_allele \
 --pick_order canonical,tsl,biotype,rank,ccds,length --format vcf \
---fork 4 --cache_version 95 --polyphen b --af --af_1kg --af_esp \
+--fork 4 --cache_version 96 --polyphen b --af --af_1kg --af_esp \
 --af_gnomad --force_overwrite --dir_cache $cache_dir
 
 perl $vcf2maf_dir/vcf2maf.pl \
@@ -83,7 +83,7 @@ if [ $input_format = 'Mutect2' ]; then
 		--shift_hgvs 1 --check_existing --total_length --allele_number \
 		--no_escape --xref_refseq --failed 1 --vcf --flag_pick_allele \
 		--pick_order canonical,tsl,biotype,rank,ccds,length --format vcf \
-		--fork 4 --cache_version 95 --polyphen b --af --af_1kg --af_esp \
+		--fork 4 --cache_version 96 --polyphen b --af --af_1kg --af_esp \
 		--af_gnomad --force_overwrite
 
 		perl $vcf2maf_dir/vcf2maf.pl \
