@@ -838,11 +838,8 @@ if [ $Mutect2 = 'yes' ]; then
 		sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
 		$name $species $config_file $type $filtering $artefact_type &&
 
-		Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file & PIDS="$PIDS $!"
+		Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
 	done
-
-	wait $PIDS
-	PIDS=""
 fi
 
 sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Mutect2 $runmode $types
@@ -882,7 +879,6 @@ if [ $sequencing_type = 'WES' ]; then
 	Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species Copywriter
 	sh $repository_dir/CNV_CleanUp.sh $name
-
 fi
 
 if [ $runmode = "MS" ]; then
