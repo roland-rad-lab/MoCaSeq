@@ -15,7 +15,6 @@ picard_dir=/PATH/TO/PICARDTOOLS
 trimmomatic_dir=/PATH/TO/TRIMMOMATIC
 GATK_dir=/PATH/TO/GATK
 snpeff_dir=/PATH/TO/SNPEFF
-delly_dir=/PATH/TO/DELLY
 hmmcopyutils=/PATH/TO/HMMCOPYUTILS
 fasta_to_fastq=/PATH/TO/FASTATOFASTQ
 strelka_dir=/PATH/TO/FASTATOSTRELKA
