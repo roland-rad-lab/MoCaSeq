@@ -31,7 +31,7 @@ elif [ $artefact_type = 'CT' ]; then
 	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
 	-V $name/results/Mutect2/$name.m2.filt.vcf -P \
 	$name/results/QC/$name.Tumor.bam.artifacts.pre_adapter_detail_metrics \
-	--artifact-modes G/T --output $name/results/Mutect2/$name.m2.filt.AM.vcf
+	--artifact-modes C/T --output $name/results/Mutect2/$name.m2.filt.AM.vcf
 elif [ $artefact_type = 'GT' ]; then
 	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
 	-V $name/results/Mutect2/$name.m2.filt.vcf -P \
