@@ -22,17 +22,17 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,2,3</sup>, Sebastian 
 
 * [Overview](#Overview)
     + [Abstract](#abstract)
-    + [TL;DR](#tl;dr)
 * [System Requirements](#system-requirements)
-* [Installation](#installation)
+* [Input formats](#input-formats)
 * [Usage](#usage)
-    - [Inputs and their formats](#inputs-and-their-formats)
-    - [Using bash](using-bash)
-    - [Using Docker](using-docker)
-    - [Example](#example)
+    - [User ID](#user-ID)
+    - [Options](#options)
+* [TL;DR](#tl;dr)
 * [Bug reports](#bug-reports)
 * [Citation](#citation)
 * [License](./LICENSE)
+
+
 
 ## Overview
 This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data.
@@ -45,6 +45,70 @@ Here, we describe standardised computational pipelines tailored specifically for
 We give step by step guidance on the conduction of individual analysis types and provide advice for data interpretation. The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq). 
 
 This protocol takes 2-7 days, depending on the desired analyses.  
+
+## System Requirements
+- Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
+- Using the *Docker* version: Platform of your choice.
+- Hardware: 
+	- Minimum: 8-core processor, 32 GB RAM
+	- Optimal (running multiple samples in parallel): 48-core processor, 256 GB RAM, Solid-State Drive
+- Disk space: 
+	- Reference files: 15 GB
+	- Results: 30 GB (WES 100x), 300 GB (WGS)
+	- Temporary files during analysis: ~170 GB (WES), ~1000 GB (WGS)
+
+We strongly recommend to use the Docker version of this pipeline!
+
+All *bash*, *R* and *python* scripts are directly invokable from `repository`.
+
+## Input formats
+The standard input format are fastq-files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM-files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
+
+## Usage
+We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
+```
+sudo docker run \
+-v <your_working_directory>/:/var/pipeline/ \
+rolandradlab/mocaseq:<mocaseq_version> <options>
+```
+Options are identical to calling `CancerGenomeAnalysis.sh` directly and are listed [below](#options). When invoked without options, the container will start, display usage information and shut down.
+
+### User ID
+Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``-e USERID=`id -u` -e GRPID=`id -g` `` when calling `docker run`:
+```
+sudo docker run \
+-v <your_working_directory>/:/var/pipeline/ \
+-e USERID=`id -u` -e GRPID=`id -g` \
+rolandradlab/mocaseq:<mocaseq_version> <options>
+```
+This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
+
+### Options
+| short | long               | Details                                                                                                                                                                                           |
+|-------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -n    | --name             | Name of the sample                                                                                                                                                                                |
+| -nf   | --fastq_normal_fw  | Path to first normal Fastq. Do NOT use if running single-sample tumor only.                                                                                                                       |
+| -nr   | --fastq_normal_rev | Path to second normal Fastq. Do NOT use if running single-sample tumor only.                                                                                                                      |
+| -tf   | --fastq_tumor_fw   | Path to first tumor fastq. Do NOT use if running single-sample normal only.                                                                                                                       |
+| -tr   | --fastq_tumor_rev  | Path to second tumor fastq. Do NOT use if running single-sample normal only.                                                                                                                      |
+| -nb   | --bam_normal       | Path to normal BAM. Do NOT use in combination with -nf or -nr. When used, -rb MUST be specified.                                                                                                  |
+| -tb   | --bam_tumor        | Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, --repeat_mapping MUST be set to ‘yes’ or ‘no’.                                                                           |
+| -rm   | --repeat_mapping   | If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no').                                                           |
+| -st   | --sequencing_type  | Set to 'WES' or 'WGS'.                                                                                                                                                                            |
+| -c    | --config           | Path to configuration file. Optional.                                                                                                                                                             |
+| -qc   | --quality_control  | Determines wheter QC is done ('yes') or skipped ('no'). Optional.                                                                                                                                 |
+| -t    | --threads          | Number of CPU threads. Optional. Defaults to 8.                                                                                                                                                   |
+| -r    | --ram              | Amount of Gb RAM. Optional. Defaults to 32.                                                                                                                                                       |
+| -temp | --temp_dir         | Path to temporary directory. Optional. Defaults to current working directory.                                                                                                                     |
+| -art  | --artefact         | Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes’. Defaults to none.        |
+| -filt | --filtering        | Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'.                 |
+| -p    | --phred            | If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional. |
+| -mu   | --Mutect2          | Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'.                                                                          |
+| -de   | --Delly            | Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode.                                                       |
+| -ti   | --Titan            | Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes’, forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode.         |
+|       | --test             | If set to 'yes': Will download reference files (if needed) and start a test run.                                                                                                                  |
+|       | --memstats         | If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds.                            |
+|       | --help             | Show this help.                                                                                                                                                                                   |
 
 ## TL;DR
 1. Download and install [Docker](https://www.docker.com/products/docker-desktop).
@@ -59,11 +123,11 @@ sudo docker run \
 rolandradlab/mocaseq:<mocaseq_version> \
 --test yes
 ``` 
-This automatically downloads the container, downloads all required reference files and tests the pipeline. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
+This automatically download the container, download all required reference files and tests the pipeline. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
 
 3. Download and unzip the github repository: 
 ```
-wget https://github.com/rolandradlab/MoCaSeq/archive/master.zip \
+wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 && unzip master.zip \
 && rm master.zip \
 && mv MoCaSeq-master MoCaSeq
@@ -79,7 +143,7 @@ mkdir raw
 
 The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
-5. Replace `<your_working_directory>` and `<mocaseq_version>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data Depending on the available CPU and RAM, this will take approximately 24 hours.
+5. Replace `<your_working_directory>` and `<mocaseq_version>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data. Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
@@ -97,89 +161,6 @@ rolandradlab/mocaseq:<mocaseq_version>  \
 ```
 
 6. Browse the results located in `S821/results/`.
-
-## System Requirements
-- Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
-- Using the *Docker* version: Platform of your choice.
-- Hardware: 
-	- Minimum: 8-core processor, 32 GB RAM
-	- Optimal (running multiple samples in parallel): 48-core processor, 256 GB RAM, Solid-State Drive
-- Disk space: 
-	- Reference files: 15 GB
-	- Results: 30 GB (WES 100x), 300 GB (WGS)
-	- Temporary files during analysis: ~170 GB (WES), ~1000 GB (WGS)
-
-## Installation
-All *bash*, *R* and *python* scripts are directly invokable from `repository`.
-
-1. This pipeline requires a number of tools used for the detection of somatic mutations. Installation procedures are listed in `repository/Preparation_SystemSetup.sh`.
-
-2. Edit `config.sh` to update the relevant paths for each tool, as well as the temporary directory and the number of CPU threads and RAM to be used.
-
-3. Run `sh repository/Preparation_GetReferenceData.sh config.sh` to automatically download all reference files needed to the current directory (inside a newly created folder `Genomes`).
-
-## Usage
-### Inputs and their formats
-fastq
-bam
-
-### Using Docker
-
-### Docker
-We provide a docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
-```
-sudo docker run \
--v <your_working_directory>/:/var/pipeline/ \
-rolandradlab/mocaseq:<github_release> <options>
-```
-Options are identical to calling `CancerGenomeAnalysis.sh` directly and are listed [below](#options). When invoked without options, the container will start, display usage information and shut down.
-
-Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``-e USERID=`id -u` -e GRPID=`id -g` `` when calling `docker run`:
-```
-sudo docker run \
--v <your_working_directory>/:/var/pipeline/ \
--e USERID=`id -u` -e GRPID=`id -g` \
-rolandradlab/mocaseq:<github_release> <options>
-```
-This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
-
-### Using bash
-
-The complete pipeline is wrapped inside a shell-script. During the analysis, the fastq-files are automatically copied to the target directory.
-```
-sh MoCaSeq/CancerGenomeAnalysis.sh \
--nf '/media/rad/HDD2/examples/S821/S821-WES.Normal.R1.fastq.gz' \
--nr '/media/rad/HDD2/examples/S821/S821-WES.Normal.R2.fastq.gz'  \
--tf '/media/rad/HDD2/examples/S821/S821-WES.Tumor.R1.fastq.gz'  \
--tr '/media/rad/HDD2/examples/S821/S821-WES.Tumor.R2.fastq.gz' \
---name S821-WES --species Mouse --sequencing_type WES --config /media/rad/SSD1/MoCaSeq/configadapted.sh \
---artefact none --filtering all --phred phred33 --Delly no --Chromothripsis no --Mutect2 yes --Titan yes 
-
-sh MouseCancerGenomeAnalysis.sh <name> \
-<fastq_normal_1> <fastq_normal_2> <fastq_tumor_1> <fastq_tumor_2> \
-<sequencing_type> <config_file> [none|CT|GT] [phred33|phred64]"
-```
-
-### Options
-
-
-### Example
-1. Download examplary data to the current folder.
-Choose from `WES` (download WES example), `WGS` (download WGS example) or `all` (both WES and WGS).
-```
-sh $repository_dir/Preparation_GetExemplaryData.sh WES
-```
-
-2. Run the main workflow using the downloaded files.
-
-```
-sh MouseCancerGenomeAnalysis.sh S821-WES \
-S821-WES.Normal.R1.fastq.gz S821-WES.Normal.R2.fastq.gz \
-S821-WES.Tumor.R1.fastq.gz S821-WES.Tumor.R2.fastq.gz \
-WES config.sh none phred33
-```
-
-3. The results can be found in `S821-WES/results/`
 
 ## Bug reports
 Please send comments and bug reports to: sebastian.lange [@] tum.de
