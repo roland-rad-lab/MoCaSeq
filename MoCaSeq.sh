@@ -20,7 +20,7 @@ usage()
 	echo "	-tb, --bam_tumor         Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, -rb MUST be specified."
 	echo "	-rm, --repeat_mapping    If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no')."
 	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'. Defaults to WES."
-	echo "	-c, --config             Path to configuration file."
+	echo "	-c, --config             Path to configuration file. Optional."
 	echo "	-qc, --quality_control   Determines wheter QC is done ('yes') or skipped ('no'). Optional."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --ram                Amount of Gb RAM. Optional. Defaults to 32."
