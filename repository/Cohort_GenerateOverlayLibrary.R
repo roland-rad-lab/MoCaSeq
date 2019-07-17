@@ -118,7 +118,7 @@ fillOverlayMat = function(Samples,AberrationCutoff,SummaryStat=SummaryStat)
                        for (segment in Segments$UnifiedPosition)
                             {
                             ActualPosition = Segments[Segments$UnifiedPosition== segment,]
-                            Chromosome = ActualPosition$chr
+                            Chromosome = as.character(ActualPosition$chr)
                             Start = ActualPosition$start
                             Stop  = ActualPosition$end
                             if(ActualPosition$Mean>0)

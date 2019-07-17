@@ -481,7 +481,8 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CleanSam \
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CleanSam \
 		-INPUT $temp_dir/$name.$type.sam \
 		-OUTPUT $temp_dir/$name.$type.cleaned.bam \
 		-VALIDATION_STRINGENCY LENIENT &&
@@ -494,7 +495,8 @@ if [ $repeat_mapping = "yes" ]; then
 
 		rm $temp_dir/$name.$type.cleaned.bam &&
 
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar AddOrReplaceReadGroups \
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
 		-I $temp_dir/$name.$type.cleaned.sorted.bam \
 		-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
 		-ID 1 -LB Lib1-Control -PL ILLUMINA -PU Run1 -SM $type \
@@ -502,7 +504,8 @@ if [ $repeat_mapping = "yes" ]; then
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
 
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar MarkDuplicates \
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar MarkDuplicates \
 		-INPUT $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
 		-OUTPUT $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
 		-METRICS_FILE $name/results/QC/$name.$type.duplicate_metrics.txt \
@@ -558,17 +561,20 @@ if [ $quality_control = "yes" ]; then
 
 	for type in $types;
 	do
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CollectSequencingArtifactMetrics \
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CollectSequencingArtifactMetrics \
 		-R $genome_file \
 		-I $name/results/bam/$name.$type.bam \
 		-O $name/results/QC/$name.$type.bam.artifacts & PIDS="$PIDS $!"
 
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CollectMultipleMetrics \
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CollectMultipleMetrics \
 		-R $genome_file \
 		-I $name/results/bam/$name.$type.bam \
 		-O $name/results/QC/$name.$type.bam.metrics & PIDS="$PIDS $!"
 
-		samtools idxstats $name/results/bam/$name.$type.bam > $name/results/QC/$name.$type.bam.idxstats & PIDS="$PIDS $!"
+		samtools idxstats $name/results/bam/$name.$type.bam \
+		> $name/results/QC/$name.$type.bam.idxstats & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -580,7 +586,8 @@ if [ $quality_control = "yes" ]; then
 	if [ $sequencing_type = 'WES' ]; then
 		for type in $types;
 		do
-			java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CollectHsMetrics \
+			java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+			-jar $picard_dir/picard.jar CollectHsMetrics \
 			-SAMPLE_SIZE 100000 \
 			-R $genome_file \
 			-I $name/results/bam/$name.$type.bam \
@@ -595,7 +602,8 @@ if [ $quality_control = "yes" ]; then
 	elif [ $sequencing_type = 'WGS' ]; then
 		for type in $types;
 		do
-			java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CollectWgsMetrics \
+			java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+			-jar $picard_dir/picard.jar CollectWgsMetrics \
 			-R $genome_file \
 			-I $name/results/bam/$name.$type.bam \
 			-O $name/results/QC/$name.$type.bam.metrics \
