@@ -4,7 +4,7 @@
 
 ## MoCaSeq: Computational pipelines for the analysis of mouse cancers
 
-__Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,2,3</sup>, Sebastian Mueller<sup>1,2,3</sup>, Roman Maresch<sup>1,2,3</sup>, Maximilian Zwiebel<sup>1,2,3</sup>, Laura Gonzalez-Silva<sup>4</sup>, Günter Schneider<sup>2</sup>, Ruby Banerjee<sup>5</sup>, Fengtang Yang<sup>5</sup>, George S. Vassiliou<sup>5,6,7</sup>, Mathias J. Friedrich<sup>1,2,3</sup>, Dieter Saur<sup>2,3,8,9</sup>, Ignacio Varela<sup>4</sup>, Roland Rad<sup>1,2,3,8</sup>__
+__Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mueller<sup>1,3</sup>, Roman Maresch<sup>1,3</sup>, Maximilian Zwiebel<sup>1,3</sup>, Laura Gonzalez-Silva<sup>4</sup>, Günter Schneider<sup>2</sup>, Ruby Banerjee<sup>5</sup>, Fengtang Yang<sup>5</sup>, George S. Vassiliou<sup>5,6,7</sup>, Mathias J. Friedrich<sup>1,2,3</sup>, Dieter Saur<sup>2,3,8,9</sup>, Ignacio Varela<sup>4</sup>, Roland Rad<sup>1,2,3,8</sup>__
 <br>
 <sub>
 	1 Institute of Molecular Oncology and Functional Genomics, School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
@@ -38,17 +38,19 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,2,3</sup>, Sebastian 
 This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data.
 
 ### Abstract
-Mouse models of human cancer have proven invaluable in linking genetics to molecular mechanisms and phenotypes. The tremendous opportunities for reverse as well as forward genetics in mice gain further momentum through the sequencing revolution. Sequencing analysis pipelines were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups. 
+Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups. 
 
-Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present workflows for the detection of all genetic alterations, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements. All components have been extensively validated and cross-compared using multiple methodologies. The protocol also contributes novel analytical tools, such as pipelines for inference of chromothripsis. 
+Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present novel tools and workflows for the detection of different alteration types, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements, such as chromothripsis. Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation. 
 
-We give step by step guidance on the conduction of individual analysis types and provide advice for data interpretation. The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq). 
+The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq) and as a [dockerized version](https://cloud.docker.com/u/rolandradlab/repository/docker/rolandradlab/mocaseq).
 
 This protocol takes 2-7 days, depending on the desired analyses.  
 
 ## System Requirements
-- Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
+We strongly recommend to use the Docker version of this pipeline!
+
 - Using the *Docker* version: Platform of your choice.
+- Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
 - Hardware: 
 	- Minimum: 8-core processor, 32 GB RAM
 	- Optimal (running multiple samples in parallel): 48-core processor, 256 GB RAM, Solid-State Drive
@@ -57,12 +59,10 @@ This protocol takes 2-7 days, depending on the desired analyses.
 	- Results: 30 GB (WES 100x), 300 GB (WGS)
 	- Temporary files during analysis: ~170 GB (WES), ~1000 GB (WGS)
 
-We strongly recommend to use the Docker version of this pipeline!
-
 All *bash*, *R* and *python* scripts are directly invokable from `repository`.
 
 ## Input formats
-The standard input format are fastq-files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM-files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
+The standard input format are FASTQ files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
 
 ## Usage
 We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
@@ -116,7 +116,7 @@ This will run the pipeline with your current UID and GID and set the permissions
 ```
 mkdir MoCaSeq && cd MoCaSeq
 ```
-2. Replace `<your_working_directory>` and `<mocaseq_version>`, then run 
+3. Replace `<your_working_directory>` and `<mocaseq_version>`, then run 
 ```
 sudo docker run \
 -v <your_working_directory>/:/var/pipeline/ \
@@ -125,14 +125,14 @@ rolandradlab/mocaseq:<mocaseq_version> \
 ``` 
 This automatically download the container, download all required reference files and tests the pipeline. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
 
-3. Download and unzip the github repository: 
+4. Download and unzip the github repository: 
 ```
 wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 && unzip master.zip \
 && rm master.zip \
 && mv MoCaSeq-master MoCaSeq
 ```
-4. Use the provided script to download both tumor and matched normal fastq-files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model.
+5. Use the provided script to download both tumor and matched normal FASTQ files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model.
 ```
 mkdir raw
 && cd raw
@@ -143,7 +143,7 @@ mkdir raw
 
 The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
-5. Replace `<your_working_directory>` and `<mocaseq_version>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data. Depending on the available CPU and RAM, this will take approximately 24 hours.
+6. Replace `<your_working_directory>` and `<mocaseq_version>`. This directory should contain `ref/`, which was generated in step 2. Additionally, replace `<threads>` and `<ram>`, then run the pipeline using the downloaded data. Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
@@ -160,7 +160,7 @@ rolandradlab/mocaseq:<mocaseq_version>  \
 --artefact GT
 ```
 
-6. Browse the results located in `S821/results/`.
+7. Browse the results located in `S821/results/`.
 
 ## Bug reports
 Please send comments and bug reports to: sebastian.lange [@] tum.de
