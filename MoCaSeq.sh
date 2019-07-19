@@ -11,7 +11,7 @@
 usage()
 {
 	echo "  Usage: $0 "
-	echo "	-n, --name               Name of the sample"
+	echo "	-n, --name               Name of the sample."
 	echo "	-nf, --fastq_normal_fw   Path to first normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-nr, --fastq_normal_rev  Path to second normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-tf, --fastq_tumor_fw    Path to first tumor fastq. Do NOT use if running single-sample normal only."
@@ -21,12 +21,12 @@ usage()
 	echo "	-rm, --repeat_mapping    If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no')."
 	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'. Defaults to WES."
 	echo "	-c, --config             Path to configuration file. Optional."
-	echo "	-qc, --quality_control   Determines wheter QC is done ('yes') or skipped ('no'). Optional."
+	echo "	-qc, --quality_control   Determines whether QC is done ('yes') or skipped ('no'). Optional."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --ram                Amount of Gb RAM. Optional. Defaults to 32."
 	echo "	-temp, --temp_dir        Path to temporary directory. Optional. Defaults to current working directory."
 	echo "	-art, --artefact         Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes'. Defaults to none."
-	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'"
+	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'."
 	echo "	-p, --phred              If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional."
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
