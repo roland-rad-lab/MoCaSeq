@@ -230,7 +230,7 @@ RUN	cd ${TEMP_DIR} \
 	&& cp -R ./bin ./util ${PACKAGE_DIR}/hmmcopy_utils/ \
 	&& cd ${TEMP_DIR} \
 	&& rm -rf hmmcopy_utils \
-# fastQC v0.11.17 (https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
+# fastQC v0.11.8 (https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.8.zip' \
 	&& unzip fastqc_v0.11.8.zip \
@@ -290,12 +290,12 @@ RUN	cd ${TEMP_DIR} \
 	&& tar -xjf strelka-2.9.10.centos6_x86_64.tar.bz2 \
 	&& mv ./strelka-2.9.10.centos6_x86_64 ${PACKAGE_DIR}/strelka-2.9.10 \
 	&& rm strelka-2.9.10.centos6_x86_64.tar.bz2 \
-# Manta 1.5.0 (https://github.com/Illumina/manta)
+# Manta 1.6.0 (https://github.com/Illumina/manta)
 	&& cd ${TEMP_DIR} \
-	&& wget -nv 'https://github.com/Illumina/manta/releases/download/v1.5.0/manta-1.5.0.centos6_x86_64.tar.bz2' \
-	&& tar -xjf manta-1.5.0.centos6_x86_64.tar.bz2 \
-	&& mv manta-1.5.0.centos6_x86_64 ${PACKAGE_DIR}/manta-1.5.0 \
-	&& rm manta-1.5.0.centos6_x86_64.tar.bz2 \
+	&& wget -nv 'https://github.com/Illumina/manta/releases/download/v1.6.0/manta-1.6.0.centos6_x86_64.tar.bz2' \
+	&& tar -xjf manta-1.6.0.centos6_x86_64.tar.bz2 \
+	&& mv manta-1.6.0.centos6_x86_64 ${PACKAGE_DIR}/manta-1.6.0 \
+	&& rm manta-1.6.0.centos6_x86_64.tar.bz2 \
 # Vcftools 0.1.16 (https://github.com/vcftools/vcftools.git)
 	&& cd ${TEMP_DIR} \
 	&& git clone 'https://github.com/vcftools/vcftools.git' \
