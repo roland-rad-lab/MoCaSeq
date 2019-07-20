@@ -26,6 +26,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [Input formats](#input-formats)
 * [Usage](#usage)
     - [User ID](#user-ID)
+    - [Folder locations](#folder-locations)
     - [Options](#options)
 * [TL;DR](#tl;dr)
 * [Bug reports](#bug-reports)
@@ -81,7 +82,7 @@ rolandradlab/mocaseq:<mocaseq_version> <options>
 ```
 This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
 
-### Changing location of input and reference files
+### Folder locations
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using 
 ``-v local_folder:container_folder`` when calling `docker run`:
 ```
@@ -165,7 +166,7 @@ mkdir -p ${working_directory}/raw \
 && sh ${working_directory}/MoCaSeq/repository/Preparation_GetExemplaryData.sh WES \
 && cd ${working_directory}
 ```
-The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
+	The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
 8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. \
 Depending on the available CPU and RAM, this will take approximately 24 hours.
