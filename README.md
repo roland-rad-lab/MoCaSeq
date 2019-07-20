@@ -2,7 +2,7 @@
 [![Docker](https://img.shields.io/badge/Docker-avaible-green.svg)](https://cloud.docker.com/repository/docker/rolandradlab/natureprotocols2018/general)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## MoCaSeq: Computational pipelines for the analysis of mouse cancers
+## MoCaSeq: Analysis pipelines for cancer genome sequencing in mice
 
 __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mueller<sup>1,3</sup>, Roman Maresch<sup>1,3</sup>, Maximilian Zwiebel<sup>1,3</sup>, Laura Gonzalez-Silva<sup>4</sup>, Günter Schneider<sup>2</sup>, Ruby Banerjee<sup>5</sup>, Fengtang Yang<sup>5</sup>, George S. Vassiliou<sup>5,6,7</sup>, Mathias J. Friedrich<sup>1,2,3</sup>, Dieter Saur<sup>2,3,8,9</sup>, Ignacio Varela<sup>4</sup>, Roland Rad<sup>1,2,3,8</sup>__
 <br>
@@ -83,16 +83,18 @@ This will run the pipeline with your current UID and GID and set the permissions
 
 ### Changing location of input and reference files
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using 
-``-v local_folder:container_folder`` when calling `docker run`: 
+``-v local_folder:container_folder`` when calling `docker run`:
+```
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
 -v <your_ref_directory>:/var/pipeline/ref/ \
 -v <your_raw_directory>:/var/pipeline/raw/ \
 -e USERID=`id -u` -e GRPID=`id -g` \
 rolandradlab/mocaseq:<mocaseq_version> <options>
-Importantly, the pipeline requires that:
-- the main working directory needs to be mapped to ``/var/pipeline/``.
-- the reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``.
+```
+Importantly, the pipeline requires that: \
+The main working directory needs to be mapped to ``/var/pipeline/``. \
+The reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``.
 
 ### Options
 | short | long               | Details                                                                                                                                                                                           |
@@ -123,15 +125,18 @@ Importantly, the pipeline requires that:
 
 ## TL;DR
 1. Download and install [Docker](https://www.docker.com/products/docker-desktop).
+
 2. Set the name and location of the working directory. This will be used for testing and the reference files will be located here. Use a volume with at least 250 GB of free disk space.
 ```
 working_directory=/PATH/TO/WORKING_DIRECTORY
 ```
+
 3. Create the working directory:
 ```
 mkdir -p $working_directory \
 && cd ${working_directory}
 ```
+
 4. Download and unzip the repository from Github: 
 ```
 wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
@@ -139,10 +144,12 @@ wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 && rm master.zip \
 && mv MoCaSeq-master ${working_directory}/MoCaSeq
 ```
+
 5. Download the Docker image from Dockerhub:
 ```
 sudo docker pull rolandradlab/mocaseq
 ```
+
 6. Test the pipeline, which automatically downloads the required reference files. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
 ```
 sudo docker run \
@@ -150,6 +157,7 @@ sudo docker run \
 rolandradlab/mocaseq \
 --test yes
 ``` 
+
 7. Use the provided script to download both tumor and matched normal FASTQ files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model. `all` will download both WES (100x) and WGS (30x) data, using 100 GB of disk space. Use `WES` or `WGS` to only download the respective files.
 ```
 mkdir -p ${working_directory}/raw \
@@ -158,7 +166,9 @@ mkdir -p ${working_directory}/raw \
 && cd ${working_directory}
 ```
 The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
-8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. Depending on the available CPU and RAM, this will take approximately 24 hours.
+
+8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. \
+Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
@@ -182,9 +192,13 @@ rolandradlab/mocaseq \
 Please send comments and bug reports to: sebastian.lange [@] tum.de
 
 ## Citation
-Please cite our primary paper: \
-Mueller, S., Engleitner, T., Maresch, R., Zukowska, M., Lange, S., …, Rad, R. (2018). \
-Evolutionary routes and KRAS dosage define pancreatic cancer phenotypes. Nature, 554(7690), 62–68. \
+This repository can be cited using:
+S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice.
+https://doi.org/10.5281/zenodo.3344535
+
+Primary paper for which this pipeline was developed:
+S. Mueller, T. Engleitner, R. Maresch, M. Zukowska, S. Lange, […], R. Rad (2018).
+Evolutionary routes and KRAS dosage define pancreatic cancer phenotypes. Nature, 554(7690), 62–68.
 https://doi.org/10.1038/nature25459
 
 ## License
