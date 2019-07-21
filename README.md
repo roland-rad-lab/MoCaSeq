@@ -27,6 +27,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [Usage](#usage)
     - [User ID](#user-ID)
     - [Folder locations](#folder-locations)
+    - [Interactive mode](#interactive-mode)
     - [Options](#options)
 * [TL;DR](#tl;dr)
 * [Bug reports](#bug-reports)
@@ -87,15 +88,26 @@ By default, Docker containers cannot access files located on the machine they ru
 ``-v local_folder:container_folder`` when calling `docker run`:
 ```
 sudo docker run \
+-e USERID=`id -u` -e GRPID=`id -g` \
 -v <your_working_directory>:/var/pipeline/ \
 -v <your_ref_directory>:/var/pipeline/ref/ \
--v <your_raw_directory>:/var/pipeline/raw/ \
--e USERID=`id -u` -e GRPID=`id -g` \
+-v <your_temp_directory>:/var/pipeline/temp/ \
 rolandradlab/mocaseq:<mocaseq_version> <options>
 ```
 Importantly, the pipeline requires that: \
 The main working directory needs to be mapped to ``/var/pipeline/``. \
 The reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``.
+The temp directory needs to be mapped to ``/var/pipeline/temp/ ``.
+
+### Interactive mode
+By default, this Docker image automatically runs the MoCaSeq pipeline, as detailed above. However, all scripts included in the ``repository`` folder can be used separately, to allow adjustment of specific aspects of the pipeline. For this, the image can be started in interactive mode:
+```
+sudo docker run \
+-it --entrypoint=/bin/bash \
+-e USERID=`id -u` -e GRPID=`id -g` \
+-v <your_working_directory>:/var/pipeline/ \
+rolandradlab/mocaseq:<mocaseq_version>
+```
 
 ### Options
 | short | long               | Details                                                                                                                                                                                           |
@@ -134,7 +146,7 @@ working_directory=/PATH/TO/WORKING_DIRECTORY
 
 3. Create the working directory:
 ```
-mkdir -p $working_directory \
+mkdir -p ${working_directory} \
 && cd ${working_directory}
 ```
 
@@ -166,15 +178,13 @@ mkdir -p ${working_directory}/raw \
 && sh ${working_directory}/MoCaSeq/repository/Preparation_GetExemplaryData.sh WES \
 && cd ${working_directory}
 ```
-	The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
+* The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
-8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. \
-Depending on the available CPU and RAM, this will take approximately 24 hours.
+8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
 -e USERID=`id -u` -e GRPID=`id -g` \
 -v ${working_directory}:/var/pipeline/ \
--v ${working_directory}/ref:/var/pipeline/ref/ \
 rolandradlab/mocaseq \
 -nf '/var/pipeline/raw/S821-WES.Normal.R1.fastq.gz' \
 -nr '/var/pipeline/raw/S821-WES.Normal.R2.fastq.gz' \
@@ -193,13 +203,13 @@ rolandradlab/mocaseq \
 Please send comments and bug reports to: sebastian.lange [@] tum.de
 
 ## Citation
-This repository can be cited using:
-S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice.
+This repository can be cited using: \
+S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice. \
 https://doi.org/10.5281/zenodo.3344535
 
-Primary paper for which this pipeline was developed:
-S. Mueller, T. Engleitner, R. Maresch, M. Zukowska, S. Lange, […], R. Rad (2018).
-Evolutionary routes and KRAS dosage define pancreatic cancer phenotypes. Nature, 554(7690), 62–68.
+Primary paper for which this pipeline was developed: \
+S. Mueller, T. Engleitner, R. Maresch, M. Zukowska, S. Lange, […], R. Rad (2018). \
+Evolutionary routes and KRAS dosage define pancreatic cancer phenotypes. Nature, 554(7690), 62–68. \
 https://doi.org/10.1038/nature25459
 
 ## License
