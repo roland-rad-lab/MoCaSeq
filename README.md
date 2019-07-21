@@ -124,7 +124,7 @@ rolandradlab/mocaseq:<mocaseq_version>
 | -c    | --config           | Path to configuration file. Optional.                                                                                                                                                             |
 | -qc   | --quality_control  | Determines whether QC is done ('yes') or skipped ('no'). Optional.                                                                                                                                |
 | -t    | --threads          | Number of CPU threads. Optional. Defaults to 8.                                                                                                                                                   |
-| -r    | --ram              | Amount of Gb RAM. Optional. Defaults to 32.                                                                                                                                                       |
+| -r    | --RAM              | Amount of Gb RAM. Optional. Defaults to 32.                                                                                                                                                       |
 | -temp | --temp_dir         | Path to temporary directory. Optional. Defaults to current working directory.                                                                                                                     |
 | -art  | --artefact         | Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes’. Defaults to none.        |
 | -filt | --filtering        | Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'.                 |
@@ -193,7 +193,7 @@ rolandradlab/mocaseq \
 --name S821-WES \
 --sequencing_type WES \
 --threads <threads> \
---ram <ram> \
+--RAM <RAM> \
 --artefact GT
 ```
 

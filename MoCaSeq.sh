@@ -23,7 +23,7 @@ usage()
 	echo "	-c, --config             Path to configuration file. Optional."
 	echo "	-qc, --quality_control   Determines whether QC is done ('yes') or skipped ('no'). Optional."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
-	echo "	-r, --ram                Amount of Gb RAM. Optional. Defaults to 32."
+	echo "	-r, --RAM                Amount of Gb RAM. Optional. Defaults to 32."
 	echo "	-temp, --temp_dir        Path to temporary directory. Optional. Defaults to current working directory."
 	echo "	-art, --artefact         Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes'. Defaults to none."
 	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'."
@@ -76,7 +76,7 @@ while [ "$1" != "" ]; do case $1 in
 	-st|--sequencing_type) shift;sequencing_type="$1";;
 	-c|--config) shift;config_file="$1";;
 	-t|--threads) shift;threads="$1";;
-	-r|--ram) shift;RAM="$1";;
+	-r|--RAM) shift;RAM="$1";;
 	-temp|--temp_dir) shift;temp_dir="$1";;
 	-art|--artefact) shift;artefact_type="$1";;
 	-filt|--filtering) shift;filtering="$1";;
