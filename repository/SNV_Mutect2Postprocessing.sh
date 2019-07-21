@@ -68,7 +68,7 @@ elif [ $filtering = 'hard' ]; then
 	"( ( FILTER = 'PASS') & (GEN[Tumor].AF >= 0.1) & \
 	( ( GEN[Tumor].AD[0] + GEN[Tumor].AD[1]) >= 10 ) & \
 	( ( GEN[Normal].AD[0] + GEN[Normal].AD[1]) >= 10 ) & \
-	(GEN[Tumor].AD[1] >= 2) & (GEN[Normal].AD[1] = 0) )" \
+	(GEN[Tumor].AD[1] >= 3) & (GEN[Normal].AD[1] = 0) )" \
 	> $name/results/Mutect2/$name.m2.postprocessed.vcf
 elif [ $filtering = 'none' ]; then
 	cat $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf \
