@@ -110,7 +110,7 @@ rolandradlab/mocaseq:<mocaseq_version>
 ```
 
 ### Options
-| short | long               | Details                                                                                                                                                                                           |
+| short    | long                    | Details                                                                                                                                                                                           |
 |-------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | -n    | --name             | Name of the sample.                                                                                                                                                                               |
 | -nf   | --fastq_normal_fw  | Path to first normal Fastq. Do NOT use if running single-sample tumor only.                                                                                                                       |
