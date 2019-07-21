@@ -50,7 +50,7 @@ species=Mouse
 quality_control=yes
 threads=8
 RAM=32
-temp_dir=$(pwd)/temp
+temp_dir=/var/pipeline/temp
 artefact_type=none
 filtering=hard
 phred=
@@ -91,7 +91,7 @@ while [ "$1" != "" ]; do case $1 in
 esac; shift; done
 
 if [ -z $config_file ]; then
-	config_file=/opt/MoCaSeq/config_docker.sh
+	config_file=/opt/MoCaSeq/config.sh
 fi
 
 test_dir=${config_file%/*}/test
@@ -909,13 +909,10 @@ fi
 
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 
-	echo '---- Run & Plot HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
+	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 1000 \
-	$mapWig_file $gcWig_file $centromere_file $varregions_file
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 1000
 fi
 
 echo '---- Run msisensor----' | tee -a $name/results/QC/$name.report.txt
