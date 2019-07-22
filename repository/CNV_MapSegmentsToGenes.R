@@ -34,14 +34,14 @@ if (species=="Mouse")
 	dataset="hsapiens_gene_ensembl"
 }
 
-mart=useMart(biomart = 'ensembl', dataset = dataset, host="useast.ensembl.org", ensemblRedirect = FALSE)
+mart=useMart(biomart = 'ensembl', dataset = dataset)
 
 cnv=data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
 segment=read.delim(segment)
 
 for (i in 1:nrow(segment))
 {
-	#print(paste("Getting information from segment ",i,"/",nrow(segments),".",sep=""))
+	print(paste("Getting information from segment ",i,"/",nrow(segment),".",sep=""))
 	results=getBM(attributes=c("chromosome_name","start_position","end_position","external_gene_name"), 
 		filters=c("chromosomal_region"),
 		values=paste(segment[i,"Chrom"],":",segment[i,"Start"],":",segment[i,"End"],sep=""),
