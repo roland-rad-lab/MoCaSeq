@@ -89,6 +89,7 @@ RUN	apt update \
 		sra-toolkit \
 		unzip \
 		wget \
+		xvfb \
 		zip \
 		zlib1g-dev \
 	&& add-apt-repository 'ppa:openjdk-r/ppa' \
