@@ -124,8 +124,8 @@ RUN	apt-get update \
 	&& add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
 	&& apt update \
 	&& apt install -y --no-install-recommends \
-		r-base=3.6.1-1bionic \
-		r-base-dev=3.6.1-1bionic \
+		r-base=3.6.1-3bionic \
+		r-base-dev=3.6.1-3bionic \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
 	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort"),version="3.9",ask=FALSE,update=TRUE)'
