@@ -14,6 +14,7 @@ config_file=$3
 type=$4
 filtering=$5
 artefact_type=$6
+GATK=$7
 
 . $config_file
 

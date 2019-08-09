@@ -14,7 +14,7 @@ temp_dir=/var/pipeline/temp
 
 picard_dir=/opt/picard-2.20.0
 trimmomatic_dir=/opt/trimmomatic-0.39
-GATK_dir=/opt/gatk-4.1.2.0
+GATK_dir=$(echo /opt/$GATK)
 snpeff_dir=/opt/snpEff-4.3T
 hmmcopyutils_dir=/opt/hmmcopy_utils
 fasta_to_fastq=/opt/bin

@@ -13,6 +13,7 @@ species=$2
 config_file=$3
 filtering=$4
 artefact_type=$5
+GATK=$6
 
 . $config_file
 

@@ -31,6 +31,7 @@ usage()
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
+	echo "	-gatk, --GATKVersion     Set to '4.1.0.0' or '4.1.3.0', determining which GATK version is used. Optional. Defaults to 4.1.3.0"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run."
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
 	echo "	--help                   Show this help."
@@ -57,6 +58,7 @@ phred=
 Mutect2=yes
 Delly=no
 runmode=MS
+gatk=4.1.3.0
 test=no
 memstats=0
 config_file=
@@ -84,6 +86,7 @@ while [ "$1" != "" ]; do case $1 in
     -mu|--Mutect2) shift;Mutect2="$1";;
     -de|--Delly) shift;Delly="$1";;
     -ti|--Titan) shift;Titan="$1";;
+    -gatk|--GATKVersion) shift;GATK="$1";;
     --memstats) shift;memstats="$1";;
     --test) shift;test="$1";;
     --help) usage;shift;;
@@ -156,8 +159,6 @@ if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'no' ]; then
 	quality_control=yes
 else Titan=no
 fi
-
-
 
 #reading configuration from $config_file
 . $config_file
@@ -772,7 +773,7 @@ if [ $runmode = "MS" ]; then
 	python2 $name/results/Strelka/Strelka/runWorkflow.py -m local -j $threads
 
 	sh $repository_dir/SNV_StrelkaPostprocessing.sh \
-	$name $species $config_file $filtering $artefact_type
+	$name $species $config_file $filtering $artefact_type $GATK
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Strelka $species $CGC_file $TruSight_file
 
@@ -824,7 +825,7 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	sh $repository_dir/SNV_Mutect2Postprocessing.sh \
-	$name $species $config_file $filtering $artefact_type
+	$name $species $config_file $filtering $artefact_type $GATK
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Mutect2 $species $CGC_file $TruSight_file
 fi
@@ -844,7 +845,7 @@ if [ $Mutect2 = 'yes' ]; then
 		-bamout $name/results/Mutect2/$name."$type".m2.bam &&
 
 		sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
-		$name $species $config_file $type $filtering $artefact_type &&
+		$name $species $config_file $type $filtering $artefact_type $GATK &&
 
 		Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
 	done
