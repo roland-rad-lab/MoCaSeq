@@ -161,7 +161,7 @@ else Titan=no
 fi
 
 #reading configuration from $config_file
-. $config_file
+source $config_file
 repository_dir=${config_file%/*}/repository
 
 echo '---- Starting Mouse Cancer Genome Analysis ----'
@@ -283,6 +283,7 @@ echo Setting location for temporary files to $temp_dir| tee -a $name/results/QC/
 echo Assuming $artefact_type-artefacts for SNV-calling | tee -a $name/results/QC/$name.report.txt
 echo $filtering is setting for filtering of SNV calls | tee -a $name/results/QC/$name.report.txt
 echo Quality scores are assumed as $phred | tee -a $name/results/QC/$name.report.txt
+echo Using GATK v$GATK | tee -a $name/results/QC/$name.report.txt
 if [ $Mutect2 = "yes" ]; then
 	echo Will run Mutect2 | tee -a $name/results/QC/$name.report.txt
 fi
