@@ -13,14 +13,11 @@ analysis=$2
 type=$3
 
 if [ $analysis = 'MS' ]; then
+
+	rm $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 	rm $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz
-	rm $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf.idx
-	rm $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf
-	rm $name/results/Mutect2/$name.m2.filt.AM.filtered.vcf.idx
-	rm $name/results/Mutect2/$name.m2.filt.AM.filtered.vcf
-	rm $name/results/Mutect2/$name.m2.filt.AM.vcf.summary
-	rm $name/results/Mutect2/$name.m2.filt.AM.vcf.idx
-	rm $name/results/Mutect2/$name.m2.filt.AM.vcf
+	rm $name/results/Mutect2/$name.m2.filt.filtered.selected.vcf.idx
+	rm $name/results/Mutect2/$name.m2.filt.filtered.selected.vcf
 	rm $name/results/Mutect2/$name.m2.filt.vcf.idx
 	rm $name/results/Mutect2/$name.m2.filt.vcf
 	rm $name/results/Mutect2/$name.m2.vcf.idx

@@ -20,43 +20,22 @@ GATK=$6
 echo '---- Mutect2 Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
+-I $name/results/Mutect2/$name.m2.f1r2.tar.gz \
+-O $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+
 java -jar $GATK_dir/gatk.jar FilterMutectCalls \
 --variant $name/results/Mutect2/"$name".m2.vcf \
 --output $name/results/Mutect2/"$name".m2.filt.vcf \
---reference $genome_file
-
-if [ $artefact_type = 'none' ]; then
-	cp $name/results/Mutect2/$name.m2.filt.vcf \
-	$name/results/Mutect2/$name.m2.filt.AM.vcf
-elif [ $artefact_type = 'CT' ]; then
-	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
-	-V $name/results/Mutect2/$name.m2.filt.vcf -P \
-	$name/results/QC/$name.Tumor.bam.artifacts.pre_adapter_detail_metrics \
-	--artifact-modes C/T --output $name/results/Mutect2/$name.m2.filt.AM.vcf
-elif [ $artefact_type = 'GT' ]; then
-	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
-	-V $name/results/Mutect2/$name.m2.filt.vcf -P \
-	$name/results/QC/$name.Tumor.bam.artifacts.pre_adapter_detail_metrics \
-	--artifact-modes G/T --output $name/results/Mutect2/$name.m2.filt.AM.vcf
-fi
-
-if [ $artefact_type = 'none' ]; then
-	cp $name/results/Mutect2/$name.m2.filt.AM.vcf \
-	$name/results/Mutect2/$name.m2.filt.AM.filtered.vcf
-elif [ $artefact_type = 'CT' ] || [ $artefact_type = 'GT' ]; then
-	cat $name/results/Mutect2/$name.m2.filt.AM.vcf \
-	| java -jar $snpeff_dir/SnpSift.jar filter \
-	"( ( ( FILTER = 'PASS'  ) & (exists GEN[Tumor].OBP) & \
-	(GEN[Tumor].OBP <= 0.05) ) | ( ( FILTER = 'PASS'  ) ) )" \
-	> $name/results/Mutect2/$name.m2.filt.AM.filtered.vcf
-fi
+--reference $genome_file \
+--ob-priors $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 
 java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
--V $name/results/Mutect2/$name.m2.filt.AM.filtered.vcf \
--output $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf
+-V $name/results/Mutect2/$name.m2.filt.vcf \
+-output $name/results/Mutect2/$name.m2.filt.selected.vcf
 
 if [ $filtering = 'all' ]; then
-	cat $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf \
+	cat $name/results/Mutect2/$name.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS') & (GEN[Tumor].AF >= 0.05) & \
 	( ( GEN[Tumor].AD[0] + GEN[Tumor].AD[1]) >= 5 ) & \
@@ -64,7 +43,7 @@ if [ $filtering = 'all' ]; then
 	(GEN[Tumor].AD[1] >= 2) & (GEN[Normal].AD[1] <= 1) )" \
 	> $name/results/Mutect2/$name.m2.postprocessed.vcf
 elif [ $filtering = 'hard' ]; then
-	cat $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf \
+	cat $name/results/Mutect2/$name.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS') & (GEN[Tumor].AF >= 0.1) & \
 	( ( GEN[Tumor].AD[0] + GEN[Tumor].AD[1]) >= 10 ) & \
@@ -72,7 +51,7 @@ elif [ $filtering = 'hard' ]; then
 	(GEN[Tumor].AD[1] >= 3) & (GEN[Normal].AD[1] = 0) )" \
 	> $name/results/Mutect2/$name.m2.postprocessed.vcf
 elif [ $filtering = 'none' ]; then
-	cat $name/results/Mutect2/$name.m2.filt.AM.filtered.selected.vcf \
+	cat $name/results/Mutect2/$name.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS' ) )" \
 	> $name/results/Mutect2/$name.m2.postprocessed.vcf

@@ -819,6 +819,7 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	-I $name/results/bam/$name.Tumor.bam \
 	-I $name/results/bam/$name.Normal.bam \
 	-tumor Tumor -normal Normal \
+	--f1r2-tar-gz $name/results/Mutect2/$name.m2.f1r2.tar.gz \
 	-O $name/results/Mutect2/$name.m2.vcf \
 	-bamout $name/results/Mutect2/$name.m2.bam
 
