@@ -281,7 +281,9 @@ echo Setting location of genome to $genome_dir | tee -a $name/results/QC/$name.r
 echo Setting location for temporary files to $temp_dir| tee -a $name/results/QC/$name.report.txt
 echo Assuming $artefact_type-artefacts for SNV-calling | tee -a $name/results/QC/$name.report.txt
 echo $filtering is setting for filtering of SNV calls | tee -a $name/results/QC/$name.report.txt
+
 echo Quality scores are assumed as $phred | tee -a $name/results/QC/$name.report.txt
+
 echo Using GATK v$GATK | tee -a $name/results/QC/$name.report.txt
 if [ $Mutect2 = "yes" ]; then
 	echo Will run Mutect2 | tee -a $name/results/QC/$name.report.txt
@@ -842,11 +844,12 @@ if [ $Mutect2 = 'yes' ]; then
 		-R $genome_file \
 		-I $name/results/bam/$name.$type.bam \
 		-tumor $type \
+		--f1r2-tar-gz $name/results/Mutect2/$name."$type".m2.f1r2.tar.gz \
 		-O $name/results/Mutect2/$name."$type".m2.vcf \
-		-bamout $name/results/Mutect2/$name."$type".m2.bam &&
+		-bamout $name/results/Mutect2/$name."$type".m2.bam
 
 		sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
-		$name $species $config_file $type $filtering $artefact_type $GATK &&
+		$name $species $config_file $type $filtering $artefact_type $GATK
 
 		Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
 	done

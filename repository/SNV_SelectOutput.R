@@ -2,7 +2,7 @@
 
 ##########################################################################################
 ##
-## SNV_Select",input_format,"Output.R
+## SNV_SelectOutput.R
 ##
 ## Filters output for human annoted files.
 ##
@@ -68,4 +68,3 @@ if (species=="Human")
 
 	write.table(sel,paste(name,"/results/",input_format,"/",name,".",input_format,".NoCommonSNPs.OnlyImpact.CGC.txt",sep=""), col.names=T,row.names=F, quote=F, sep="\t")
 }
-
