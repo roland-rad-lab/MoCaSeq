@@ -23,6 +23,7 @@ manta_dir=/opt/manta-1.6.0
 bammatcher_dir=/opt/bam-matcher
 vcf2maf_dir=/opt/vcf2maf-1.6.17
 vep_dir=/opt/vep-96
+discvrseq_dir=/opt/DISCVRSeq-1.07
 	
 if [ $species = 'Mouse' ]; then
 	genome_dir=$genomes_dir/GRCm38.p6

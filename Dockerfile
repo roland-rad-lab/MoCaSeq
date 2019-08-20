@@ -306,6 +306,11 @@ RUN	cd ${TEMP_DIR} \
 	&& tar -xjf manta-1.6.0.centos6_x86_64.tar.bz2 \
 	&& mv manta-1.6.0.centos6_x86_64 ${PACKAGE_DIR}/manta-1.6.0 \
 	&& rm manta-1.6.0.centos6_x86_64.tar.bz2 \
+# VariantQC 1.07 (https://github.com/BimberLab/DISCVRSeq)	
+	&& cd ${TEMP_DIR} \
+	&& wget -nv 'https://github.com/BimberLab/DISCVRSeq/releases/download/1.07/DISCVRSeq-1.07.jar' \
+	&& mkdir -p {PACKAGE_DIR}/DISCVRSeq/ \
+	&& mv DISCVRSeq-1.07.jar {PACKAGE_DIR}/DISCVRSeq-1.07/ \
 # Vcftools 0.1.16 (https://github.com/vcftools/vcftools.git)
 	&& cd ${TEMP_DIR} \
 	&& git clone 'https://github.com/vcftools/vcftools.git' \
