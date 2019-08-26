@@ -890,7 +890,7 @@ if [ $sequencing_type = 'WES' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species Copywriter
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species Copywriter 20000 $CGC_file $TruSight_file
 	sh $repository_dir/CNV_CleanUp.sh $name
 fi
 
@@ -909,7 +909,7 @@ if [ $runmode = "MS" ]; then
 
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 20000 \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $CGC_file $TruSight_file
 fi
 
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
