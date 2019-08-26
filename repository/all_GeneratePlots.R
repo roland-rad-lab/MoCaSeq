@@ -98,6 +98,11 @@ if(method=="LOH")
     CopyNumber <<- "Plot_Freq"
     Chromosome <<- "Chrom"
   }
+if(method=="CNVKit")
+  {
+    Start <<- "start"
+    CopyNumber <<- "log2"
+    Chromosome <<- "chromosome"
 }
 
 
@@ -116,6 +121,12 @@ if(method=="HMMCopy")
   SegmentStop <<- "End"
   SegmentMean <<- "Mean"
   SegmentChromosome <<- "Chrom"
+if(method=="cnvkit")
+  {
+  SegmentStart <<- "start"
+  SegmentStop <<- "end"
+  SegmentMean <<- "log2"
+  SegmentChromosome <<- "chromosome"
   }
 }
 
