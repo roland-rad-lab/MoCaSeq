@@ -14,8 +14,6 @@ name = args[1]
 species = args[2]
 method = args[3]
 resolution = args[4]
-CGC = args[5]
-TruSight = args[6]
 
 suppressMessages(library(biomaRt))
 suppressMessages(library(tidyr))
@@ -86,52 +84,4 @@ if (method=="Copywriter")
 	write.table(cnv,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
 } else if (method=="HMMCopy") {
 	write.table(cnv,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-}
-
-CGC=read.delim(CGC,header=T,sep="\t")
-
-cnv_cgc = cnv %>%
-filter(Gene %in% CGC[,1])
-
-if (method=="Copywriter")
-{
-	write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-} else if (method=="HMMCopy") {
-	write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-}
-
-cnv_cgc = cnv_cgc %>%
-filter(abs(as.numeric(Mean)) > 0.75)
-
-if (method=="Copywriter")
-{
-	write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.OnlyImpact.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-} else if (method=="HMMCopy") {
-	write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.OnlyImpact.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-}
-
-if (species=="Human")
-{
-	TruSight=read.delim(TruSight,header=T,sep="\t")
-
-	cnv_ts = cnv %>%
-	filter(Gene %in% TruSight[,1])
-
-	if (method=="Copywriter")
-	{
-		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-	} else if (method=="HMMCopy") {
-		write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-	}
-
-	cnv_ts = cnv_ts %>%
-	filter(abs(as.numeric(Mean)) > 0.75)
-
-	if (method=="Copywriter")
-	{
-		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.OnlyImpact.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-	} else if (method=="HMMCopy") {
-		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.OnlyImpact.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
-	}
-	CGC=read.delim(CGC,header=T,sep="\t")
 }
