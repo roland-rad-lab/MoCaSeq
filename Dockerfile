@@ -44,6 +44,7 @@ RUN	apt update \
 		gosu \
 	&& apt -y --no-install-recommends upgrade \
 	&& apt install -y --no-install-recommends \
+		apt-transport-https \
 		alien \
 		ant \
 		autoconf \
@@ -62,6 +63,7 @@ RUN	apt update \
 		git-all \
 		git-daemon-sysvinit \
 		gparted \
+		gnupg2 \
 		libbam-dev \
 		libbz2-dev \
 		libcairo2-dev \
@@ -129,6 +131,13 @@ RUN	apt-get update \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
 	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort"),version="3.9",ask=FALSE,update=TRUE)'
+
+RUN cd ${TEMP_DIR} \
+	&& curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add - \ 
+	&& apt-key fingerprint 0EBFCD88 \
+	&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+	&& apt update \
+	&& apt install docker-ce docker-ce-cli containerd.io
 
 RUN	cd ${TEMP_DIR} \
 # bcl2fastq v2.20 (https://support.illumina.com)
