@@ -416,10 +416,10 @@ if [ $repeat_mapping = "yes" ]; then
 		-threads $threads -$phred \
 		$name/fastq/$name.$type.R1.fastq.gz \
 		$name/fastq/$name.$type.R2.fastq.gz \
-		$temp_dir/$name.$type.R1.passed.fastq \
-		$temp_dir/$name.$type.R1.not_passed.fastq \
-		$temp_dir/$name.$type.R2.passed.fastq \
-		$temp_dir/$name.$type.R2.not_passed.fastq \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R1.not_passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.not_passed.fastq.gz \
 		LEADING:25 TRAILING:25 MINLEN:50 \
 		SLIDINGWINDOW:10:25 \
 		ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
@@ -434,8 +434,8 @@ if [ $repeat_mapping = "yes" ]; then
 	for type in $types;
 	do
 		fastqc -t $threads \
-		$temp_dir/$name.$type.R1.passed.fastq \
-		$temp_dir/$name.$type.R2.passed.fastq \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
 		--outdir=$name/results/QC & PIDS="$PIDS $!"
 	done
 	
@@ -460,8 +460,8 @@ if [ $repeat_mapping = "yes" ]; then
 	do
 		bwa mem -t $threads $genomeindex_dir \
 		-Y -K $bwainputbases -v 1 \
-		$temp_dir/$name.$type.R1.passed.fastq \
-		$temp_dir/$name.$type.R2.passed.fastq \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
 		> $temp_dir/$name.$type.sam & PIDS="$PIDS $!"
 	done
 
@@ -470,10 +470,10 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		rm $temp_dir/$name.$type.R1.passed.fastq & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R1.not_passed.fastq & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R2.passed.fastq & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R2.not_passed.fastq & PIDS="$PIDS $!"
+		rm $temp_dir/$name.$type.R1.passed.fastq.gz & PIDS="$PIDS $!"
+		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz & PIDS="$PIDS $!"
+		rm $temp_dir/$name.$type.R2.passed.fastq.gz & PIDS="$PIDS $!"
+		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
