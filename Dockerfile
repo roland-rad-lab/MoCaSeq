@@ -262,6 +262,13 @@ RUN	cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/picard/releases/download/2.20.0/picard.jar' \
 	&& mkdir -p ${PACKAGE_DIR}/picard-2.20.0 \
 	&& mv picard.jar ${PACKAGE_DIR}/picard-2.20.0 \
+# sambamba v0.7.0 (https://broadinstitute.github.io/picard)
+	&& cd ${TEMP_DIR} \
+	&& wget -nv 'https://github.com/biod/sambamba/releases/download/v0.7.0/sambamba-0.7.0-linux-static.gz' \
+	&& gunzip sambamba-0.7.0-linux-static.gz
+	&& mkdir -p ${PACKAGE_DIR}/sambamba-0.7.0 \
+	&& mv sambamba-0.7.0-linux-static ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
+	&& chmod +x ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
 # SnpEff v4.3T (http://snpeff.sourceforge.net)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://netix.dl.sourceforge.net/project/snpeff/snpEff_v4_3t_core.zip' \
