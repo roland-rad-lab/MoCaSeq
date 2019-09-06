@@ -502,7 +502,7 @@ if [ $repeat_mapping = "yes" ]; then
 		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
 		-I $temp_dir/$name.$type.cleaned.sorted.bam \
 		-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-		-ID 1 -LB Lib1-Control -PL ILLUMINA -PU Run1 -SM $type \
+		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
 		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
