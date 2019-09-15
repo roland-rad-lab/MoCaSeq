@@ -62,6 +62,7 @@ GATK=4.1.3.0
 test=no
 memstats=0
 config_file=
+chromosomes=$19
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -950,15 +951,12 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	echo '---- Optional for WGS: Run Delly ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	#delly_file=$(basename $delly_dir)
-	#$delly_dir"/"$delly_file call \
 	delly call \
 	-o $name/results/Delly/$name.pre.bcf \
-	-g $genome_dir/GRCm38.p6.fna \
+	-g $genome_file \
 	$name/results/bam/$name.Tumor.bam \
 	$name/results/bam/$name.Normal.bam
 
-	#$($delly_dir/$(basename $delly_dir)) filter \
 	delly filter \
 	-f somatic -o $name/results/Delly/$name.bcf \
 	-s $genome_dir/Samples.tsv $name/results/Delly/$name.pre.bcf
