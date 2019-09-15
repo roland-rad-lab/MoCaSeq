@@ -17,7 +17,6 @@ trimmomatic_dir=/opt/trimmomatic-0.39
 GATK_dir=$(echo /opt/gatk-$GATK)
 snpeff_dir=/opt/snpEff-4.3T
 hmmcopyutils_dir=/opt/hmmcopy_utils
-fasta_to_fastq=/opt/bin
 strelka_dir=/opt/strelka-2.9.10
 manta_dir=/opt/manta-1.6.0
 bammatcher_dir=/opt/bam-matcher

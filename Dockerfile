@@ -219,7 +219,6 @@ RUN	cd ${TEMP_DIR} \
 	&& unzip gatk-4.1.3.0.zip \
 	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.3.0 \
 	&& cp ./gatk-4.1.3.0/gatk-package-4.1.3.0-local.jar ${PACKAGE_DIR}/gatk-4.1.3.0/ \
-	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.3.0/gatk-package-4.1.3.0-local.jar ${PACKAGE_DIR}/bin/gatk.jar \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.3.0/gatk-package-4.1.3.0-local.jar ${PACKAGE_DIR}/gatk-4.1.3.0/gatk.jar \
 	&& rm -rf gatk-4.1.3.0.zip gatk-4.1.3.0 \
 # GATK v4.1.0.0 (https://software.broadinstitute.org/gatk/)
@@ -228,7 +227,6 @@ RUN	cd ${TEMP_DIR} \
 	&& unzip gatk-4.1.0.0.zip \
 	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.0.0 \
 	&& cp ./gatk-4.1.0.0/gatk-package-4.1.0.0-local.jar ${PACKAGE_DIR}/gatk-4.1.0.0/ \
-	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.0.0/gatk-package-4.1.0.0-local.jar ${PACKAGE_DIR}/bin/gatk.jar \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.0.0/gatk-package-4.1.0.0-local.jar ${PACKAGE_DIR}/gatk-4.1.0.0/gatk.jar \
 	&& rm -rf gatk-4.1.0.0.zip gatk-4.1.0.0 \
 # GATK requires Java 8 to be active
@@ -269,6 +267,7 @@ RUN	cd ${TEMP_DIR} \
 	&& mkdir -p ${PACKAGE_DIR}/sambamba-0.7.0 \
 	&& mv sambamba-0.7.0-linux-static ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
 	&& chmod +x ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
+	&& ln -sf ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 ${PACKAGE_DIR}/bin/sambamba\
 # SnpEff v4.3T (http://snpeff.sourceforge.net)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://netix.dl.sourceforge.net/project/snpeff/snpEff_v4_3t_core.zip' \
