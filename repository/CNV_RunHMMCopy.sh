@@ -21,12 +21,10 @@ elif [ $species = 'Mouse' ]; then
 	chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y
 fi
 
-for type in Tumor Normal;
+for type in $types;
 do
 	(
 	echo "Binning read counts in control file @ $resolution resolution..."
-	$hmmcopyutils_dir/bin/readCounter -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
-	echo "Binning read counts in tumor file @ $resolution resolution..."
 	$hmmcopyutils_dir/bin/readCounter -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
 	) &
 done
