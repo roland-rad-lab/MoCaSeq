@@ -250,6 +250,7 @@ else bwainputbases=10000000
 fi
 
 MAX_RECORDS_IN_RAM=$(expr $RAM \* 250000)
+HASH_TABLE_SIZE=$((RAM*1000000000/1000))
 
 echo '---- Starting Mouse Cancer Genome Analysis ----' | tee -a $name/results/QC/$name.report.txt
 echo Starting pipeline using these settings: | tee -a $name/results/QC/$name.report.txt
@@ -463,11 +464,11 @@ if [ $repeat_mapping = "yes" ]; then
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		> $temp_dir/$name.$type.sam & PIDS="$PIDS $!"
+		| java -jar $picard_dir/picard.jar CleanSam \
+		INPUT=/dev/stdin \
+		OUTPUT=$temp_dir/$name.$type.cleaned.bam \
+		VALIDATION_STRINGENCY=LENIENT
 	done
-
-	wait $PIDS
-	PIDS=""
 
 	for type in $types;
 	do
@@ -480,25 +481,18 @@ if [ $repeat_mapping = "yes" ]; then
 	wait $PIDS
 	PIDS=""
 
-	echo '---- Postprocessing I (Cleaning, sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
+	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	for type in $types;
 	do
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar CleanSam \
-		-INPUT $temp_dir/$name.$type.sam \
-		-OUTPUT $temp_dir/$name.$type.cleaned.bam \
-		-VALIDATION_STRINGENCY LENIENT &&
-
-		rm $temp_dir/$name.$type.sam &&
-
-		samtools sort -@ $threads \
-		$temp_dir/$name.$type.cleaned.bam \
-		-o $temp_dir/$name.$type.cleaned.sorted.bam &&
+		opt/bin/sambamba sort \
+		-t $threads -m ${RAM} --tmpdir=$temp_dir \
+		-o $temp_dir/$name.$type.cleaned.sorted.bam \
+		$temp_dir/$name.$type.cleaned.bam &&
 
 		rm $temp_dir/$name.$type.cleaned.bam &&
-
+		
 		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
 		-I $temp_dir/$name.$type.cleaned.sorted.bam \
@@ -508,13 +502,11 @@ if [ $repeat_mapping = "yes" ]; then
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
 
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar MarkDuplicates \
-		-INPUT $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-		-OUTPUT $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-		-METRICS_FILE $name/results/QC/$name.$type.duplicate_metrics.txt \
-		-REMOVE_DUPLICATES false -ASSUME_SORTED true \
-		-VALIDATION_STRINGENCY LENIENT -MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
+		opt/bin/sambamba markdup \
+		--t $threads --tmpdir=$temp_dir \
+		--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
+		$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
+		$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
@@ -549,7 +541,7 @@ if [ $repeat_mapping = "yes" ]; then
 		--use-original-qualities \
 		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		samtools index -@ $threads $name/results/bam/$name.$type.bam &&
+		opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
 
 		rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
@@ -640,7 +632,7 @@ if [ $species = "Mouse" ]; then
 	echo '---- Get genotypes ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	echo 'Name\tAllele\tCHROM\tPOS\tREF\tALT\tCount_Ref\tCount_Alt\tComment' > $name/results/Genotype/$name.Genotypes.txt
+	echo -e 'Name\tAllele\tCHROM\tPOS\tREF\tALT\tCount_Ref\tCount_Alt\tComment' > $name/results/Genotype/$name.Genotypes.txt
 
 	allele=Kras-G12D
 	position=6:145246771-145246771
