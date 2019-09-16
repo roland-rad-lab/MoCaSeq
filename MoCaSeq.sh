@@ -250,7 +250,7 @@ else bwainputbases=10000000
 fi
 
 MAX_RECORDS_IN_RAM=$(expr $RAM \* 250000)
-HASH_TABLE_SIZE=$((RAM*1000000000/1000))
+HASH_TABLE_SIZE=$((RAM*1000000000/500))
 
 echo '---- Starting Mouse Cancer Genome Analysis ----' | tee -a $name/results/QC/$name.report.txt
 echo Starting pipeline using these settings: | tee -a $name/results/QC/$name.report.txt

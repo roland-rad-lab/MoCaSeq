@@ -133,7 +133,7 @@ RUN	apt-get update \
 	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort"),version="3.9",ask=FALSE,update=TRUE)'
 
 RUN cd ${TEMP_DIR} \
-	&& curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add - \ 
+	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \ 
 	&& apt-key fingerprint 0EBFCD88 \
 	&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
 	&& apt update \
