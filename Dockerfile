@@ -263,7 +263,7 @@ RUN	cd ${TEMP_DIR} \
 # sambamba v0.7.0 (https://broadinstitute.github.io/picard)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/biod/sambamba/releases/download/v0.7.0/sambamba-0.7.0-linux-static.gz' \
-	&& gunzip sambamba-0.7.0-linux-static.gz
+	&& gunzip sambamba-0.7.0-linux-static.gz \
 	&& mkdir -p ${PACKAGE_DIR}/sambamba-0.7.0 \
 	&& mv sambamba-0.7.0-linux-static ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
 	&& chmod +x ${PACKAGE_DIR}/sambamba-0.7.0/sambamba-0.7.0 \
