@@ -136,7 +136,8 @@ RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \ 
 	&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge" \
 	; apt update \
-	&& apt install docker-ce docker-ce-cli containerd.io
+	&& apt install -y --no-install-recommends \
+	docker-ce docker-ce-cli containerd.io
 
 RUN	cd ${TEMP_DIR} \
 # bcl2fastq v2.20 (https://support.illumina.com)
