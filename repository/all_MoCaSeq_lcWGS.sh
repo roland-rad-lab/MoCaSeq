@@ -224,18 +224,17 @@ if [ $ends = 'PE' ]; then
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		| java -jar $picard_dir/picard.jar CleanSam \
-		INPUT=/dev/stdin \
-		OUTPUT=$temp_dir/$name.$type.cleaned.bam \
-		VALIDATION_STRINGENCY=LENIENT
+		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CleanSam \
+		-I /dev/stdin \
+		-O $temp_dir/$name.$type.cleaned.bam \
+		-VALIDATION_STRINGENCY LENIENT
 	done
 
 	for type in $types;
 	do
 		rm $temp_dir/$name.$type.R1.passed.fastq.gz
-		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz
 		rm $temp_dir/$name.$type.R2.passed.fastq.gz
-		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz
 	done
 
 elif [ $ends = 'SE' ]; then
@@ -296,10 +295,12 @@ elif [ $ends = 'SE' ]; then
 		bwa mem -t $threads $genomeindex_dir \
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
-		| java -jar $picard_dir/picard.jar CleanSam \
-		INPUT=/dev/stdin \
-		OUTPUT=$temp_dir/$name.$type.cleaned.bam \
-		VALIDATION_STRINGENCY=LENIENT
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
+		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CleanSam \
+		-I /dev/stdin \
+		-O $temp_dir/$name.$type.cleaned.bam \
+		-VALIDATION_STRINGENCY LENIENT
 	done
 
 	for type in $types;
@@ -313,7 +314,7 @@ fi
 
 	for type in $types;
 	do
-		opt/bin/sambamba sort \
+		/opt/bin/sambamba sort \
 		-t $threads -m ${RAM} --tmpdir=$temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.bam \
 		$temp_dir/$name.$type.cleaned.bam &&
@@ -329,7 +330,7 @@ fi
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
 
-		opt/bin/sambamba markdup \
+		/opt/bin/sambamba markdup \
 		--t $threads --tmpdir=$temp_dir \
 		--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
 		$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
@@ -337,9 +338,6 @@ fi
 
 		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam
 	done
-
-	
-	
 
 	echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -368,13 +366,10 @@ fi
 		--use-original-qualities \
 		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
+		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
 
 		rm $name/results/bam/$name.$type.bam.bai
 	done
-
-	
-	
 
 if [ $quality_control = "yes" ]; then
 	echo '---- Quality control I (Sequencing artifacts, multiple metrics) ----' | tee -a $name/results/QC/$name.report.txt
@@ -397,10 +392,7 @@ if [ $quality_control = "yes" ]; then
 		samtools idxstats $name/results/bam/$name.$type.bam \
 		> $name/results/QC/$name.$type.bam.idxstats
 	done
-
 	
-	
-
 	echo '---- Quality control II (WES- or WGS-specific metrics) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
@@ -413,9 +405,6 @@ if [ $quality_control = "yes" ]; then
 		-O $name/results/QC/$name.$type.bam.metrics \
 		-SAMPLE_SIZE 1000000
 	done
-
-	
-	
 
 	echo '---- Summarizing quality control data ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt

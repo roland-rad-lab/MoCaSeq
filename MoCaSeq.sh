@@ -465,10 +465,11 @@ if [ $repeat_mapping = "yes" ]; then
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		| java -jar $picard_dir/picard.jar CleanSam \
-		INPUT=/dev/stdin \
-		OUTPUT=$temp_dir/$name.$type.cleaned.bam \
-		VALIDATION_STRINGENCY=LENIENT
+		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CleanSam \
+		-I /dev/stdin \
+		-O $temp_dir/$name.$type.cleaned.bam \
+		-VALIDATION_STRINGENCY LENIENT
 	done
 
 	for type in $types;
@@ -487,7 +488,7 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		opt/bin/sambamba sort \
+		/opt/bin/sambamba sort \
 		-t $threads -m ${RAM} --tmpdir=$temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.bam \
 		$temp_dir/$name.$type.cleaned.bam &&
@@ -503,7 +504,7 @@ if [ $repeat_mapping = "yes" ]; then
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
 
-		opt/bin/sambamba markdup \
+		/opt/bin/sambamba markdup \
 		--t $threads --tmpdir=$temp_dir \
 		--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
 		$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
@@ -542,7 +543,7 @@ if [ $repeat_mapping = "yes" ]; then
 		--use-original-qualities \
 		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
+		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
 
 		rm $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
 	done
