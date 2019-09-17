@@ -13,11 +13,12 @@ args = commandArgs(TRUE)
 name <- args[1]
 species <- args[2]
 repository_dir <- args[3]
-resolution <- args[4]
-map_file <- args[5]
-gc_file <- args[6]
-centromere_file <- args[7]
-varregions_file <- args[8]
+sequencing_type <- args[4]
+resolution <- args[5]
+map_file <- args[6]
+gc_file <- args[7]
+centromere_file <- args[8]
+varregions_file <- args[9]
 
 library(HMMcopy)
 library(DNAcopy)
@@ -73,7 +74,16 @@ write.table(somatic_tab,paste(name,"/results/HMMCopy/",name,".HMMCopy.",resoluti
 
 # segmentation of the CN plot
 somatic_CNA <- smooth.CNA(CNA(genomdat=somatic_tab$log2Ratio,chrom=somatic_tab$Chrom,maploc=somatic_tab$Start,data.type='logratio'))
-cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=5,undo.splits='sdundo',undo.SD=2,verbose=2)$output
+
+if (sequencing_type == "lcWGS")
+{
+	cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=3,undo.splits='sdundo',undo.SD=1.5,verbose=2)$output
+}
+if (sequencing_depth == "WES" | sequencing_depth == "WGS")
+{
+	cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=5,undo.splits='sdundo',undo.SD=2,verbose=2)$output
+}
+
 colnames(cnv_segments) <- c("ID", "Chrom", "Start", "End", "num.mark", "Mean")
 cnv_segments <- cnv_segments[,c("Chrom", "Start", "End","Mean")]
 cnv_segments <- cnv_segments[naturalorder(cnv_segments$Chrom),]
