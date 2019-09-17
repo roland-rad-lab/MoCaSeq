@@ -543,7 +543,7 @@ if [ $repeat_mapping = "yes" ]; then
 
 		opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
 
-		rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
+		rm $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
