@@ -324,7 +324,7 @@ RUN	cd ${TEMP_DIR} \
 # VariantQC 1.07 (https://github.com/BimberLab/DISCVRSeq)	
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/BimberLab/DISCVRSeq/releases/download/1.07/DISCVRSeq-1.07.jar' \
-	&& mkdir -p ${PACKAGE_DIR}/DISCVRSeq/ \
+	&& mkdir -p ${PACKAGE_DIR}/DISCVRSeq-1.07/ \
 	&& mv DISCVRSeq-1.07.jar ${PACKAGE_DIR}/DISCVRSeq-1.07/ \
 # Vcftools 0.1.16 (https://github.com/vcftools/vcftools.git)
 	&& cd ${TEMP_DIR} \
