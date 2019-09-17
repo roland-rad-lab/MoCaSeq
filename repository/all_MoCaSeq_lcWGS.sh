@@ -268,7 +268,7 @@ elif [ $ends = 'SE' ]; then
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		LEADING:25 TRAILING:25 MINLEN:50 \
 		SLIDINGWINDOW:10:25 \
-		ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10
+		ILLUMINACLIP:$trimmomatic_dir/adapters/BBDuk-Adapters.fa:2:30:10
 	done
 
 	echo '---- Running FastQC after trimming ----' | tee -a $name/results/QC/$name.report.txt
