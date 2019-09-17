@@ -2,7 +2,7 @@
 
 ##########################################################################################
 ##
-## CancerGenomeAnalysis.sh
+## MoCaSeq.sh
 ##
 ## Main workflow
 ##
@@ -62,7 +62,7 @@ GATK=4.1.3.0
 test=no
 memstats=0
 config_file=
-chromosomes=$19
+chromosomes=19
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -83,6 +83,7 @@ while [ "$1" != "" ]; do case $1 in
 	-temp|--temp_dir) shift;temp_dir="$1";;
 	-art|--artefact) shift;artefact_type="$1";;
 	-filt|--filtering) shift;filtering="$1";;
+    -p|--phred) shift;phred="$1";;
     -mu|--Mutect2) shift;Mutect2="$1";;
     -de|--Delly) shift;Delly="$1";;
     -ti|--Titan) shift;Titan="$1";;
@@ -617,16 +618,16 @@ if [ $quality_control = "yes" ]; then
 
 fi
 
-	if [ $runmode = "MS" ]; then
-		echo '---- Matched BAM-files? ----' | tee -a $name/results/QC/$name.report.txt
-		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+if [ $runmode = "MS" ]; then
+	echo '---- Matched BAM-files? ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-		python2 $bammatcher_dir/bam-matcher.py \
-		-B1 $name/results/bam/$name.Tumor.bam \
-		-B2 $name/results/bam/$name.Normal.bam \
-		--config $bammatcher_file --html --number_of_snps 100000 \
-		--output $name/results/QC/$name.Tumor.Normal.bammatcher.txt
-	fi
+	python2 $bammatcher_dir/bam-matcher.py \
+	-B1 $name/results/bam/$name.Tumor.bam \
+	-B2 $name/results/bam/$name.Normal.bam \
+	--config $bammatcher_file --html --number_of_snps 100000 \
+	--output $name/results/QC/$name.Tumor.Normal.bammatcher.txt
+fi
 
 if [ $species = "Mouse" ]; then
 	echo '---- Get genotypes ----' | tee -a $name/results/QC/$name.report.txt
@@ -875,7 +876,6 @@ if [ $sequencing_type = 'WES' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/CNV_CopywriterGetRawData.R $name $runmode $types
-
 	python2 $repository_dir/CNV_CopywriterGetModeCorrectionFactor.py $name
 	Rscript $repository_dir/CNV_CopywriterGetModeCorrectionFactor.R $name $runmode $types
 
@@ -900,7 +900,7 @@ if [ $runmode = "MS" ]; then
 	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir 20000 \
+	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $CGC_file $TruSight_file
 fi
