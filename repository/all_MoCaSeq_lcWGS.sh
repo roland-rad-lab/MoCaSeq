@@ -315,7 +315,7 @@ fi
 	for type in $types;
 	do
 		/opt/bin/sambamba sort \
-		-t $threads -m ${RAM} --tmpdir=$temp_dir \
+		-t $threads -m ${RAM}GB --tmpdir=$temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.bam \
 		$temp_dir/$name.$type.cleaned.bam &&
 
