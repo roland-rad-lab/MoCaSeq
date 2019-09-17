@@ -211,8 +211,10 @@ if [ $ends = 'PE' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 	for type in $types;
 	do
-		rm $name/fastq/$name.$type.R1.fastq.gz
-		rm $name/fastq/$name.$type.R2.fastq.gz
+		rm $temp_dir/$name.$type.R1.passed.fastq.gz
+		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz
+		rm $temp_dir/$name.$type.R2.passed.fastq.gz
+		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz 
 	done
 
 	echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
@@ -231,10 +233,10 @@ if [ $ends = 'PE' ]; then
 		-VALIDATION_STRINGENCY LENIENT
 	done
 
-	for type in $types;
+		for type in $types;
 	do
 		rm $temp_dir/$name.$type.R1.passed.fastq.gz
-		rm $temp_dir/$name.$type.R2.passed.fastq.gz
+
 	done
 
 elif [ $ends = 'SE' ]; then
@@ -306,7 +308,6 @@ elif [ $ends = 'SE' ]; then
 	for type in $types;
 	do
 		rm $temp_dir/$name.$type.R1.passed.fastq.gz
-		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz
 	done
 fi
 	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
@@ -329,6 +330,7 @@ fi
 		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
 		/opt/bin/sambamba markdup \
 		--t $threads --tmpdir=$temp_dir \
