@@ -438,7 +438,7 @@ sh $repository_dir/CNV_CleanUp.sh $name
 echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 20000 $types
+sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 20000 $types
 
 echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -450,7 +450,7 @@ Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $C
 echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000 $types
+sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
 
 echo '---- Finished analysis of sample '$name' ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
