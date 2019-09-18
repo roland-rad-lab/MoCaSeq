@@ -211,9 +211,7 @@ if [ $ends = 'PE' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 	for type in $types;
 	do
-		rm $temp_dir/$name.$type.R1.passed.fastq.gz
 		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz
-		rm $temp_dir/$name.$type.R2.passed.fastq.gz
 		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz 
 	done
 
@@ -236,7 +234,7 @@ if [ $ends = 'PE' ]; then
 		for type in $types;
 	do
 		rm $temp_dir/$name.$type.R1.passed.fastq.gz
-
+		rm $temp_dir/$name.$type.R2.passed.fastq.gz
 	done
 
 elif [ $ends = 'SE' ]; then
@@ -297,7 +295,6 @@ elif [ $ends = 'SE' ]; then
 		bwa mem -t $threads $genomeindex_dir \
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
-		$temp_dir/$name.$type.R2.passed.fastq.gz \
 		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 		-jar $picard_dir/picard.jar CleanSam \
 		-I /dev/stdin \
@@ -360,6 +357,7 @@ fi
 		-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
 		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 		-R $genome_file \
@@ -370,7 +368,7 @@ fi
 
 		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
 
-		rm $name/results/bam/$name.$type.bam.bai
+		rm $name/results/bam/$name.$type.bai
 	done
 
 if [ $quality_control = "yes" ]; then
@@ -405,7 +403,7 @@ if [ $quality_control = "yes" ]; then
 		-R $genome_file \
 		-I $name/results/bam/$name.$type.bam \
 		-O $name/results/QC/$name.$type.bam.metrics \
-		-SAMPLE_SIZE 1000000
+		-SAMPLE_SIZE 100000
 	done
 
 	echo '---- Summarizing quality control data ----' | tee -a $name/results/QC/$name.report.txt
@@ -437,31 +435,22 @@ Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
 Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species Copywriter 20000 $CGC_file $TruSight_file
 sh $repository_dir/CNV_CleanUp.sh $name
 
-if [ $runmode = "MS" ]; then
+echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 20000 $types
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 20000
-fi
+echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-if [ $runmode = "MS" ]; then
+Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
+$mapWig_file $gcWig_file $centromere_file $varregions_file
+Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $CGC_file $TruSight_file
 
-	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
-	$mapWig_file $gcWig_file $centromere_file $varregions_file
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $CGC_file $TruSight_file
-fi
-
-if [ $runmode = "MS" ]; then
-
-	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000
-fi
+sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000 $types
 
 echo '---- Finished analysis of sample '$name' ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt

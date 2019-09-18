@@ -893,7 +893,7 @@ if [ $runmode = "MS" ]; then
 	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 20000
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 20000 $types
 fi
 
 if [ $runmode = "MS" ]; then
@@ -911,7 +911,7 @@ if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
 fi
 
 echo '---- Run msisensor----' | tee -a $name/results/QC/$name.report.txt
