@@ -122,6 +122,7 @@ if(method=="HMMCopy")
   SegmentStop <<- "End"
   SegmentMean <<- "Mean"
   SegmentChromosome <<- "Chrom"
+  }
 if(method=="cnvkit")
   {
   SegmentStart <<- "start"
