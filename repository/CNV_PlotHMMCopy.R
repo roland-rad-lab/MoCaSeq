@@ -79,7 +79,7 @@ if (sequencing_type == "lcWGS")
 {
 	cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=3,undo.splits='sdundo',undo.SD=1.5,verbose=2)$output
 }
-if (sequencing_depth == "WES" | sequencing_depth == "WGS")
+if (sequencing_type == "WES" | sequencing_type == "WGS")
 {
 	cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=5,undo.splits='sdundo',undo.SD=2,verbose=2)$output
 }
