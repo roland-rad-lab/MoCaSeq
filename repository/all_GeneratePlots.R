@@ -103,6 +103,7 @@ if(method=="CNVKit")
     Start <<- "start"
     CopyNumber <<- "log2"
     Chromosome <<- "chromosome"
+  }
 }
 
 
