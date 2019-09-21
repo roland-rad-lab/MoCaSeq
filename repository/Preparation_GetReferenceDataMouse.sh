@@ -44,6 +44,8 @@ cp $repository_dir"/../data/GRCm38.bammatcher_bash.conf" "ref/"$VersionMouse"/"
 cp $repository_dir"/../data/GRCm38.AgilentProbeGaps.txt" "ref/"$VersionMouse"/"
 cp $repository_dir"/../data/GRCm38.Genecode_M20_Exons.rds" "ref/"$VersionMouse"/"
 
+cp $repository_dir"/../data/GRCm38.RefFlat" "ref/"$VersionMouse"/"
+
 cp $repository_dir"/../data/Samples.tsv" "ref/"$VersionMouse"/"
 
 echo '---- Downloading reference genome ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
