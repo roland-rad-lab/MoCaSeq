@@ -503,6 +503,7 @@ if [ $repeat_mapping = "yes" ]; then
 		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
 		/opt/bin/sambamba markdup \
 		--t $threads --tmpdir=$temp_dir \
@@ -535,6 +536,7 @@ if [ $repeat_mapping = "yes" ]; then
 		-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
 		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
 		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 		-R $genome_file \
@@ -543,9 +545,9 @@ if [ $repeat_mapping = "yes" ]; then
 		--use-original-qualities \
 		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam &&
+		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam $name/results/bam/$name.$type.bam.bai &&
 
-		rm $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
+		rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
