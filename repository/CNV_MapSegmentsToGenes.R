@@ -12,15 +12,31 @@ args <- commandArgs(TRUE)
 
 name = args[1]
 species = args[2]
-method = args[3]
-resolution = args[4]
-CGC = args[5]
-TruSight = args[6]
+genecode_file = args[3]
+method = args[4]
+resolution = args[5]
+CGC = args[6]
+TruSight = args[7]
 
-suppressMessages(library(biomaRt))
 suppressMessages(library(tidyr))
 suppressMessages(library(dplyr))
 suppressMessages(library(GenomicRanges))
+suppressMessages(library(data.table))
+
+genesDT = genecode_file
+
+genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
+
+AnnotateSegment <- function(segDF)
+{
+  segDF[,"chr"]=paste0("chr",segDF[,"chr"])
+  segGR <- makeGRangesFromDataFrame(segDF, keep.extra.columns = T)
+  hits <- findOverlaps(segGR, genesGR)
+  
+  #returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneID)] # only geneID
+  returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName)] # more stuff
+  return(data.frame(returnDat))
+}
 
 if (method=="Copywriter")
 {
@@ -29,28 +45,19 @@ if (method=="Copywriter")
 	segment=paste(name,"/results/",method,"/",name,".",method,".",resolution,".segments.txt",sep="")
 }
 
-if (species=="Mouse")
-{
-	dataset="mmusculus_gene_ensembl"
-} else if (species=="Human") {
-	dataset="hsapiens_gene_ensembl"
-}
-
-mart=useMart(biomart = 'ensembl', dataset = dataset)
-
 cnv=data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
 segment=read.delim(segment)
 
 for (i in 1:nrow(segment))
 {
-	print(paste("Getting information from segment ",i,"/",nrow(segment),".",sep=""))
-	results=getBM(attributes=c("chromosome_name","start_position","end_position","external_gene_name"), 
-		filters=c("chromosomal_region"),
-		values=paste(segment[i,"Chrom"],":",segment[i,"Start"],":",segment[i,"End"],sep=""),
-		mart=mart)
+	temp=NULL
+	temp=as.data.frame(segment[i,c("Chrom","Start","End")])
+	colnames(temp)=c("chr","start","end")
+	results=AnnotateSegment(temp)
 	if (nrow(results) > 0) 
 		{
 		colnames(results)=c("Chrom", "Start", "End", "Gene")
+		results[,"Chrom"]=gsub("chr","",results[,"Chrom"])
 		results$Mean=segment[i,"Mean"]
 		results$Name=name
 		results=results[,c("Name", "Chrom", "Start", "End", "Mean","Gene")]

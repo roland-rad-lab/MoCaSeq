@@ -43,6 +43,8 @@ if [ $species = 'Mouse' ]; then
 	exons_file=$genome_dir/GRCm38.SureSelect_Mouse_All_Exon_V1.bed
 	centromere_file="NULL"
 	varregions_file=$genome_dir/GRCm38.AgilentProbeGaps.txt
-	genecode_file=$genome_dir/GRCm38.Genecode_M20_Exons.rds
+	genecode_file_exons=$genome_dir/GRCm38.Genecode_M20_Exons.rds
+	genecode_file_genes=$genome_dir/GRCm38.Genecode_M20_Genes.rds
+	vepdata_dir=$genome_dir/VEP
 	vepdata_dir=$genome_dir/VEP
 fi
