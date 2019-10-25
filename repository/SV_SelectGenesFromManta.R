@@ -11,13 +11,19 @@
 args <- commandArgs(TRUE)
 
 name = args[1]
+type = args[2]
 
 library(data.table)
 library(dplyr)
 library(tidyr)
 library(readr)
 
-tab=read_tsv(paste(name,"/results/Manta/",name,".Manta.txt",sep=""))
+if (type=="")
+{
+	tab=read_tsv(paste(name,"/results/Manta/",name,".Manta.txt",sep=""))
+} else {
+	tab=read_tsv(paste(name,"/results/Manta/",name,".",type,".Manta.txt",sep=""))
+}
 
 colnames(tab)=gsub("\\[\\*]","",colnames(tab))
 colnames(tab)=gsub("\\[","",colnames(tab))
@@ -41,4 +47,9 @@ select(-key) %>%
 filter(!is.na(Effect)) %>%
 distinct()
 
-write.table(tab,paste(name,"/results/Manta/",name,".Manta.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+if (type=="")
+{
+	write.table(tab,paste(name,"/results/Manta/",name,".Manta.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+} else {
+	write.table(tab,paste(name,"/results/Manta/",name,".",type,".Manta.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+}
