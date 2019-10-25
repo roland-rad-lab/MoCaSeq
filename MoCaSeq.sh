@@ -670,7 +670,7 @@ if [ $species = "Mouse" ]; then
 		wt_allele=1,11
 		del_allele=2,3,4,5,6,7,8,9,10
 		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file $transcript $allele $position $wt_allele $del_allele
+		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
 		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
 		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
@@ -680,7 +680,7 @@ if [ $species = "Mouse" ]; then
 		wt_allele="1,2,3,16"
 		del_allele="4,5,6,7,8,9,10,11,12,13,14,15"
 		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file $transcript $allele $position $wt_allele $del_allele
+		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
 		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
 		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
@@ -690,7 +690,7 @@ if [ $species = "Mouse" ]; then
 		wt_allele="1,2,5,6,7,8,9,10,11"
 		del_allele="3,4"
 		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file $transcript $allele $position $wt_allele $del_allele
+		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
 		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
 		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
@@ -700,7 +700,7 @@ if [ $species = "Mouse" ]; then
 		wt_allele="1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17"
 		del_allele="3"
 		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file $transcript $allele $position $wt_allele $del_allele
+		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
 		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
 		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 	fi
@@ -886,7 +886,7 @@ if [ $sequencing_type = 'WES' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species Copywriter 20000 $CGC_file $TruSight_file
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter 20000 $CGC_file $TruSight_file
 	sh $repository_dir/CNV_CleanUp.sh $name
 fi
 
@@ -905,7 +905,7 @@ if [ $runmode = "MS" ]; then
 
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species HMMCopy 20000 $CGC_file $TruSight_file
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 20000 $CGC_file $TruSight_file
 fi
 
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
@@ -940,6 +940,7 @@ if [ $Titan = "yes" ]; then
 
 	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir 20000 $mapWig_file $gcWig_file $exons_file $sequencing_type
 	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type
+	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes
 fi
 
 if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; then
