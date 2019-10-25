@@ -99,8 +99,11 @@ if [ $input_format = 'Mutect2' ]; then
 		
 		if [ $type = 'Normal' ]; then
 			awk 'BEGIN{FS=OFS="\t"} NR>2{print $0,$NF=0}' $name/results/$input_format/$name.$type.$input_format.vep.maf >> $name/results/$input_format/$name.$type.$input_format.vep.maf.tmp
-			mv $name/results/$input_format/$name.$type.$input_format.vep.maf.tmp $name/results/$input_format/$name.$type.$input_format.vep.maf
 		fi
+		if [ $type = 'Tumor' ]; then
+			awk 'BEGIN{FS=OFS="\t"} NR>2{print $0,$NF=$42/$40}' $name/results/$input_format/$name.$type.$input_format.vep.maf >> $name/results/$input_format/$name.$type.$input_format.vep.tmp
+		fi
+		mv $name/results/$input_format/$name.$type.$input_format.vep.maf.tmp $name/results/$input_format/$name.$type.$input_format.vep.maf
 		) &
 	done
 
