@@ -121,6 +121,7 @@ if [ $test = 'yes' ]; then
 		Titan=no
 		Delly=no
 		runmode=MS
+		GATK=4.1.3.0
 fi
 
 if [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ ! -z $fastq_tumor_1 ] && [ ! -z $fastq_tumor_2 ] && [ -z $bam_normal ] && [ -z $bam_tumor ]; then

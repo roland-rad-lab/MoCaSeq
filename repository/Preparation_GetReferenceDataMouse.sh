@@ -43,6 +43,7 @@ cp $repository_dir"/../data/GRCm38.bammatcher_bash.conf" "ref/"$VersionMouse"/"
 
 cp $repository_dir"/../data/GRCm38.AgilentProbeGaps.txt" "ref/"$VersionMouse"/"
 cp $repository_dir"/../data/GRCm38.Genecode_M20_Exons.rds" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38.Genecode_M20_Genes.rds" "ref/"$VersionMouse"/"
 
 cp $repository_dir"/../data/GRCm38.RefFlat" "ref/"$VersionMouse"/"
 
