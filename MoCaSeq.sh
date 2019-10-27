@@ -31,7 +31,7 @@ usage()
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
-	echo "	-gatk, --GATKVersion     Set to '4.1.0.0' or '4.1.3.0', determining which GATK version is used. Optional. Defaults to 4.1.3.0"
+	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0' or '4.1.4.0', determining which GATK version is used. Optional. Defaults to 4.1.4.0"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run."
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
 	echo "	--help                   Show this help."
@@ -58,7 +58,7 @@ phred=
 Mutect2=yes
 Delly=no
 runmode=MS
-GATK=4.1.3.0
+GATK=4.1.4.0
 test=no
 memstats=0
 config_file=
@@ -121,7 +121,6 @@ if [ $test = 'yes' ]; then
 		Titan=no
 		Delly=no
 		runmode=MS
-		GATK=4.1.3.0
 fi
 
 if [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ ! -z $fastq_tumor_1 ] && [ ! -z $fastq_tumor_2 ] && [ -z $bam_normal ] && [ -z $bam_tumor ]; then
