@@ -132,7 +132,7 @@ if (species=="Human")
 	}
 
 	cnv_ts = cnv_ts %>%
-	filter(abs(as.numeric(Mean)) > 0.75)
+	filter(abs(as.numeric(Mean)) > 1)
 
 	if (method=="Copywriter")
 	{
