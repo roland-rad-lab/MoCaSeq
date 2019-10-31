@@ -23,7 +23,7 @@ suppressMessages(library(dplyr))
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(data.table))
 
-genesDT = genecode_file
+genesDT = readRDS(genecode_file)
 
 genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
 
