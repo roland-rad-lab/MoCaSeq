@@ -34,32 +34,32 @@ gc_file=gsub("20000",resolution,gc_file)
 normal <- as.data.frame(correctReadcount(wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)))
 tumor <- as.data.frame(correctReadcount(wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)))
 
-normal_copy=GRanges(normal$space, IRanges(normal$start, normal$end),copy=normal$copy)
-tumor_copy=GRanges(tumor$space, IRanges(tumor$start, tumor$end),copy=tumor$copy)
+normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
+tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
 
 # remove regions with increased variability for mice and centromere regions for humams
 if (species == "Human")
 {
-	filter=read.delim(centromere_file)
+	filtering=read.delim(centromere_file)
 	flankLength=5000000
 }
 if (species == "Mouse")
 {
-	filter=read.delim(varregions_file)
+	filtering=read.delim(varregions_file)
 	flankLength=0
 }
 
-colnames(filter)[1:3] <- c("space","start","end")
-filter$start <- filter$start - flankLength
-filter$end <- filter$end + flankLength
-filter=GRanges(filter$space, IRanges(filter$start, filter$end))
+colnames(filtering)[1:3] <- c("space","start","end")
+filtering$start <- filtering$start - flankLength
+filtering$end <- filtering$end + flankLength
+filtering=GRanges(filtering$space, IRanges(filtering$start, filtering$end))
 
-hits <- findOverlaps(query = normal_copy, subject = filter)
+hits <- findOverlaps(query = normal_copy, subject = filtering)
 ind <- queryHits(hits)
 message("Removed ", length(ind), " bins near centromeres.")
 normal_copy=(normal_copy[-ind, ])
 
-hits <- findOverlaps(query = tumor_copy, subject = filter)
+hits <- findOverlaps(query = tumor_copy, subject = filtering)
 ind <- queryHits(hits)
 message("Removed ", length(ind), " bins near centromeres.")
 tumor_copy=(tumor_copy[-ind, ])
