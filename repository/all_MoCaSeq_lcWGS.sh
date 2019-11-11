@@ -212,7 +212,9 @@ if [ $ends = 'PE' ]; then
 	for type in $types;
 	do
 		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz
-		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz 
+		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz
+		rm $name/fastq/$name.$type.R1.fastq.gz
+		rm $name/fastq/$name.$type.R2.fastq.gz 
 	done
 
 	echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
