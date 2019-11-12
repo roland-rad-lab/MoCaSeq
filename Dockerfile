@@ -140,12 +140,6 @@ RUN cd ${TEMP_DIR} \
 	docker-ce docker-ce-cli containerd.io
 
 RUN	cd ${TEMP_DIR} \
-# bcl2fastq v2.20 (https://support.illumina.com)
-	&& wget -nv 'https://support.illumina.com/content/dam/illumina-support/documents/downloads/software/bcl2fastq/bcl2fastq2-v2-20-0-linux-x86-64.zip' \
-	&& unzip bcl2fastq2-v2-20-0-linux-x86-64.zip \
-	&& alien bcl2fastq2-v2.20.0.422-Linux-x86_64.rpm \
-	&& dpkg -i bcl2fastq2_0v2.20.0.422-2_amd64.deb \
-	&& rm bcl2fastq2-v2-20-0-linux-x86-64.zip bcl2fastq2-v2.20.0.422-Linux-x86_64.rpm bcl2fastq2_0v2.20.0.422-2_amd64.deb \
 # bwa-mem v0.7.17 (http://bio-bwa.sourceforge.net)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/lh3/bwa/releases/download/v0.7.17/bwa-0.7.17.tar.bz2' \
