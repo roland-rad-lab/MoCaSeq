@@ -898,6 +898,17 @@ if [ $runmode = "MS" ]; then
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 20000 $types
 fi
 
+if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
+
+	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
+	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 1000 \
+	$mapWig_file $gcWig_file $centromere_file $varregions_file
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 1000 $CGC_file $TruSight_file
+fi
+
 if [ $runmode = "MS" ]; then
 
 	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
@@ -906,14 +917,6 @@ if [ $runmode = "MS" ]; then
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 20000 $CGC_file $TruSight_file
-fi
-
-if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
-
-	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
 fi
 
 echo '---- Run msisensor----' | tee -a $name/results/QC/$name.report.txt
