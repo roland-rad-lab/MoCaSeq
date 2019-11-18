@@ -34,12 +34,12 @@ gc_file=gsub("20000",resolution,gc_file)
 normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
 normal$reads <- normal$reads+1
 normal <- as.data.frame(correctReadcount(normal))
-normal_copy=GRanges(normal$space, IRanges(normal$start, normal$end),copy=normal$copy)
+normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
 
-tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".tumor.",resolution,".wig",sep=""),gc_file,map_file)
+tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
 tumor$reads <- tumor$reads+1
 tumor <- as.data.frame(correctReadcount(tumor))
-tumor_copy=GRanges(tumor$space, IRanges(tumor$start, tumor$end),copy=tumor$copy)
+tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
 
 # remove regions with increased variability for mice and centromere regions for humams
 if (species == "Human")
