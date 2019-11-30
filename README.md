@@ -74,11 +74,11 @@ rolandradlab/mocaseq:<mocaseq_version> <options>
 Options are listed [below](#options). When invoked without options, the container will start, display usage information and shut down.
 
 ### User ID
-Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``-e USERID=`id -u` -e GRPID=`id -g` `` when calling `docker run`:
+Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``--user $(id -u):$(id -g) `` when calling `docker run`:
 ```
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
--e USERID=`id -u` -e GRPID=`id -g` \
+--user $(id -u):$(id -g) \
 rolandradlab/mocaseq:<mocaseq_version> <options>
 ```
 This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
@@ -88,7 +88,7 @@ By default, Docker containers cannot access files located on the machine they ru
 ``-v local_folder:container_folder`` when calling `docker run`:
 ```
 sudo docker run \
--e USERID=`id -u` -e GRPID=`id -g` \
+--user $(id -u):$(id -g) \
 -v <your_working_directory>:/var/pipeline/ \
 -v <your_ref_directory>:/var/pipeline/ref/ \
 -v <your_temp_directory>:/var/pipeline/temp/ \
@@ -104,7 +104,7 @@ By default, this Docker image automatically runs the MoCaSeq pipeline, as detail
 ```
 sudo docker run \
 -it --entrypoint=/bin/bash \
--e USERID=`id -u` -e GRPID=`id -g` \
+--user $(id -u):$(id -g) \
 -v <your_working_directory>:/var/pipeline/ \
 rolandradlab/mocaseq:<mocaseq_version>
 ```
@@ -183,7 +183,7 @@ mkdir -p ${working_directory}/raw \
 8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. Depending on the available CPU and RAM, this will take approximately 24 hours.
 ```
 sudo docker run \
--e USERID=`id -u` -e GRPID=`id -g` \
+--user $(id -u):$(id -g) \
 -v ${working_directory}:/var/pipeline/ \
 rolandradlab/mocaseq \
 -nf '/var/pipeline/raw/S821-WES.Normal.R1.fastq.gz' \
