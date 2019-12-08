@@ -110,6 +110,12 @@ if(method=="CNVKit")
     CopyNumber <<- "log2"
     Chromosome <<- "chromosome"
   }
+if(method=="aCGH")
+    {
+    Start <<- "Start"
+    CopyNumber <<- "logRR"
+    Chromosome <<- "Chromosome"
+    }
 }
 
 
@@ -136,8 +142,35 @@ if(method=="cnvkit")
   SegmentMean <<- "log2"
   SegmentChromosome <<- "chromosome"
   }
+if(method=="aCGH")
+{
+  SegmentStart <<- "Start"
+  SegmentStop <<- "End"
+  SegmentMean <<- "logRR"
+  SegmentChromosome <<- "Chromosome"
+  }  
 }
 
+
+PreProcess_aCGH = function(segmentdata,chrom.sizes,processedLogCounts)
+{
+ Outlist = list()
+ StartPositions = processedLogCounts
+ segmentdata = read.table(segmentdata,sep="\t",header=T)
+ segmentdata$logRR = segmentdata$Amplification+segmentdata$Deletion
+ FoundSegments = GRanges(as.character(segmentdata$Chr),IRanges(segmentdata$Start,segmentdata$Stop),Value=segmentdata$logRR)
+ AllChromosomes = GRanges(paste("chr",names(chrom.sizes),sep=""),IRanges(StartPositions,chrom.sizes),Value=rep(0,length(chrom.sizes)))
+ NotReportedSegments = as.data.frame(setdiff(AllChromosomes,FoundSegments))[,c("seqnames","start","end")]
+ NotReportedSegments$logRR=0
+ ReportedFragments = as.data.frame(FoundSegments)[,c("seqnames","start","end","Value")]
+ colnames(ReportedFragments) = c("Chromosome","Start","End","logRR")
+ colnames(NotReportedSegments) =c("Chromosome","Start","End","logRR")
+ segmentdataReformated = rbind(ReportedFragments,NotReportedSegments)
+ segmentdataReformated$Chromosome = as.character(segmentdataReformated$Chromosome)
+ segmentdataReformated$Chromosome = as.numeric(gsub("chr","",segmentdataReformated$Chromosome))
+ segmentdataReformated = segmentdataReformated[order(segmentdataReformated[,"Chromosome"],segmentdataReformated[,"Start"]),]
+ return(segmentdataReformated)
+}
 
 ProcessCountData = function(countdata="",chrom.sizes=chrom.sizes,method="")
 {
@@ -153,7 +186,10 @@ ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
 {
   Outlist = list()
   FirstPosition = c()
-  segmentdata = read.table(segmentdata,header=T,sep="\t")
+  if(method!="aCGH")
+   {
+   segmentdata = read.table(segmentdata,header=T,sep="\t")
+   }
   SetVariableNamesSegments(method)
   cnSeg <- data.frame()
   borders <- c()
