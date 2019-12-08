@@ -31,6 +31,10 @@ normal=LOH_FilterReads(normal)
 #merge both files using UniquePos, reduce the input to heterozygous positions
 variants = LOH_MergeVariants(tumor,normal)
 
+#write out table used for plotting of germline variants
+write.table(variants,file=paste(name,"/results/LOH/",name,".VariantsForLOHGermline.txt",sep=""),quote=F,sep="\t",row.names=F,col.names=T)
+
+#filter for informative variants (heterozygous in germline)
 variants = variants[variants[,"Normal_Freq"] <= 0.7 & variants[,"Normal_Freq"] >= 0.3,]
 
 #define the dictionary, which defines whether an allele im AMBigous or UNAMBigous.

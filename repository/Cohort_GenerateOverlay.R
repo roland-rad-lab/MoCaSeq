@@ -21,3 +21,4 @@ for (SummaryStat in c("Mean","Proportion"))
     RunOverlayAnalysis(Samples=Samples,Method="HMMCopy",species="Mouse",resolution=20000,SummaryStat=SummaryStat,AberrationCutoff=0.25,ChromomsomesToRemove="",Ylim=Ylim,format="pdf",Suffix=paste0(".",SummaryStat,".",Ylim))
   }
 }
+
