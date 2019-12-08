@@ -10,6 +10,7 @@ LABEL org.label-schema.url="https://www.imo.med.tum.de"
 ENV TARGET_DIR /var/pipeline
 ENV PACKAGE_DIR=/opt
 ENV TEMP_DIR=/var/tmp
+ENV HOME /var
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
