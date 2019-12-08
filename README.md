@@ -15,7 +15,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 	6 Wellcome Trust-MRC Stem Cell Institute, Cambridge Biomedical Campus, University of Cambridge, CB2 0SL Cambridge, UK<br>
 	7 Department of Haematology, Cambridge University Hospitals NHS Trust, CB2 0QQ Cambridge, UK<br>
 	8 German Cancer Consortium (DKTK), German Cancer Research Center (DKFZ), 69120 Heidelberg, Germany<br>
-	9 Institute for Translational Cancer Research and Institute for Experimental Cancer Therapy, School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
+	9 Chair of Translational Cancer Research and Institute for Experimental Cancer Therapy, School of Medicine, Technische Universität München, 81675 Munich, Germany<br>
 </sub>
 
 ### Contents
@@ -203,14 +203,14 @@ rolandradlab/mocaseq \
 Please send comments and bug reports to: sebastian.lange [@] tum.de
 
 ## Citation
-Please cite the corresponding protocol published concurrently to this repository: \
-S. Lange, T. Engleitner, S. Mueller, R. Maresch, M. Zwiebel, L. Gonzaléz-Silva, G. Schneider, R. Banerjee, F. Yang, G. Vassiliou, M. Friedrich, D. Saur, I. Varela and R. Rad (2019).
-Analysis pipelines for cancer genome sequencing in mice. Nature Protocols, 
-https://doi.org/10.1038/s41596-019-0234-7
-
-Specific versions of the repository can be cited directly:
-S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice. 
+This repository can be cited using: \
+S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice. \
 https://doi.org/10.5281/zenodo.3344535
+
+Primary paper for which this pipeline was developed: \
+S. Mueller, T. Engleitner, R. Maresch, M. Zukowska, S. Lange, […], R. Rad (2018). \
+Evolutionary routes and KRAS dosage define pancreatic cancer phenotypes. Nature, 554(7690), 62–68. \
+https://doi.org/10.1038/nature25459
 
 ## License
 The program is distributed under the MIT license.

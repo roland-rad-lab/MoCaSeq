@@ -98,12 +98,6 @@ if(method=="LOH")
     CopyNumber <<- "Plot_Freq"
     Chromosome <<- "Chrom"
   }
-if(method=="LOH_Germline")
-  {
-    Start <<- "Pos"
-    CopyNumber <<- "Normal_Freq"
-    Chromosome <<- "Chrom"
-  }
 if(method=="CNVKit")
   {
     Start <<- "start"
@@ -192,7 +186,7 @@ SetYAxis = function(y_axis)
     y_output <<- ".2."
     yborder <<- 2
   }
-  if(y_axis=="LOH" || y_axis=="LOH_Germline")
+  if(y_axis=="LOH")
    {
      ylim <<- c(-0.25,1.25)
      ypos <<- c(0,0.5,1)
@@ -257,7 +251,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   {
     segments(ChromBordersReduced,-yborder,ChromBordersReduced,yborder,lty=3,col="grey40",lwd=0.9)
   }
-  if(method =="LOH" || method=="LOH_Germline")
+  if(method =="LOH")
   {
     segments(ChromBordersReduced,0,ChromBordersReduced,1,lty=3,col="grey40",lwd=0.9)
   }
