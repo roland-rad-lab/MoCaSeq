@@ -24,13 +24,13 @@ mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/LEWES_EiJ.mgp.v5.*
 mv -t $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/wild_only/ $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/WSB_EiJ.mgp.v5.*
 
-find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name  "*.mgp.v5.snps.dbSNP142.vcf.gz" | parallel --workdir $PWD --eta --load 80% --noswap 'bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z'
+find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name  "*.mgp.v5.snps.dbSNP142.vcf.gz" | xargs -i bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z
 
-find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name  "*.mgp.v5.indels.dbSNP142.normed.vcf.gz" | parallel --workdir $PWD --eta --load 80% --noswap 'bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z'
+find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name  "*.mgp.v5.indels.dbSNP142.normed.vcf.gz" | xargs -i bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z
 
-find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter" | parallel --workdir $PWD --eta --load 80% --noswap 'bcftools sort {} -o {}.sort -O z'
+find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter" | xargs -i bcftools sort {} -o {}.sort -O z
 
-find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter.sort" | parallel --workdir $PWD --eta --load 80% --noswap 'tabix -p vcf {}'
+find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter.sort" | xargs -i tabix -p vcf {}
 
 cwd=$(pwd)
 
