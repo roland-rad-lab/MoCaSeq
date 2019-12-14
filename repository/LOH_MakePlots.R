@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+gi#!/usr/bin/Rscript
 
 ##########################################################################################
 ##
@@ -41,6 +41,17 @@ for (i in 1:chromosomes)
 }
 
 system(paste("pdfunite ",name,"_Chromosomes/",name,".Chr?.LOH.LOH.pdf ",name,"_Chromosomes/",name,".Chr??.LOH.LOH.pdf ",name,".Chromosomes.LOH.LOH.pdf",sep=""))
+
+LOHDat = ProcessCountData(data,chrom.sizes,"LOH_raw")
+
+plotGlobalRatioProfile(cn=LOHDat[[1]],ChromBorders=LOHDat[[2]],cnSeg="",samplename=name,method="LOH_raw",toolname="LOH_raw",normalization="",y_axis="LOH_raw",Transparency=70, Cex=0.3,outformat="pdf")
+
+for (i in 1:chromosomes)
+{
+     plotChromosomalRatioProfile(cn=LOHDat[[4]],chrom.sizes,cnSeg="",samplename=name,chromosome=i,method="LOH_raw",toolname="LOH_raw",SliceStart="",SliceStop="",Transparency=70, Cex=0.7, outformat="pdf")
+}
+
+system(paste("pdfunite ",name,"_Chromosomes/",name,".Chr?.LOH_raw.LOH_raw.pdf ",name,"_Chromosomes/",name,".Chr??.LOH_raw.LOH_raw.pdf ",name,".Chromosomes.LOH_raw.LOH_raw.pdf",sep=""))
 
 data=paste(name,".VariantsForLOHGermline.txt",sep="")
 
