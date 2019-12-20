@@ -208,14 +208,14 @@ RUN	cd ${TEMP_DIR} \
 	&& git clone https://github.com/ekg/fasta-to-fastq.git \
 	&& cp ./fasta-to-fastq/fasta_to_fastq.pl ${PACKAGE_DIR}/bin/ \
 	&& rm -rf fasta-to-fastq \
-# GATK v4.1.4.0 (https://software.broadinstitute.org/gatk/)
+# GATK v4.1.4.1 (https://software.broadinstitute.org/gatk/)
 	&& cd ${TEMP_DIR} \
-	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.4.0/gatk-4.1.4.0.zip' \
-	&& unzip gatk-4.1.4.0.zip \
-	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.4.0 \
-	&& cp ./gatk-4.1.4.0/gatk-package-4.1.4.0-local.jar ${PACKAGE_DIR}/gatk-4.1.4.0/ \
-	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.4.0/gatk-package-4.1.4.0-local.jar ${PACKAGE_DIR}/gatk-4.1.4.0/gatk.jar \
-	&& rm -rf gatk-4.1.4.0.zip gatk-4.1.4.0 \
+	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.4.1/gatk-4.1.4.1.zip' \
+	&& unzip gatk-4.1.4.1.zip \
+	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.4.1 \
+	&& cp ./gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar ${PACKAGE_DIR}/gatk-4.1.4.1/ \
+	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.4.1/gatk-package-4.1.4.1-local.jar ${PACKAGE_DIR}/gatk-4.1.4.1/gatk.jar \
+	&& rm -rf gatk-4.1.4.1.zip gatk-4.1.4.1 \
 # GATK v4.1.3.0 (https://software.broadinstitute.org/gatk/)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.3.0/gatk-4.1.3.0.zip' \
