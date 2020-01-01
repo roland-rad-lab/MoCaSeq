@@ -101,7 +101,7 @@ if(method=="LOH")
 if(method=="LOH_raw")
   {
     Start <<- "Pos"
-    CopyNumber <<- "Plot_Freq"
+    CopyNumber <<- "Tumor_Freq"
     Chromosome <<- "Chrom"
   }
 if(method=="LOH_Germline")
