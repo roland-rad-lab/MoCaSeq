@@ -29,7 +29,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
     - [Folder locations](#folder-locations)
     - [Options](#options)
     - [Interactive mode](#interactive-mode)
-* [TL;DR](#tl;dr)
+* [TL;DR](#tldr)
 * [Bug reports](#bug-reports)
 * [Citation](#citation)
 * [License](./LICENSE)
@@ -68,7 +68,7 @@ The standard input format are FASTQ files produced from modern Illumina sequence
 
 ## Usage
 We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
-```
+```bash
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
 rolandradlab/mocaseq:<mocaseq_version> <options>
@@ -77,7 +77,7 @@ Options are listed [below](#options). When invoked without options, the containe
 
 ### User ID
 Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``--user $(id -u):$(id -g) `` when calling `docker run`:
-```
+```bash
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
 --user $(id -u):$(id -g) \
@@ -88,7 +88,7 @@ This will run the pipeline with your current UID and GID and set the permissions
 ### Folder locations
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using 
 ``-v local_folder:container_folder`` when calling `docker run`:
-```
+```bash
 sudo docker run \
 --user $(id -u):$(id -g) \
 -v <your_working_directory>:/var/pipeline/ \
@@ -130,7 +130,7 @@ The temp directory needs to be mapped to ``/var/pipeline/temp/ ``.
 
 ### Interactive mode
 By default, this Docker image automatically runs the MoCaSeq pipeline, as detailed above. However, all scripts included in the ``repository`` folder can be used separately, to allow adjustment of specific aspects of the pipeline. For this, the image can be started in interactive mode:
-```
+```bash
 sudo docker run \
 -it --entrypoint=/bin/bash \
 --user $(id -u):$(id -g) \
@@ -142,18 +142,18 @@ rolandradlab/mocaseq:<mocaseq_version>
 1. Download and install [Docker](https://www.docker.com/products/docker-desktop).
 
 2. Set the name and location of the working directory. This will be used for testing and the reference files will be located here. Use a volume with at least 250 GB of free disk space.
-```
+```bash
 working_directory=/PATH/TO/WORKING_DIRECTORY
 ```
 
 3. Create the working directory:
-```
+```bash
 mkdir -p ${working_directory} \
 && cd ${working_directory}
 ```
 
 4. Download and unzip the repository from Github: 
-```
+```bash
 wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 && unzip master.zip \
 && rm master.zip \
@@ -161,12 +161,12 @@ wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 ```
 
 5. Download the Docker image from Dockerhub:
-```
+```bash
 sudo docker pull rolandradlab/mocaseq
 ```
 
 6. Test the pipeline, which automatically downloads the required reference files. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
-```
+```bash
 sudo docker run \
 -v ${working_directory}:/var/pipeline/ \
 rolandradlab/mocaseq \
@@ -174,7 +174,7 @@ rolandradlab/mocaseq \
 ``` 
 
 7. Use the provided script to download both tumor and matched normal FASTQ files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model. `all` will download both WES (100x) and WGS (30x) data, using 100 GB of disk space. Use `WES` or `WGS` to only download the respective files.
-```
+```bash
 mkdir -p ${working_directory}/raw \
 && cd ${working_directory}/raw \
 && sh ${working_directory}/MoCaSeq/repository/Preparation_GetExemplaryData.sh WES \
@@ -183,7 +183,7 @@ mkdir -p ${working_directory}/raw \
 * The raw data is available from the [European Nucleotide Archive](https://www.ebi.ac.uk/ena) using the run accessions ERR2230828 (WES Tumour), ERR2230866 (WES Normal), ERR2210078 (WGS Tumour) and ERR2210079 (WGS Normal).
 
 8. Now run test the pipeline using a "real-life" sample. Replace `<threads>` and `<ram>`, then run the pipeline using the data downloaded in Step 7. Depending on the available CPU and RAM, this will take approximately 24 hours.
-```
+```bash
 sudo docker run \
 --user $(id -u):$(id -g) \
 -v ${working_directory}:/var/pipeline/ \
