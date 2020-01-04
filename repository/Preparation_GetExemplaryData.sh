@@ -24,6 +24,8 @@ download=$1
 
 if [ $download = 'all' ] || [ $download = 'WES' ]; then
 
+echo 'Downloading WES data'
+
 	# https://www.ebi.ac.uk/ena/data/view/ERS2066588
 	wget -nv -O S821-WES.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_1.fastq.gz
 	wget -nv -O S821-WES.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR223/006/ERR2230866/ERR2230866_2.fastq.gz
@@ -33,6 +35,8 @@ if [ $download = 'all' ] || [ $download = 'WES' ]; then
 fi
 
 if [ $download = 'all' ] || [ $download = 'WGS' ]; then
+
+echo 'Downloading WGS data'
 	# https://www.ebi.ac.uk/ena/data/view/ERS1980539
 	wget -nv -O S821-WGS.Normal.R1.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_1.fastq.gz
 	wget -nv -O S821-WGS.Normal.R2.fastq.gz ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR221/009/ERR2210079/ERR2210079_2.fastq.gz
