@@ -27,8 +27,8 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [Usage](#usage)
     - [User ID](#user-ID)
     - [Folder locations](#folder-locations)
-    - [Interactive mode](#interactive-mode)
     - [Options](#options)
+    - [Interactive mode](#interactive-mode)
 * [TL;DR](#tl;dr)
 * [Bug reports](#bug-reports)
 * [Citation](#citation)
@@ -40,7 +40,9 @@ This repository serves as a companion to an analysis workflow protocol for mouse
 ### Abstract
 Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups. 
 
-Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present novel tools and workflows for the detection of different alteration types, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements, such as chromothripsis. Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation. 
+Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present novel tools and workflows for the detection of different alteration types, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements, such as chromothripsis. 
+
+Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation. 
 
 The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq) and as a [dockerized version](https://cloud.docker.com/u/rolandradlab/repository/docker/rolandradlab/mocaseq).
 
@@ -96,18 +98,8 @@ rolandradlab/mocaseq:<mocaseq_version> <options>
 ```
 Importantly, the pipeline requires that: \
 The main working directory needs to be mapped to ``/var/pipeline/``. \
-The reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``.
+The reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``. \
 The temp directory needs to be mapped to ``/var/pipeline/temp/ ``.
-
-### Interactive mode
-By default, this Docker image automatically runs the MoCaSeq pipeline, as detailed above. However, all scripts included in the ``repository`` folder can be used separately, to allow adjustment of specific aspects of the pipeline. For this, the image can be started in interactive mode:
-```
-sudo docker run \
--it --entrypoint=/bin/bash \
---user $(id -u):$(id -g) \
--v <your_working_directory>:/var/pipeline/ \
-rolandradlab/mocaseq:<mocaseq_version>
-```
 
 ### Options
 | short    | long                    | Details                                                                                                                                                                                           |
@@ -135,6 +127,16 @@ rolandradlab/mocaseq:<mocaseq_version>
 |       | --test             | If set to 'yes': Will download reference files (if needed) and start a test run.                                                                                                                  |
 |       | --memstats         | If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds.                            |
 |       | --help             | Show this help.                                                                                                                                                                                   |
+
+### Interactive mode
+By default, this Docker image automatically runs the MoCaSeq pipeline, as detailed above. However, all scripts included in the ``repository`` folder can be used separately, to allow adjustment of specific aspects of the pipeline. For this, the image can be started in interactive mode:
+```
+sudo docker run \
+-it --entrypoint=/bin/bash \
+--user $(id -u):$(id -g) \
+-v <your_working_directory>:/var/pipeline/ \
+rolandradlab/mocaseq:<mocaseq_version>
+```
 
 ## TL;DR
 1. Download and install [Docker](https://www.docker.com/products/docker-desktop).
@@ -204,12 +206,14 @@ Please send comments and bug reports to: sebastian.lange [@] tum.de
 
 ## Citation
 Please cite the corresponding protocol published concurrently to this repository: \
-S. Lange, T. Engleitner, S. Mueller, R. Maresch, M. Zwiebel, L. Gonzaléz-Silva, G. Schneider, R. Banerjee, F. Yang, G. Vassiliou, M. Friedrich, D. Saur, I. Varela and R. Rad (2019).
-Analysis pipelines for cancer genome sequencing in mice. Nature Protocols, 
+\
+S. Lange, T. Engleitner, S. Mueller, R. Maresch, M. Zwiebel, L. Gonzaléz-Silva, G. Schneider, R. Banerjee, F. Yang, G. Vassiliou, M. Friedrich, D. Saur, I. Varela and R. Rad (2020).
+Analysis pipelines for cancer genome sequencing in mice. *Nature Protocols*. \
 https://doi.org/10.1038/s41596-019-0234-7
 
-Specific versions of the repository can be cited directly:
-S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice. 
+Specific versions of the repository can be cited directly: \
+\
+S. Lange. MoCaSeq: Analysis pipelines for cancer genome sequencing in mice. \
 https://doi.org/10.5281/zenodo.3344535
 
 ## License
