@@ -489,7 +489,7 @@ if [ $repeat_mapping = "yes" ]; then
 	for type in $types;
 	do
 		/opt/bin/sambamba sort \
-		-t $threads -m ${RAM}GB --tmpdir=$temp_dir \
+		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.bam \
 		$temp_dir/$name.$type.cleaned.bam &&
 
@@ -505,8 +505,8 @@ if [ $repeat_mapping = "yes" ]; then
 		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
 		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
-		/opt/bin/sambamba markdup \
-		--t $threads --tmpdir=$temp_dir \
+		/opt/bin/sambamba markdup --tmpdir $temp_dir \
+		--t $threads \
 		--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
 		$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
 		$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
@@ -545,7 +545,10 @@ if [ $repeat_mapping = "yes" ]; then
 		--use-original-qualities \
 		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		/opt/bin/sambamba index -t $threads $name/results/bam/$name.$type.bam $name/results/bam/$name.$type.bam.bai &&
+		/opt/bin/sambamba index \
+		-t $threads \
+		$name/results/bam/$name.$type.bam \
+		$name/results/bam/$name.$type.bam.bai &&
 
 		rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
