@@ -876,7 +876,9 @@ if [ $sequencing_type = 'WES' ]; then
 	echo '---- Run CopywriteR ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/CNV_RunCopywriter.R $name $species $threads $runmode $genome_dir $centromere_file $varregions_file $types
+	resolution=20000
+
+	Rscript $repository_dir/CNV_RunCopywriter.R $name $species $threads $runmode $genome_dir $centromere_file $varregions_file $resolution $types
 
 	echo '---- Export raw data and re-normalize using Mode ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -889,7 +891,7 @@ if [ $sequencing_type = 'WES' ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter 20000 $CGC_file $TruSight_file
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter $resolution $CGC_file $TruSight_file
 	sh $repository_dir/CNV_CleanUp.sh $name
 fi
 
@@ -898,7 +900,7 @@ if [ $runmode = "MS" ]; then
 	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 20000 $types
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode $resolution $types
 fi
 
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
@@ -917,9 +919,9 @@ if [ $runmode = "MS" ]; then
 	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
+	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type $resolution \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
-	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 20000 $CGC_file $TruSight_file
+	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy $resolution $CGC_file $TruSight_file
 fi
 
 echo '---- Run msisensor----' | tee -a $name/results/QC/$name.report.txt
@@ -944,7 +946,7 @@ if [ $Titan = "yes" ]; then
 	echo '---- Run TitanCNA ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir 20000 $mapWig_file $gcWig_file $exons_file $sequencing_type
+	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir $resolution $mapWig_file $gcWig_file $exons_file $sequencing_type
 	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type
 	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes
 fi
