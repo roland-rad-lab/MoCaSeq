@@ -17,7 +17,10 @@ runmode = args[4]
 genome_dir = args[5]
 centromere_file <- args[6]
 varregions_file <- args[7]
-types =  args[8]
+resolution <- args[8]
+type <- args[9]
+
+if (resolution=="NULL") { resolution=20000 } 
 
 library(CopywriteR)
 library(GenomeInfoDb)
@@ -39,10 +42,12 @@ if (runmode == "SS") {
 	}
 }
 
+resolution=as.numeric(as.character(resolution))/1000
+
 if (species == "Human") {
-	reference_files = paste(genome_dir,"/hg38_20kb",sep="")
+	reference_files = paste(genome_dir,"/hg38_",resolution,"kb",sep="")
 } else if (species == "Mouse") {
-	reference_files = paste(genome_dir,"/mm10_20kb",sep="")
+	reference_files = paste(genome_dir,"/mm10_",resolution,"kb",sep="")
 }
 
 bp.param = SnowParam(workers = threads, type = "SOCK")
