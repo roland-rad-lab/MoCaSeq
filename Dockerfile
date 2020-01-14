@@ -234,12 +234,6 @@ RUN	cd ${TEMP_DIR} \
 	&& rm -rf gatk-4.1.0.0.zip gatk-4.1.0.0 \
 # GATK requires Java 8 to be active
 	&& update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java \
-# GATK v3.8.1.0 (https://software.broadinstitute.org/gatk/download/auth?package=GATK-archive\&version=3.8-1-0-gf15c1c3ef)
-	&& cd ${TEMP_DIR} \
-	&& wget -nv -O gatk-3.8.1.0.tar.bz2 'https://software.broadinstitute.org/gatk/download/auth?package=GATK-archive&version=3.8-1-0-gf15c1c3ef' \
-	&& tar -xvjf gatk-3.8.1.0.tar.bz2 \
-	&& mv GenomeAnalysisTK-3.8-1-0-gf15c1c3ef/ ${PACKAGE_DIR}/gatk-3.8.1.0 \
-	&& rm gatk-3.8.1.0.tar.bz2 \
 # HMMCopy Utils (https://github.com/shahcompbio/hmmcopy_utils/)
 	&& cd ${TEMP_DIR} \
 	&& git clone https://github.com/shahcompbio/hmmcopy_utils.git \
