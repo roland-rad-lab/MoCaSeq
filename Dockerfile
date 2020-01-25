@@ -208,6 +208,12 @@ RUN	cd ${TEMP_DIR} \
 	&& git clone https://github.com/ekg/fasta-to-fastq.git \
 	&& cp ./fasta-to-fastq/fasta_to_fastq.pl ${PACKAGE_DIR}/bin/ \
 	&& rm -rf fasta-to-fastq \
+# GATK v3.8.1.0 (https://software.broadinstitute.org/gatk/download/auth?package=GATK-archive\&version=3.8-1-0-gf15c1c3ef)
+	&& cd ${TEMP_DIR} \
+	&& wget -nv -O gatk-3.8.1.0.tar.bz2 'https://storage.googleapis.com/gatk-software/package-archive/gatk/GenomeAnalysisTK-3.8-1-0-gf15c1c3ef.tar.bz2' \
+	&& tar -xvjf gatk-3.8.1.0.tar.bz2 \
+	&& mv GenomeAnalysisTK-3.8-1-0-gf15c1c3ef/ ${PACKAGE_DIR}/gatk-3.8.1.0 \
+	&& rm gatk-3.8.1.0.tar.bz2 \
 # GATK v4.1.4.1 (https://software.broadinstitute.org/gatk/)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.4.1/gatk-4.1.4.1.zip' \
