@@ -85,9 +85,12 @@ ReformatSegmentData = function(segmentdata)
                           }
 
 
-LoadSegmentData = function(Sample)
+LoadSegmentData = function(Sample,Path="")
                      {
                      MainPath = getwd()
+                     if (Path=="") { 
+                     PathPrefix="" } else { 
+                     PathPrefix=paste0(Path,"/") }
                      if(Method=="Copywriter")
                          {
                          PathSuffix = "/results/Copywriter/"
@@ -98,7 +101,7 @@ LoadSegmentData = function(Sample)
                         PathSuffix = "/results/HMMCopy/"
                         SampleSuffix = paste(".HMMCopy.",resolution,".segments.txt",sep="")
                         }    
-                     file = paste(MainPath,"/",Sample,PathSuffix,Sample,SampleSuffix,sep="")
+                     file = paste(MainPath,"/",PathPrefix,Sample,PathSuffix,Sample,SampleSuffix,sep="")
                      Segments = read.table(file,header=T,sep="\t")
                      return(Segments)
                      }
@@ -106,12 +109,13 @@ LoadSegmentData = function(Sample)
 
 
 
-fillOverlayMat = function(Samples,AberrationCutoff,SummaryStat=SummaryStat)
+fillOverlayMat = function(Samples,Paths,AberrationCutoff,SummaryStat=SummaryStat)
                    {
                    SummaryStat <<- SummaryStat
-                   for ( Sample in Samples)
+                   for ( i in 1:length(Samples))
                        {
-                       Segments = LoadSegmentData(Sample)
+                       print(paste0("Getting data for ",Samples[i]))
+                       Segments = LoadSegmentData(Samples[i],Paths[i])
                        Segments = ReformatSegmentData(Segments) 
                        Segments = Segments[abs(Segments$Mean)>=AberrationCutoff,]
                        Segments = Segments[!Segments$chr %in% ChromomsomesToRemove,]
@@ -123,11 +127,11 @@ fillOverlayMat = function(Samples,AberrationCutoff,SummaryStat=SummaryStat)
                             Stop  = ActualPosition$end
                             if(ActualPosition$Mean>0)
                                 {
-                                OverlayMat[OverlayMat[,"Chromosome"]==Chromosome & OverlayMat[,"Start"]>=Start & OverlayMat[,"Stop"]<=Stop,paste(Sample,"Gain",sep="")] = ActualPosition$Mean
+                                OverlayMat[OverlayMat[,"Chromosome"]==Chromosome & OverlayMat[,"Start"]>=Start & OverlayMat[,"Stop"]<=Stop,paste(Samples[i],"Gain",sep="")] = ActualPosition$Mean
                                 }
                             if(ActualPosition$Mean<0)
                                 {
-                                OverlayMat[OverlayMat[,"Chromosome"]==Chromosome & OverlayMat[,"Start"]>=Start & OverlayMat[,"Stop"]<=Stop,paste(Sample,"Del",sep="")] = ActualPosition$Mean
+                                OverlayMat[OverlayMat[,"Chromosome"]==Chromosome & OverlayMat[,"Start"]>=Start & OverlayMat[,"Stop"]<=Stop,paste(Samples[i],"Del",sep="")] = ActualPosition$Mean
                                 }
                             }
                        }
@@ -238,11 +242,11 @@ PlotOverlay = function(format="",Suffix="",Ylim="")
                   }
                }
 
-RunOverlayAnalysis = function(Samples,species="Mouse",Method="Copywriter",resolution=20000,AberrationCutoff=0.2,SummaryStat="Proportion",ChromomsomesToRemove=c("X","Y"),Ylim="5",format="pdf",Suffix="")
+RunOverlayAnalysis = function(Samples,Paths="",species="Mouse",Method="Copywriter",resolution=20000,AberrationCutoff=0.2,SummaryStat="Proportion",ChromomsomesToRemove=c("X","Y"),Ylim="5",format="pdf",Suffix="")
                          {
                          BinGenome(species=species,Method=Method,resolution=resolution,ChromomsomesToRemove=ChromomsomesToRemove)
                          SetOverlayMat(Samples)
-                         fillOverlayMat(Samples,AberrationCutoff=AberrationCutoff,SummaryStat=SummaryStat)
+                         fillOverlayMat(Samples,Paths=Paths,AberrationCutoff=AberrationCutoff,SummaryStat=SummaryStat)
                          print(ChromLength)
                          ReformatOverlayMat()
                          PlotOverlay(format=format,Ylim=Ylim,Suffix=Suffix)
