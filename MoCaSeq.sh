@@ -948,7 +948,7 @@ if [ $Titan = "yes" ]; then
 
 	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir $resolution $mapWig_file $gcWig_file $exons_file $sequencing_type
 	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type
-	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes
+	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes $CGC_file $TruSight_file
 fi
 
 if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; then

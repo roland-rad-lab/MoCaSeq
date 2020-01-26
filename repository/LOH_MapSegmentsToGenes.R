@@ -13,13 +13,15 @@ args <- commandArgs(TRUE)
 name = args[1]
 species = args[2]
 genecode_file = args[3]
+CGC = args[4]
+TruSight = args[5]
 
 suppressMessages(library(tidyr))
 suppressMessages(library(dplyr))
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(data.table))
 
-genesDT = genecode_file
+genesDT = readRDS(genecode_file)
 
 genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
 
@@ -92,3 +94,10 @@ if (nrow(segments) > 0)
 }
 
 write.table(loh,paste(name,"/results/LOH/",name,".LOH.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+
+CGC=read.delim(CGC,header=T,sep="\t")
+
+loh_cgc = loh %>%
+filter(Gene %in% c(as.character(CGC[,1]),"Cdkn2_ncruc"))
+
+write.table(loh_cgc,paste(name,"/results/LOH/",name,".LOH.genes.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
