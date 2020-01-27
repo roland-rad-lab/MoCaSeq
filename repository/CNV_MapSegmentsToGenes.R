@@ -132,7 +132,7 @@ if (species=="Human")
 	}
 
 	cnv_ts = cnv_ts %>%
-	filter(abs(as.numeric(Mean)) > 1)
+	filter(abs(as.numeric(Mean)) > 0.75)
 
 	if (method=="Copywriter")
 	{
@@ -140,5 +140,4 @@ if (species=="Human")
 	} else if (method=="HMMCopy") {
 		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.OnlyImpact.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
 	}
-	CGC=read.delim(CGC,header=T,sep="\t")
 }
