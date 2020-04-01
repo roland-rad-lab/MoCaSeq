@@ -32,7 +32,7 @@ AnnotateSegment <- function(segDF)
   hits <- findOverlaps(segGR, genesGR)
   
   #returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneID)] # only geneID
-  returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName)] # more stuff
+  returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName, geneID)] # more stuff
   return(data.frame(returnDat))
 }
 
@@ -52,12 +52,12 @@ if (nrow(segments) > 0)
 		results=AnnotateSegment(temp)
 		if (nrow(results) > 0) 
 			{
-			results=results[,c("chr", "start", "end", "geneName")]
-			colnames(results)=c("Chrom", "Start", "End", "Gene")
+			results=results[,c("chr", "start", "end", "geneName","geneID")]
+			colnames(results)=c("Chrom", "Start", "End", "Gene","GeneID")
 			results[,"Chrom"]=gsub("chr","",results[,"Chrom"])
 			results$TITAN=as.data.frame(segments)[i,"TITAN_call"]
 			results$Name=name
-			results=results[,c("Name", "Chrom", "Start", "End", "TITAN","Gene")]
+			results=results[,c("Name", "Chrom", "Start", "End", "TITAN","Gene","GeneID")]
 			loh=rbind(loh,results)
 			}
 	}
@@ -72,8 +72,9 @@ if (nrow(segments) > 0)
 		{
 			ncruc$Gene="Cdkn2_ncruc"
 			ncruc$Name=name
-			colnames(ncruc)=c("Chrom", "Start", "End", "TITAN", "Gene", "Name")
-			ncruc=ncruc[,c("Name","Chrom", "Start", "End", "TITAN", "Gene")]
+			ncruc$GeneID=NA
+			colnames(ncruc)=c("Chrom", "Start", "End", "TITAN", "Gene", "Name","GeneID")
+			ncruc=ncruc[,c("Name","Chrom", "Start", "End", "TITAN", "Gene","GeneID")]
 			loh=rbind(loh,ncruc)
 		}
 	}
@@ -91,6 +92,7 @@ if (nrow(segments) > 0)
 		loh[1,"End"]=1
 		loh[1,"TITAN"]="NLOH"
 		loh[1,"Gene"]="EMPTY"
+		loh[1,"GeneID"]="EMPTY"
 }
 
 write.table(loh,paste(name,"/results/LOH/",name,".LOH.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
