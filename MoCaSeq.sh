@@ -831,6 +831,8 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	$name $species $config_file $filtering $artefact_type $GATK
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Mutect2 $species $CGC_file $TruSight_file
+
+	Rscript SNV_Signatures.R $name
 fi
 
 if [ $Mutect2 = 'yes' ]; then
