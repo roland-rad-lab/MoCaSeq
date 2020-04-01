@@ -24,7 +24,6 @@ suppressMessages(library(HMMcopy))
 suppressMessages(library(GenomeInfoDb))
 suppressMessages(library(GenomicRanges))
 
-
 correctReadDepth = function (tumWig, normWig, gcWig, mapWig, genomeStyle = "NCBI", 
     targetedSequence = NULL) 
 {
