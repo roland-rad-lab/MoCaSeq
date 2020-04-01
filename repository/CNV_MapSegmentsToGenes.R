@@ -34,7 +34,7 @@ AnnotateSegment <- function(segDF)
   hits <- findOverlaps(segGR, genesGR)
   
   #returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneID)] # only geneID
-  returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName)] # more stuff
+  returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName, geneID)] # more stuff
   return(data.frame(returnDat))
 }
 
@@ -56,11 +56,11 @@ for (i in 1:nrow(segment))
 	results=AnnotateSegment(temp)
 	if (nrow(results) > 0) 
 		{
-		colnames(results)=c("Chrom", "Start", "End", "Gene")
+		colnames(results)=c("Chrom", "Start", "End", "Gene", "GeneID")
 		results[,"Chrom"]=gsub("chr","",results[,"Chrom"])
 		results$Mean=segment[i,"Mean"]
 		results$Name=name
-		results=results[,c("Name", "Chrom", "Start", "End", "Mean","Gene")]
+		results=results[,c("Name", "Chrom", "Start", "End", "Mean","Gene", "GeneID")]
 		cnv=rbind(cnv,results)
 		}
 }
@@ -73,8 +73,9 @@ if (species=="Mouse")
 	ncruc=data.frame(pintersect(segment[queryHits(olaps)], ncruc.gr[subjectHits(olaps)]))[,c("seqnames","start","end","Mean")]
 	ncruc$Gene="Cdkn2_ncruc"
 	ncruc$Name=name
-	colnames(ncruc)=c("Chrom", "Start", "End", "Mean", "Gene", "Name")
-	ncruc=ncruc[,c("Name","Chrom", "Start", "End", "Mean", "Gene")]
+	ncruc$GeneID=NA
+	colnames(ncruc)=c("Chrom", "Start", "End", "Mean", "Gene", "Name", "GeneID")
+	ncruc=ncruc[,c("Name","Chrom", "Start", "End", "Mean", "Gene", "GeneID")]
 	cnv=rbind(cnv,ncruc)
 }
 
