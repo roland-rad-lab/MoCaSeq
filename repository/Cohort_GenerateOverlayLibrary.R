@@ -85,7 +85,7 @@ ReformatSegmentData = function(segmentdata)
                           }
 
 
-LoadSegmentData = function(Sample,Path="")
+LoadSegmentData = function(Sample,Path)
                      {
                      MainPath = getwd()
                      if (Path=="") { 
@@ -198,8 +198,11 @@ ReformatOverlayMat = function()
                       }
                       
 
-PlotOverlay = function(format="",Suffix="",Ylim="")
+PlotOverlay = function(format="",Suffix="",Ylim="",Save_path="")
                {
+               if (Save_path=="") { 
+               PathPrefix=paste0(getwd(),"/") } else { 
+               PathPrefix=paste0(Save_path,"/") }
                YcordsGain = OverlayMat$Gain
                YcordsDel = OverlayMat$Del
                Xcords = OverlayMat$Start
@@ -226,7 +229,7 @@ PlotOverlay = function(format="",Suffix="",Ylim="")
                    }
                if(format=="pdf")
                    {
-                   pdf(paste0("CopyNumberOverlay",Suffix,".pdf"),width=18,height=12,paper="special")
+                   pdf(paste0(PathPrefix,"CopyNumberOverlay",Suffix,".pdf"),width=18,height=12,paper="special")
                    }
                par(las=1)            
                plot(1,xlim=c(0,max(OverlayMat$Stop)),ylim=Ylim,bty="n",xaxt="n",,yaxt="n",xlab="",ylab="",type="n")
@@ -242,12 +245,12 @@ PlotOverlay = function(format="",Suffix="",Ylim="")
                   }
                }
 
-RunOverlayAnalysis = function(Samples,Paths="",species="Mouse",Method="Copywriter",resolution=20000,AberrationCutoff=0.2,SummaryStat="Proportion",ChromomsomesToRemove=c("X","Y"),Ylim="5",format="pdf",Suffix="")
+RunOverlayAnalysis = function(Samples,Paths="",Save_path="",species="Mouse",Method="Copywriter",resolution=20000,AberrationCutoff=0.2,SummaryStat="Proportion",ChromomsomesToRemove=c("X","Y"),Ylim="5",format="pdf",Suffix="")
                          {
                          BinGenome(species=species,Method=Method,resolution=resolution,ChromomsomesToRemove=ChromomsomesToRemove)
                          SetOverlayMat(Samples)
                          fillOverlayMat(Samples,Paths=Paths,AberrationCutoff=AberrationCutoff,SummaryStat=SummaryStat)
                          print(ChromLength)
                          ReformatOverlayMat()
-                         PlotOverlay(format=format,Ylim=Ylim,Suffix=Suffix)
+                         PlotOverlay(format=format,Ylim=Ylim,Suffix=Suffix,Save_path=Save_path)
                          }
