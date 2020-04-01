@@ -1,4 +1,13 @@
-library(tidyr)
+#!/usr/bin/Rscript
+
+##########################################################################################
+##
+## Cohort_CompareSNPs.R
+##
+## Generate heatmap from SNPs.
+##
+##########################################################################################
+
 library(dplyr)
 library(pheatmap)
 library(Rtsne)
@@ -6,42 +15,49 @@ library(data.table)
 library(ggplot2)
 library(matrixStats)
 
-Files=list.files(pattern="Positions.txt")
-#Files=c("FMFW76.Tumor.Mutect2.Positions.txt", "V9A3BS.Normal.Mutect2.Positions.txt", "AFC5B1.Tumor.Mutect2.Positions.txt")
-#Files=Files[42:56]
+#CHANGE DATA HERE
+Samples=  	#list of samples to be included. Will always generate plot for tumor and tail from each mouse/patient
+cohort_name= 	#used as prefix for all plots
+
+#AFTERWARDS PASTE THE REST IN
+max_snv=0	#can be changed to some large number, which will be used to downsample SNPs; only needed for human WGS data
 
 results=list()
-for (file in Files)
-{
-	ID=paste(unlist(strsplit(file,"\\."))[1],unlist(strsplit(file,"\\."))[2],sep="_")
-	print(paste0("Getting SNP for ",ID))
-	tab=read.delim(file)
-	colnames(tab)=c("CHROM","POS","REF","ALT","AF","AD0","AD1", "MMQ","MBQ")
-	tab=tbl_df(tab)
-	tab=tab %>% 
-	filter(AD0+AD1>=10) %>%
-	filter(MMQ>=50) %>%
-	mutate(REF=as.character(REF)) %>%
-	mutate(ALT=as.character(ALT)) %>%
-	mutate(CHROM=as.character(CHROM))
-	tab$ID=ID
-	vec=grep(",",tab$ALT)
-	if (length(vec) > 1){
-		tab=tab[-grep(",",tab$ALT),]
-		vec=grep("Phix",tab$CHROM)
-	}
+
+for (name in Samples) {
+	for (type in c("Tumor","Normal")) {
+		file=paste0(name,"/results/Mutect2/",name,".",type,".Mutect2.Positions.txt")
+		print(paste0("Getting SNP for ",name," ",type))
+		tab=read.delim(file)
+		colnames(tab)=c("CHROM","POS","REF","ALT","AF","AD0","AD1", "MMQ","MBQ")
+		tab=tbl_df(tab)
+		tab=tab %>% 
+		filter(AD0+AD1>=10) %>%
+		filter(MMQ>=50) %>%
+		mutate(REF=as.character(REF)) %>%
+		mutate(ALT=as.character(ALT)) %>%
+		mutate(CHROM=as.character(CHROM))
+		tab$name=paste0(name,"_",type)
+		vec=grep(",",tab$ALT)
 		if (length(vec) > 1){
-		tab=tab[-grep("Phix",tab$CHROM),]
+			tab=tab[-grep(",",tab$ALT),]
+			vec=grep("Phix",tab$CHROM)
+		}
+			if (length(vec) > 1){
+			tab=tab[-grep("Phix",tab$CHROM),]
+		}
+		tab$uniquepos=paste(tab$CHROM,tab$POS,tab$REF,tab$ALT,sep="_")
+		if (max_snv > 0) {
+			tab = tab[sample(nrow(tab),max_snv,replace=T),]
+		}
+		tab=unique(tab)
+		results[[paste0(name,"_",type)]]=tab
 	}
-	tab$uniquepos=paste(tab$CHROM,tab$POS,tab$REF,tab$ALT,sep="_")
-	tab = tab[sample(nrow(tab),2000000,replace=T),]
-	tab=unique(tab)
-	results[[ID]]=tab
 }
 results = bind_rows(results)
 
-results = results[,c("uniquepos","AF","ID")]
-spreads = spread(results,"ID","AF")
+results = results[,c("uniquepos","AF","name")]
+spreads = spread(results,"name","AF")
 
 #spreads[is.na(spreads)]=0
 df = as.data.frame(spreads)
@@ -58,21 +74,19 @@ saveRDS(df,file="df.RDS")
 spreads=readRDS("df.RDS")
 vec=colnames(spreads)
 
-pheatmap(cor(spreads, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
-
-graphics.off()
-
-pdf("Sample_to_Sample_Correlation.pdf", width=20, height = 20)
+pdf(paste0(cohort_name,"_Sample_to_Sample_Correlation.pdf"), width=20, height = 20)
 pheatmap(cor(spreads, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
 dev.off()
 
 temp=spreads
 temp[temp>0]=1
 
-pdf("Sample_to_Sample_Correlation_normed.pdf")
+pdf(paste0(cohort_name,"_Sample_to_Sample_Correlation_normed.pdf"), width=20, height = 20)
 pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
 dev.off()
 
+file.exists("Rplots.pdf")
+file.remove("Rplots.pdf")
 
 dt=data.table(spreads)
 dt[, variance := rowVars(as.matrix(.SD))] # get variance
@@ -100,9 +114,12 @@ ggplot(pcDT, aes(PC1, PC2,label=sample)) +
   geom_hline(yintercept = 0, color="grey") +
   geom_label()
 
-ggsave("PCA_all.pdf", plot = last_plot(), device = "pdf", width = 10, height = 10)
+ggsave(paste0(cohort_name,"_PCA.pdf"), plot = last_plot(), device = "pdf", , width=20, height = 20)
 
+file.exists("Rplots.pdf")
+file.remove("Rplots.pdf")
 
+#IGNORE FOR NOW
 
 # col=read.table("../SNP_Normal/Annotation.txt",header=T,stringsAsFactors=F)
 
@@ -176,7 +193,7 @@ ggsave("PCA_all.pdf", plot = last_plot(), device = "pdf", width = 10, height = 1
 #   geom_hline(yintercept = 0, color="grey") +
 #   scale_color_manual(values=group.colors)
 
-# ggsave("PCA_all.pdf", plot = last_plot(), device = "pdf", width = 10, height = 10)
+# ggsave("PCA_all.pdf", plot = last_plot(), device = "pdf", wnameth = 10, height = 10)
 
 # spreads=t(spreads)
 
