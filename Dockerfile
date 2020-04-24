@@ -214,6 +214,14 @@ RUN	cd ${TEMP_DIR} \
 	&& tar -xvjf gatk-3.8.1.0.tar.bz2 \
 	&& mv GenomeAnalysisTK-3.8-1-0-gf15c1c3ef/ ${PACKAGE_DIR}/gatk-3.8.1.0 \
 	&& rm gatk-3.8.1.0.tar.bz2 \
+# GATK v4.1.7.0 (https://software.broadinstitute.org/gatk/)
+	&& cd ${TEMP_DIR} \
+	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.7.0/gatk-4.1.7.0.zip' \
+	&& unzip gatk-4.1.7.0.zip \
+	&& mkdir -p ${PACKAGE_DIR}/gatk-4.1.7.0 \
+	&& cp ./gatk-4.1.7.0/gatk-package-4.1.7.0-local.jar ${PACKAGE_DIR}/gatk-4.1.7.0/ \
+	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.7.0/gatk-package-4.1.7.0-local.jar ${PACKAGE_DIR}/gatk-4.1.7.0/gatk.jar \
+	&& rm -rf gatk-4.1.7.0.zip gatk-4.1.7.0 \
 # GATK v4.1.4.1 (https://software.broadinstitute.org/gatk/)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.1.4.1/gatk-4.1.4.1.zip' \
