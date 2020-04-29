@@ -9,6 +9,7 @@
 ##########################################################################################
 
 library(dplyr)
+library(tidyr)
 library(pheatmap)
 library(Rtsne)
 library(data.table)
@@ -16,8 +17,8 @@ library(ggplot2)
 library(matrixStats)
 
 #CHANGE DATA HERE
-Samples=  	#list of samples to be included. Will always generate plot for tumor and tail from each mouse/patient
-cohort_name= 	#used as prefix for all plots
+Samples=list.files() 	#list of samples to be included. Will always generate plot for tumor and tail from each mouse/patient
+cohort_name="" 	#used as prefix for all plots
 
 #AFTERWARDS PASTE THE REST IN
 max_snv=0	#can be changed to some large number, which will be used to downsample SNPs; only needed for human WGS data
@@ -85,8 +86,8 @@ pdf(paste0(cohort_name,"_Sample_to_Sample_Correlation_normed.pdf"), width=20, he
 pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
 dev.off()
 
-file.exists("Rplots.pdf")
-file.remove("Rplots.pdf")
+if (file.exists("Rplots.pdf")) {file.remove("Rplots.pdf")}
+
 
 dt=data.table(spreads)
 dt[, variance := rowVars(as.matrix(.SD))] # get variance
