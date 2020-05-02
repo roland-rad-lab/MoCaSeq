@@ -130,8 +130,8 @@ RUN	apt-get update \
 		r-base=3.6.3-1bionic \
 		r-base-dev=3.6.3-1bionic \
 	&& rm -rf /var/lib/apt/lists/* \
-	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
-	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort","SomaticSignatures", "SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
+	&& R -e 'install.packages(pkgs=c("BiocManager","deconstructSigs"),dependencies=TRUE)' \
+	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19", XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort","SomaticSignatures", "SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
 
 RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \ 
