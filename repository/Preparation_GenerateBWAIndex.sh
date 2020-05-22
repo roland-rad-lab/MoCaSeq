@@ -20,7 +20,7 @@ samtools faidx ref/$VersionMouse/$VersionMouse.fna
 samtools faidx ref/$VersionMouse/$VersionMouse.fna $(grep -P -o '^>[A-Z].*\.\d*' ref/$VersionMouse/$VersionMouse.fna | sed 's/>//g') > ref/$VersionMouse"/"$VersionMouse"_alt.fna"
 samtools faidx ref/$VersionMouse/$VersionMouse.fna $(grep -P -o '>[0-9XY]+' ref/$VersionMouse/$VersionMouse.fna | sed 's/>//g') > ref/$VersionMouse"/"$VersionMouse"_primary.fna"
 
-perl opt/bin/fasta_to_fastq.pl "ref/"$VersionMouse"/"$VersionMouse"_alt.fna" > "ref/"$VersionMouse"/haplotypes.fastq"
+perl /opt/bin/fasta_to_fastq.pl "ref/"$VersionMouse"/"$VersionMouse"_alt.fna" > "ref/"$VersionMouse"/haplotypes.fastq"
 
 mkdir -p ref/$VersionMouse/primary_index
 
