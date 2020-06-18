@@ -1,5 +1,5 @@
 [![DOI](https://zenodo.org/badge/162331694.svg)](https://zenodo.org/badge/latestdoi/162331694)
-[![Docker](https://img.shields.io/badge/Docker-avaible-green.svg)](https://cloud.docker.com/repository/docker/rolandradlab/natureprotocols2018/general)
+[![Docker](https://img.shields.io/badge/Docker-avaible-green.svg)](https://hub.docker.com/r/rolandradlab/mocaseq)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## MoCaSeq: Analysis pipelines for cancer genome sequencing in mice
