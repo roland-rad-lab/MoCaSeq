@@ -159,21 +159,21 @@ RUN	cd ${TEMP_DIR} \
 	&& mv ./bwa.kit/resource-human-HLA ${PACKAGE_DIR}/bwa-0.7.17/bwakit/ \
 	&& mv bwa.kit ${PACKAGE_DIR}/bwakit-0.7.15 \
 	&& rm bwakit-0.7.15_x64-linux.tar.bz2 \
-# htslib 1.9 and bcftools 1.9 and samtools 1.9
+# htslib 1.10.2 and bcftools 1.10.2 and samtools 1.10
 	&& cd ${TEMP_DIR} \
 	&& git clone https://github.com/samtools/htslib.git \
 	&& git clone https://github.com/samtools/samtools.git \
 	&& git clone https://github.com/samtools/bcftools.git \
 	&& cd htslib \
-	&& git checkout '1.9' \
+	&& git checkout '1.10.2' \
 	&& make \
 	&& make install \
 	&& cd ../bcftools \
-	&& git checkout '1.9' \
+	&& git checkout '1.10.2' \
 	&& make \
 	&& make install \
 	&& cd ../samtools \
-	&& git checkout '1.9' \
+	&& git checkout '1.10' \
 	&& make \
 	&& make install \
 	&& cd ${TEMP_DIR} \
