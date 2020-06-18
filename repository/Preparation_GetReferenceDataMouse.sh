@@ -94,7 +94,7 @@ echo '---- Generate customized Sanger DB ----' | tee -a "ref/"$VersionMouse"/Get
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
 sh $repository_dir/Preparation_GenerateSangerMouseDB.sh $VersionMouse $temp_dir
-rm $temp_dir
+rm -rf $temp_dir
 
 wget -nv -c -r -P ref/"$VersionMouse"/ ftp://ftp-mouse.sanger.ac.uk/REL-1807-SNPs_Indels/mgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz
 wget -nv -c -r -P ref/"$VersionMouse"/ ftp://ftp-mouse.sanger.ac.uk/REL-1807-SNPs_Indels/mgp.v6.merged.norm.snp.indels.sfiltered.vcf.gz.tbi
