@@ -187,7 +187,7 @@ RUN	cd ${TEMP_DIR} \
 	&& make install \
 	&& cd ${TEMP_DIR} \
 	&& rm -rf bedtools2 \
-# Delly2 v0.8.1 (https://github.com/dellytools/delly)
+# Delly2 v0.8.3 (https://github.com/dellytools/delly)
 	&& apt update \
 	&& apt install -y --no-install-recommends \
 	libboost-date-time-dev \
@@ -197,12 +197,12 @@ RUN	cd ${TEMP_DIR} \
 	libboost-iostreams-dev \
 	&& cd ${TEMP_DIR} \
 	&& git clone https://github.com/dellytools/delly.git \
-	&& mv delly delly-0.8.1 \
-	&& cd delly-0.8.1 \
-	&& git checkout 'v0.8.1' \
+	&& mv delly delly-0.8.3 \
+	&& cd delly-0.8.3 \
+	&& git checkout 'v0.8.3' \
 	&& make STATIC=1 prefix=/usr/local install \
 	&& cd ${TEMP_DIR} \
-	&& rm -rf delly-0.8.1 \
+	&& rm -rf delly-0.8.3 \
 # Fasta-to-Fastq (https://github.com/ekg/fasta-to-fastq/)
 	&& cd ${TEMP_DIR} \
 	&& git clone https://github.com/ekg/fasta-to-fastq.git \
