@@ -129,7 +129,7 @@ if (species=="Human")
 	{
 		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
 	} else if (method=="HMMCopy") {
-		write.table(cnv_cgc,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+		write.table(cnv_ts,paste(name,"/results/",method,"/",name,".",method,".",resolution,".genes.TruSight.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
 	}
 
 	cnv_ts = cnv_ts %>%
