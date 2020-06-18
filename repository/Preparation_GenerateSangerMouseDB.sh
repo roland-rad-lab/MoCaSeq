@@ -28,7 +28,7 @@ find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/
 
 find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name  "*.mgp.v5.indels.dbSNP142.normed.vcf.gz" | xargs -i bcftools view {} -i FILTER=\"PASS\" -o {}.filter -O z
 
-find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter" | xargs -i bcftools sort {} -o {}.sort -O z
+find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter" | xargs -i bcftools sort {} -o {}.sort -O z --temp-dir ${temp_dir}
 
 find $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/ -name "*.filter.sort" | xargs -i tabix -p vcf {}
 
@@ -37,9 +37,9 @@ cwd=$(pwd)
 #changing directories here, so that the input order is similar between both commands
 cd $temp_dir/ftp-mouse.sanger.ac.uk/REL-1505-SNPs_Indels/strain_specific_vcfs/
 
-bcftools merge *.snps.dbSNP142.vcf.gz.filter.sort -m none -o "$temp_dir"/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz -O z
+bcftools merge *.snps.dbSNP142.vcf.gz.filter.sort -m none -o "$temp_dir"/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz -O z --temp-dir ${temp_dir}
 
-bcftools merge *.indels.dbSNP142.normed.vcf.gz.filter.sort -m none -o "$temp_dir"/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz -O z
+bcftools merge *.indels.dbSNP142.normed.vcf.gz.filter.sort -m none -o "$temp_dir"/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz -O z --temp-dir ${temp_dir}
 
 cd $cwd
 
@@ -47,9 +47,9 @@ tabix -p vcf "$temp_dir"/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz
 
 tabix -p vcf "$temp_dir"/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz
 
-bcftools concat -a -O z -o $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz $temp_dir/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz
+bcftools concat -a -O z -o $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/Merged.mgp.v5.snps.dbSNP142.filter.vcf.gz $temp_dir/Merged.mgp.v5.indels.dbSNP142.filter.vcf.gz --temp-dir ${temp_dir}
 
-bcftools sort -O z -o ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
+bcftools sort -O z -o ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz $temp_dir/MGP.v5.snp_and_indels.exclude_wild.vcf.gz --temp-dir ${temp_dir}
 
 tabix -p vcf ref/"$VersionMouse"/MGP.v5.snp_and_indels.exclude_wild.vcf.gz
 
