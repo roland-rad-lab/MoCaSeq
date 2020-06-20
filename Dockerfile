@@ -196,13 +196,11 @@ RUN	cd ${TEMP_DIR} \
 	libboost-filesystem-dev \
 	libboost-iostreams-dev \
 	&& cd ${TEMP_DIR} \
-	&& git clone https://github.com/dellytools/delly.git \
-	&& mv delly delly-0.8.3 \
-	&& cd delly-0.8.3 \
-	&& git checkout 'v0.8.3' \
-	&& make STATIC=1 prefix=/usr/local install \
-	&& cd ${TEMP_DIR} \
-	&& rm -rf delly-0.8.3 \
+	&& wget https://github.com/dellytools/delly/releases/download/v0.8.3/delly_v0.8.3_linux_x86_64bit \
+	&& mkdir ${PACKAGE_DIR}/delly-0.8.3/ \
+	&& mv delly_v0.8.3_linux_x86_64bit ${PACKAGE_DIR}/delly-0.8.3/delly \
+	&& chmod a+x ${PACKAGE_DIR}/delly-0.8.3/delly \ 
+	&& ln -sf ${PACKAGE_DIR}/delly-0.8.3/delly ${PACKAGE_DIR}/bin/delly \
 # Fasta-to-Fastq (https://github.com/ekg/fasta-to-fastq/)
 	&& cd ${TEMP_DIR} \
 	&& git clone https://github.com/ekg/fasta-to-fastq.git \
