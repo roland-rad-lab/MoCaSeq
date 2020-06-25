@@ -139,8 +139,8 @@ fillOverlayMat = function(Samples,Paths,AberrationCutoff,SummaryStat=SummaryStat
                    ColumnsDelInfo = grep("Del",colnames(OverlayMat),value=T)
                    if(SummaryStat=="Mean")
                        {
-                       OverlayMat$Gain = apply(OverlayMat[,ColumnsGainInfo],1,mean)
-                       OverlayMat$Del = apply(OverlayMat[,ColumnsDelInfo],1,mean)
+                       OverlayMat$Gain = apply(OverlayMat[,ColumnsGainInfo,drop=F],1,mean)
+                       OverlayMat$Del = apply(OverlayMat[,ColumnsDelInfo,drop=F],1,mean)
                        }
                    if(SummaryStat=="Proportion")
                        {
@@ -148,8 +148,8 @@ fillOverlayMat = function(Samples,Paths,AberrationCutoff,SummaryStat=SummaryStat
                        CNVInfo = OverlayMat[,c(ColumnsGainInfo,ColumnsDelInfo)]
                        CNVInfo[CNVInfo!=0] = 1
                        OverlayMat = cbind(AnnotationInfo,CNVInfo)
-                       OverlayMat$Gain = apply(OverlayMat[,ColumnsGainInfo],1,sum)/length(ColumnsGainInfo)
-                       OverlayMat$Del = -1* apply(OverlayMat[,ColumnsDelInfo],1,sum)/length(ColumnsGainInfo)
+                       OverlayMat$Gain = apply(OverlayMat[,ColumnsGainInfo,drop=F],1,sum)/length(ColumnsGainInfo)
+                       OverlayMat$Del = -1* apply(OverlayMat[,ColumnsDelInfo,drop=F],1,sum)/length(ColumnsGainInfo)
                        }    
                    OverlayMat <<- OverlayMat
                    }    
