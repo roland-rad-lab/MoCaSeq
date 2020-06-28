@@ -873,12 +873,12 @@ fi
 echo '---- Generate and plot copy number data ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+resolution=20000
+
 if [ $sequencing_type = 'WES' ]; then
 
 	echo '---- Run CopywriteR ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	resolution=20000
 
 	Rscript $repository_dir/CNV_RunCopywriter.R $name $species $threads $runmode $genome_dir $centromere_file $varregions_file $resolution $types
 
