@@ -35,7 +35,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [License](./LICENSE)
 
 ## Overview
-This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data.
+This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data. The manuscript, published in *Nature Protocols*, can be accessed [online](https://t.co/bRmsqg2lgb?amp=1).
 
 ### Abstract
 Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups. 
