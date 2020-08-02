@@ -141,7 +141,7 @@ if(method=="HMMCopy")
   SegmentMean <<- "Mean"
   SegmentChromosome <<- "Chrom"
   }
-if(method=="cnvkit")
+if(method=="CNVKit")
   {
   SegmentStart <<- "start"
   SegmentStop <<- "end"
@@ -284,6 +284,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
     pdf(paste(samplename,".",method,".",toolname,normalization,y_output,"pdf",sep=""),width=25,height=10)
   }
   par(mar=c(4, 4, 0, 0))
+  if(toolname=="CNVKit"){cn <- cn[c(TRUE,rep(FALSE,9)), ]}
   plot(cn$position,cn$copy,pch=20,cex=Cex,
       ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
   segments(min(ChromBorders),0,ChromBorders[LastEntry],col="#A9A9A9",lwd=2)
@@ -335,8 +336,8 @@ plotChromosomalRatioProfile = function(cn=cn,chrom.sizes,cnSeg="",samplename="",
   {
     pdf(paste(samplename,"_Chromosomes/",samplename,".Chr",chromosome,".",method,".",toolname,normalization,y_output,"pdf",sep=""),width=25,height=10)
   }
-
   par(mar=c(4, 4, 0, 0))
+  if(toolname=="CNVKit"){cn <- cn[c(TRUE,rep(FALSE,9)), ]}
   plot(cn[,Start],cn[,CopyNumber],pch=20,cex=Cex,xlim=c(Xmin,Xmax),ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),ylab="",xlab="",yaxt="n")
   if(method=="CNV")
   {
