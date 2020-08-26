@@ -38,11 +38,11 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data. The manuscript, published in *Nature Protocols*, can be accessed [online](https://t.co/bRmsqg2lgb?amp=1).
 
 ### Abstract
-Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups. 
+Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups.
 
-Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present novel tools and workflows for the detection of different alteration types, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements, such as chromothripsis. 
+Here, we describe standardised computational pipelines tailored specifically for the analysis of mouse genomic data. We present novel tools and workflows for the detection of different alteration types, including single nucleotide variants, indels, copy number variation, loss of heterozygosity and complex rearrangements, such as chromothripsis.
 
-Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation. 
+Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation.
 
 The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq) and as a [dockerized version](https://cloud.docker.com/u/rolandradlab/repository/docker/rolandradlab/mocaseq).
 
@@ -53,10 +53,10 @@ We **strongly** recommend to use the Docker version of this pipeline!
 
 - Using the *Docker* version: Platform of your choice.
 - Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
-- Hardware: 
+- Hardware:
 	- Minimum: 8-core processor, 32 GB RAM
 	- Optimal (running multiple samples in parallel): 48-core processor, 256 GB RAM, Solid-State Drive
-- Disk space: 
+- Disk space:
 	- Reference files: 15 GB
 	- Results: 30 GB (WES 100x), 300 GB (WGS)
 	- Temporary files during analysis: ~170 GB (WES), ~1000 GB (WGS)
@@ -86,7 +86,7 @@ rolandradlab/mocaseq:<mocaseq_version> <options>
 This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
 
 ### Folder locations
-By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using 
+By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using
 ``-v local_folder:container_folder`` when calling `docker run`:
 ```bash
 sudo docker run \
@@ -152,7 +152,7 @@ mkdir -p ${working_directory} \
 && cd ${working_directory}
 ```
 
-4. Download and unzip the repository from Github: 
+4. Download and unzip the repository from Github:
 ```bash
 wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
 && unzip master.zip \
@@ -171,7 +171,7 @@ sudo docker run \
 -v ${working_directory}:/var/pipeline/ \
 rolandradlab/mocaseq \
 --test yes
-``` 
+```
 
 7. Use the provided script to download both tumor and matched normal FASTQ files from one pancreatic cancer, which developed in a conditionally-activated Kras<sup>G12D</sup>-model. `all` will download both WES (100x) and WGS (30x) data, using 100 GB of disk space. Use `WES` or `WGS` to only download the respective files.
 ```bash
