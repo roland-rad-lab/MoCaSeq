@@ -138,6 +138,10 @@ if [ $species = 'Mouse' ]; then
 	chromosomes=19
 	echo "Species $species_lowercase"
 elif [ $species = 'Human' ]; then
+
+	echo "Human is currently being developed (state 2-september-2020), please do NOT run this pipeline for human right now"
+	exit 1
+
 	echo 'Species set to Human'
 	chromosomes=22
 else echo "Invalid species input (${species}). Choose Mouse or Human"; exit 1
@@ -182,37 +186,40 @@ if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 else Titan=no
 fi
 
+# TODO: artifact will never be no since the default is artefact_type=none
+if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'none' ]; then
+	quality_control=yes
+# else
+# 	Titan=no
+# 	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
+fi
+
+
 # Absolute ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $Absolute ]; then
-	Titan=yes
+	Absolute=yes
 elif [ $sequencing_type = 'WGS' ] && [ -z $Absolute ]; then
-	Titan=no
+	Absolute=no
 fi
 
 # Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
 # so it can not be used on WGS+SS (any WES and WGS+MS is ok)
 if [ $Absolute = 'yes' ] && [ $sequencing_type = 'WGS' ] && [ $runmode = 'SS' ]; then
 	Absolute=no
-	echo "Absolute can not be used on single sample WGS. Absolute will not be executed."
+	echo 'PARAMETER WARNING: Absolute can not be used on single sample WGS. Absolute was set to "no".'
 else Absolute=yes
 fi
 # Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
 
 
-
-
-
-
-
-# TODO: ADD FACETS
-
-
-
-# TODO: artifact will never be no since the default is artefact_type=none
-if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'no' ]; then
-	quality_control=yes
-else Titan=no
+# Facets ist default 'yes' for WES and default 'no' for WGS
+if [ $sequencing_type = 'WES' ] && [ -z $Facets ]; then
+	Facets=yes
+elif [ $sequencing_type = 'WGS' ] && [ -z $Facets ]; then
+	Facets=no
 fi
+# Facets only needs BAM files, so there are no more restrictions
+
 
 #reading configuration from $config_file
 source $config_file

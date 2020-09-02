@@ -18,9 +18,11 @@ config_file=$4
 . $config_file
 
 if [ $species = 'Human' ]; then
-	snp_file=$genome_dir/00-common_all.vcf.gz
+	#snp_file=$genome_dir/00-common_all.vcf.gz
+	snp_file=$dbsnp_file
 elif [ $species = 'Mouse' ]; then
-	snp_file=$genome_dir/MGP.v5.snp_and_indels.exclude_wild.chromosomal_sort.vcf.gz
+	#snp_file=$genome_dir/MGP.v5.snp_and_indels.exclude_wild.chromosomal_sort.vcf.gz
+	snp_file=$snp_file # redundant, but like this we know mouse is also covered in this ifelse
 fi
 
 if [ $sequencing_type = 'WES' ]; then
