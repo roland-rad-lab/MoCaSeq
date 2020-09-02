@@ -12,6 +12,7 @@ usage()
 {
 	echo "  Usage: $0 "
 	echo "	-n, --name               Name of the sample."
+	echo "	-s, --species            Set to 'Mouse' or 'Human'. Defaults to Mouse."
 	echo "	-nf, --fastq_normal_fw   Path to first normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-nr, --fastq_normal_rev  Path to second normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-tf, --fastq_tumor_fw    Path to first tumor fastq. Do NOT use if running single-sample normal only."
@@ -31,6 +32,8 @@ usage()
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
+	echo "	-abs, --Absolute         Set to 'yes' or 'no'. TODO: ADD TEXT"
+	echo "	-fac, --Facets           Set to 'yes' or 'no'. TODO: ADD TEXT"
 	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1' or '4.1.7.0', determining which GATK version is used. Optional. Defaults to 4.1.7.0"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run."
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
@@ -47,7 +50,6 @@ bam_normal=
 bam_tumor=
 repeat_mapping=yes
 sequencing_type=WES
-species=Mouse
 quality_control=yes
 threads=8
 RAM=32
@@ -62,12 +64,13 @@ GATK=4.1.7.0
 test=no
 memstats=0
 config_file=
-chromosomes=19
+species=Mouse
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
 while [ "$1" != "" ]; do case $1 in
 	-n|--name) shift;name="$1";;
+	-s|--species) shift;species="$1";;
 	-nf|--fastq_normal_fw) shift;fastq_normal_1="$1";;
 	-nr|--fastq_normal_rev) shift;fastq_normal_2="$1";;
 	-tf|--fastq_tumor_fw) shift;fastq_tumor_1="$1";;
@@ -87,6 +90,7 @@ while [ "$1" != "" ]; do case $1 in
     -mu|--Mutect2) shift;Mutect2="$1";;
     -de|--Delly) shift;Delly="$1";;
     -ti|--Titan) shift;Titan="$1";;
+		-abs|--Absolute) shift;Absolute="$1";;
     -gatk|--GATKVersion) shift;GATK="$1";;
     --memstats) shift;memstats="$1";;
     --test) shift;test="$1";;
@@ -98,30 +102,48 @@ if [ -z $config_file ]; then
 	config_file=/opt/MoCaSeq/config.sh
 fi
 
+# init variables of test run
 test_dir=${config_file%/*}/test
 
+#test=yes
 if [ $test = 'yes' ]; then
-		name=MoCaSeq_Test
-		fastq_normal_1=$test_dir/Mouse.Normal.R1.fastq.gz
-		fastq_normal_2=$test_dir/Mouse.Normal.R2.fastq.gz
-		fastq_tumor_1=$test_dir/Mouse.Tumor.R1.fastq.gz
-		fastq_tumor_2=$test_dir/Mouse.Tumor.R2.fastq.gz
-		sequencing_type=WES
-		bam_normal=
-		bam_tumor=
-		repeat_mapping=yes
-		quality_control=yes
-		threads=4
-		RAM=8
-		temp_dir=/var/pipeline/temp
-		artefact_type=none
-		filtering=all
-		phred=
-		Mutect2=yes
-		Titan=no
-		Delly=no
-		runmode=MS
+	name=MoCaSeq_Test
+	species=Mouse
+	fastq_normal_1=$test_dir/Mouse.Normal.R1.fastq.gz
+	fastq_normal_2=$test_dir/Mouse.Normal.R2.fastq.gz
+	fastq_tumor_1=$test_dir/Mouse.Tumor.R1.fastq.gz
+	fastq_tumor_2=$test_dir/Mouse.Tumor.R2.fastq.gz
+	sequencing_type=WES
+	bam_normal=
+	bam_tumor=
+	repeat_mapping=yes
+	quality_control=yes
+	threads=4
+	RAM=8
+	temp_dir=/var/pipeline/temp
+	artefact_type=none
+	filtering=all
+	phred=
+	Mutect2=yes
+	Titan=no
+	Absolute=no
+	Facets=no
+	Delly=no
+	runmode=MS
 fi
+
+# set some species specific arguments
+if [ $species = 'Mouse' ]; then
+	echo 'Species set to Mouse'
+	chromosomes=19
+	echo "Species $species_lowercase"
+elif [ $species = 'Human' ]; then
+	echo 'Species set to Human'
+	chromosomes=22
+else echo "Invalid species input (${species}). Choose Mouse or Human"; exit 1
+fi
+
+species_lowercase=${species,,} # set the species to lowercase to match some scripts input format (e.g. Chromothripsis)
 
 if [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ ! -z $fastq_tumor_1 ] && [ ! -z $fastq_tumor_2 ] && [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 	runmode="SS"
@@ -144,18 +166,49 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; exit 1
 fi
 
+# SET PARAMETERS FOR PURITY ANALYSIS
+
+# TITAN ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $Titan ]; then
 	Titan=yes
 elif [ $sequencing_type = 'WGS' ] && [ -z $Titan ]; then
 	Titan=no
 fi
 
+# If TITAN set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS
 if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 	Mutect2=yes
 	Titan=yes
 else Titan=no
 fi
 
+# Absolute ist default 'yes' for WES and default 'no' for WGS
+if [ $sequencing_type = 'WES' ] && [ -z $Absolute ]; then
+	Titan=yes
+elif [ $sequencing_type = 'WGS' ] && [ -z $Absolute ]; then
+	Titan=no
+fi
+
+# Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
+# so it can not be used on WGS+SS (any WES and WGS+MS is ok)
+if [ $Absolute = 'yes' ] && [ $sequencing_type = 'WGS' ] && [ $runmode = 'SS' ]; then
+	Absolute=no
+	echo "Absolute can not be used on single sample WGS. Absolute will not be executed."
+else Absolute=yes
+fi
+# Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
+
+
+
+
+
+
+
+# TODO: ADD FACETS
+
+
+
+# TODO: artifact will never be no since the default is artefact_type=none
 if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'no' ]; then
 	quality_control=yes
 else Titan=no
@@ -165,7 +218,7 @@ fi
 source $config_file
 repository_dir=${config_file%/*}/repository
 
-echo '---- Starting Mouse Cancer Genome Analysis ----'
+echo "---- Starting ${species} Cancer Genome Analysis ----"
 echo -e "$(date) \t timestamp: $(date +%s)"
 
 echo '---- Creating directories ----'
@@ -193,24 +246,20 @@ fi
 echo '---- Checking for available reference files ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-if [ -z $genome_dir/GetReferenceData.txt ]; then
-	echo '---- Reference files not found - Files will be downloaded ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-    rm -rf $genome_dir
+# Niklas: removed the "-z ...txt" since it should be "! -f" to work and therefore was not used anyways
+if [ ! grep -Fxq "DONE" $genome_dir/GetReferenceData.txt ]; then
+	echo '---- Reference files not found - Files will be downloaded ----' | tee -a $name/results/QC/${name}.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/${name}.report.txt
+  rm -rf $genome_dir
 	if [ $species = 'Mouse' ]; then
-		sh $repository_dir/Preparation_GetReferenceDataMouse.sh $config_file $temp_dir
-	fi
-elif ! grep -Fxq "DONE" $genome_dir/GetReferenceData.txt
-	then
-	echo '---- Reference files not found - Files will be downloaded ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-    rm -rf $genome_dir
-	if [ $species = 'Mouse' ]; then
-		sh $repository_dir/Preparation_GetReferenceDataMouse.sh $config_file $temp_dir
+	sh $repository_dir/Preparation_GetReferenceDataMouse.sh $config_file $temp_dir
+	elif [ $species = 'Human' ]; then
+	sh $repository_dir/Preparation_GetReferenceDataHuman.sh $config_file $temp_dir
 	fi
 else
-	echo '---- Reference files found! ----' | tee -a $name/results/QC/$name.report.txt
+	echo '---- Reference files found! ----' | tee -a ${name}/results/QC/${name}.report.txt
 fi
+
 
 if [ ! -d $temp_dir ]; then
   mkdir -p $temp_dir/
@@ -236,6 +285,14 @@ if [ $Titan = 'yes' ] && [ $Mutect2 = 'yes' ] && [ $runmode = 'MS' ]; then
 	mkdir -p $name/results/Titan
 fi
 
+if [ $Absolute = 'yes' ]; then
+	mkdir -p $name/results/ABSOLUTE
+fi
+
+if [ $Facets = 'yes' ]; then
+	mkdir -p $name/results/FACETS
+fi
+
 if [ $Delly = 'yes' ] && [ $runmode = 'MS' ] && [ $sequencing_type = 'WGS' ]; then
 	mkdir -p $name/results/Delly
 	mkdir -p $name/results/Chromothripsis
@@ -245,6 +302,9 @@ if [ $species = 'Mouse' ]; then
 	mkdir -p $name/results/Genotype
 fi
 
+
+
+
 if [ $RAM -ge 16 ]; then
 	bwainputbases=100000000
 else bwainputbases=10000000
@@ -253,11 +313,12 @@ fi
 MAX_RECORDS_IN_RAM=$(expr $RAM \* 250000)
 HASH_TABLE_SIZE=$((RAM*1000000000/500))
 
-echo '---- Starting Mouse Cancer Genome Analysis ----' | tee -a $name/results/QC/$name.report.txt
+echo "---- Starting ${species} Cancer Genome Analysis ----" | tee -a $name/results/QC/$name.report.txt
 echo Starting pipeline using these settings: | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 echo Running sample named $name | tee -a $name/results/QC/$name.report.txt
 echo Running in $runmode-mode | tee -a $name/results/QC/$name.report.txt
+
 if [ $runmode = "MS" ] && [ ! -z $fastq_normal_1 ] && [ ! -z $fastq_normal_2 ] && [ ! -z $fastq_tumor_1 ] && [ ! -z $fastq_tumor_2 ] && [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 	echo Using $fastq_normal_1 and $fastq_normal_2 for normal fastqs | tee -a $name/results/QC/$name.report.txt
 	echo Using $fastq_tumor_1 and $fastq_tumor_2 for tumor fastqs | tee -a $name/results/QC/$name.report.txt
@@ -297,6 +358,12 @@ fi
 if [ $Titan = "yes" ]; then
 	echo Will run Titan | tee -a $name/results/QC/$name.report.txt
 fi
+if [ $Absolute = "yes" ]; then
+	echo Will run ABSOLUTE | tee -a $name/results/QC/$name.report.txt
+fi
+if [ $Facets = "yes" ]; then
+	echo Will run FACETS | tee -a $name/results/QC/$name.report.txt
+fi
 echo Starting workflow using $threads CPU-threads and $RAM GB of RAM | tee -a $name/results/QC/$name.report.txt
 
 #rerouting STDERR to report file
@@ -315,6 +382,7 @@ cp $config_file $name/pipeline/
 echo '---- Copying raw data ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+# 1. this will either copy fastqs to location OR do sam2fastq
 if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
 	if [ $runmode = 'MS' ]; then
@@ -334,7 +402,6 @@ if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
 elif [ $repeat_mapping = "yes" ]; then
 
-
 	if [ $runmode = 'MS' ]; then
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
 	-INPUT $bam_tumor \
@@ -342,6 +409,7 @@ elif [ $repeat_mapping = "yes" ]; then
 	-SECOND_END_FASTQ $name/fastq/$name.Tumor.R2.fastq.gz \
 	-INCLUDE_NON_PF_READS true \
 	-VALIDATION_STRINGENCY LENIENT
+
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
 	-INPUT $bam_normal \
 	-FASTQ $name/fastq/$name.Normal.R1.fastq.gz \
@@ -365,7 +433,6 @@ elif [ $repeat_mapping = "yes" ]; then
 	-INCLUDE_NON_PF_READS true \
 	-VALIDATION_STRINGENCY LENIENT
 	fi
-
 elif [ $repeat_mapping = "no" ]; then
 	if [ $runmode = 'MS' ]; then
 	cp $bam_normal $name/results/bam/$name.Normal.bam
@@ -383,13 +450,14 @@ elif [ $repeat_mapping = "no" ]; then
 	fi
 fi
 
+# 2. remap fastq
 if [ $repeat_mapping = "yes" ]; then
 	echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 	for type in $types;
 	do
-		md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
-		md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
+	md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
+	md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -400,10 +468,10 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		fastqc -t $threads \
-		$name/fastq/$name.$type.R1.fastq.gz \
-		$name/fastq/$name.$type.R2.fastq.gz \
-		--outdir=$name/results/QC & PIDS="$PIDS $!"
+	fastqc -t $threads \
+	$name/fastq/$name.$type.R1.fastq.gz \
+	$name/fastq/$name.$type.R2.fastq.gz \
+	--outdir=$name/results/QC & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -413,19 +481,21 @@ if [ $repeat_mapping = "yes" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 	for type in $types;
 	do
-		trimmomatic_file=$(basename $trimmomatic_dir)
-		if [ -z $phred ]; then phred=$(sh $repository_dir/all_DeterminePhred.sh $name $type); fi
-		java -Xmx${RAM}G -jar $trimmomatic_dir"/"$trimmomatic_file".jar" PE \
-		-threads $threads -$phred \
-		$name/fastq/$name.$type.R1.fastq.gz \
-		$name/fastq/$name.$type.R2.fastq.gz \
-		$temp_dir/$name.$type.R1.passed.fastq.gz \
-		$temp_dir/$name.$type.R1.not_passed.fastq.gz \
-		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		$temp_dir/$name.$type.R2.not_passed.fastq.gz \
-		LEADING:25 TRAILING:25 MINLEN:50 \
-		SLIDINGWINDOW:10:25 \
-		ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
+	trimmomatic_file=$(basename $trimmomatic_dir)
+	if [ -z $phred ]; then phred=$(sh $repository_dir/all_DeterminePhred.sh $name $type); fi
+	echo "Determined phred score for trimming: $phred"
+
+	java -Xmx${RAM}G -jar $trimmomatic_dir"/"$trimmomatic_file".jar" PE \
+	-threads $threads -$phred \
+	$name/fastq/$name.$type.R1.fastq.gz \
+	$name/fastq/$name.$type.R2.fastq.gz \
+	$temp_dir/$name.$type.R1.passed.fastq.gz \
+	$temp_dir/$name.$type.R1.not_passed.fastq.gz \
+	$temp_dir/$name.$type.R2.passed.fastq.gz \
+	$temp_dir/$name.$type.R2.not_passed.fastq.gz \
+	LEADING:25 TRAILING:25 MINLEN:50 \
+	SLIDINGWINDOW:10:25 \
+	ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -436,12 +506,12 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		fastqc -t $threads \
-		$temp_dir/$name.$type.R1.passed.fastq.gz \
-		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		--outdir=$name/results/QC & PIDS="$PIDS $!"
+	fastqc -t $threads \
+	$temp_dir/$name.$type.R1.passed.fastq.gz \
+	$temp_dir/$name.$type.R2.passed.fastq.gz \
+	--outdir=$name/results/QC & PIDS="$PIDS $!"
 	done
-	
+
 	wait $PIDS
 	PIDS=""
 
@@ -449,8 +519,8 @@ if [ $repeat_mapping = "yes" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 	for type in $types;
 	do
-		rm $name/fastq/$name.$type.R1.fastq.gz & PIDS="$PIDS $!"
-		rm $name/fastq/$name.$type.R2.fastq.gz & PIDS="$PIDS $!"
+	rm $name/fastq/$name.$type.R1.fastq.gz & PIDS="$PIDS $!"
+	rm $name/fastq/$name.$type.R2.fastq.gz & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -461,24 +531,19 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		bwa mem -t $threads $genomeindex_dir \
-		-Y -K $bwainputbases -v 1 \
-		$temp_dir/$name.$type.R1.passed.fastq.gz \
-		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar CleanSam \
-		-I /dev/stdin \
-		-O $temp_dir/$name.$type.cleaned.bam \
-		-VALIDATION_STRINGENCY LENIENT
+	bwa mem -t $threads $genomeindex_dir \
+	-Y -K $bwainputbases -v 1 \
+	$temp_dir/$name.$type.R1.passed.fastq.gz \
+	$temp_dir/$name.$type.R2.passed.fastq.gz \
+	| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+	-jar $picard_dir/picard.jar CleanSam \
+	-I /dev/stdin \
+	-O $temp_dir/$name.$type.cleaned.bam \
+	-VALIDATION_STRINGENCY LENIENT
 	done
 
-	for type in $types;
-	do
-		rm $temp_dir/$name.$type.R1.passed.fastq.gz & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R1.not_passed.fastq.gz & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R2.passed.fastq.gz & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.R2.not_passed.fastq.gz & PIDS="$PIDS $!"
-	done
+	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
+	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 
 	wait $PIDS
 	PIDS=""
@@ -488,30 +553,31 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-		/opt/bin/sambamba sort \
-		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
-		-o $temp_dir/$name.$type.cleaned.sorted.bam \
-		$temp_dir/$name.$type.cleaned.bam &&
+	/opt/bin/sambamba sort \
+	-t $threads -m ${RAM}GB --tmpdir $temp_dir \
+	-o $temp_dir/$name.$type.cleaned.sorted.bam \
+	$temp_dir/$name.$type.cleaned.bam &&
+	#NIKLAS TODO: sambamba can break for large files
 
-		rm $temp_dir/$name.$type.cleaned.bam &&
-		
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
-		-I $temp_dir/$name.$type.cleaned.sorted.bam \
-		-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
-		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
+	rm $temp_dir/$name.$type.cleaned.bam &&
 
-		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+	-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
+	-I $temp_dir/$name.$type.cleaned.sorted.bam \
+	-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
+	-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
+	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
-		/opt/bin/sambamba markdup --tmpdir $temp_dir \
-		--t $threads \
-		--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
-		$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-		$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+	rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
-		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+	/opt/bin/sambamba markdup --tmpdir $temp_dir \
+	--t $threads \
+	--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
+	$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
+	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -520,37 +586,43 @@ if [ $repeat_mapping = "yes" ]; then
 	echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+
 	for type in $types;
 	do
-		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
-		-R $genome_file \
-		-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-		--known-sites $snp_file \
-		--use-original-qualities \
-		-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
+	echo "Running BaseRecalibrator 1 for $type"
+	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
+	-R $genome_file \
+	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+	--known-sites $snp_file \
+	--use-original-qualities \
+	-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
-		-R $genome_file \
-		-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-		-O $name/results/bam/$name.$type.bam \
-		-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
+	echo "Running ApplyBQSR for $type"
+	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
+	-R $genome_file \
+	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+	-O $name/results/bam/$name.$type.bam \
+	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
-		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
-		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
-		-R $genome_file \
-		-I $name/results/bam/$name.$type.bam \
-		--known-sites $snp_file \
-		--use-original-qualities \
-		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
+	echo "Running BaseRecalibrator 2 for $type"
+	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
+	-R $genome_file \
+	-I $name/results/bam/$name.$type.bam \
+	--known-sites $snp_file \
+	--use-original-qualities \
+	-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-		/opt/bin/sambamba index \
-		-t $threads \
-		$name/results/bam/$name.$type.bam \
-		$name/results/bam/$name.$type.bam.bai &&
+	echo "Running Sambamba Index for $type"
+	/opt/bin/sambamba index \
+	-t $threads \
+	$name/results/bam/$name.$type.bam \
+	$name/results/bam/$name.$type.bam.bai &&
 
-		rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
+	# TODO: this should be bam.bai right? else cannot remove 'MoCaSeq_Test/results/bam/MoCaSeq_Test.Normal.bai
+	rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -558,26 +630,28 @@ if [ $repeat_mapping = "yes" ]; then
 
 fi
 
+# TODO: HERE
+
 if [ $quality_control = "yes" ]; then
 	echo '---- Quality control I (Sequencing artifacts, multiple metrics) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	for type in $types;
 	do
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar CollectSequencingArtifactMetrics \
-		-R $genome_file \
-		-I $name/results/bam/$name.$type.bam \
-		-O $name/results/QC/$name.$type.bam.artifacts & PIDS="$PIDS $!"
+	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+	-jar $picard_dir/picard.jar CollectSequencingArtifactMetrics \
+	-R $genome_file \
+	-I $name/results/bam/$name.$type.bam \
+	-O $name/results/QC/$name.$type.bam.artifacts & PIDS="$PIDS $!"
 
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar CollectMultipleMetrics \
-		-R $genome_file \
-		-I $name/results/bam/$name.$type.bam \
-		-O $name/results/QC/$name.$type.bam.metrics & PIDS="$PIDS $!"
+	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+	-jar $picard_dir/picard.jar CollectMultipleMetrics \
+	-R $genome_file \
+	-I $name/results/bam/$name.$type.bam \
+	-O $name/results/QC/$name.$type.bam.metrics & PIDS="$PIDS $!"
 
-		samtools idxstats $name/results/bam/$name.$type.bam \
-		> $name/results/QC/$name.$type.bam.idxstats & PIDS="$PIDS $!"
+	samtools idxstats $name/results/bam/$name.$type.bam \
+	> $name/results/QC/$name.$type.bam.idxstats & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -587,34 +661,34 @@ if [ $quality_control = "yes" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	if [ $sequencing_type = 'WES' ]; then
-		for type in $types;
-		do
-			java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-			-jar $picard_dir/picard.jar CollectHsMetrics \
-			-SAMPLE_SIZE 100000 \
-			-R $genome_file \
-			-I $name/results/bam/$name.$type.bam \
-			-O $name/results/QC/$name.$type.bam.metrics \
-			-BAIT_INTERVALS $interval_file \
-			-TARGET_INTERVALS $interval_file & PIDS="$PIDS $!"
-		done
+	for type in $types;
+	do
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CollectHsMetrics \
+		-SAMPLE_SIZE 100000 \
+		-R $genome_file \
+		-I $name/results/bam/$name.$type.bam \
+		-O $name/results/QC/$name.$type.bam.metrics \
+		-BAIT_INTERVALS $interval_file \
+		-TARGET_INTERVALS $interval_file & PIDS="$PIDS $!"
+	done
 
-		wait $PIDS
-		PIDS=""
+	wait $PIDS
+	PIDS=""
 
 	elif [ $sequencing_type = 'WGS' ]; then
-		for type in $types;
-		do
-			java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-			-jar $picard_dir/picard.jar CollectWgsMetrics \
-			-R $genome_file \
-			-I $name/results/bam/$name.$type.bam \
-			-O $name/results/QC/$name.$type.bam.metrics \
-			-SAMPLE_SIZE 1000000 & PIDS="$PIDS $!"
-		done
+	for type in $types;
+	do
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CollectWgsMetrics \
+		-R $genome_file \
+		-I $name/results/bam/$name.$type.bam \
+		-O $name/results/QC/$name.$type.bam.metrics \
+		-SAMPLE_SIZE 1000000 & PIDS="$PIDS $!"
+	done
 
-		wait $PIDS
-		PIDS=""
+	wait $PIDS
+	PIDS=""
 	fi
 
 	echo '---- Summarizing quality control data ----' | tee -a $name/results/QC/$name.report.txt
@@ -625,7 +699,7 @@ if [ $quality_control = "yes" ]; then
 fi
 
 if [ $runmode = "MS" ]; then
-	echo '---- Matched BAM-files? ----' | tee -a $name/results/QC/$name.report.txt
+	echo '---- Check for matched BAM-files ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	python2 $bammatcher_dir/bam-matcher.py \
@@ -667,53 +741,54 @@ if [ $species = "Mouse" ]; then
 	sh $repository_dir/SNV_GetGenotype.sh $name $allele $comment $config_file $species $position $runmode $types
 
 	if [ $runmode = "MS" ]; then
-		allele=Trp53-fl
-		position=11:69580359-69591872
-		transcript=ENSMUST00000171247.7
-		wt_allele=1,11
-		del_allele=2,3,4,5,6,7,8,9,10
-		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
-		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
-		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
+	allele=Trp53-fl
+	position=11:69580359-69591872
+	transcript=ENSMUST00000171247.7
+	wt_allele=1,11
+	del_allele=2,3,4,5,6,7,8,9,10
+	sh $repository_dir/CNV_GetGenotype.sh $name $position
+	Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
+	cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
+	rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
-		allele=Cdh1-fl
-		position=8:106603351-106670246
-		transcript=ENSMUST00000000312.11
-		wt_allele="1,2,3,16"
-		del_allele="4,5,6,7,8,9,10,11,12,13,14,15"
-		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
-		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
-		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
+	allele=Cdh1-fl
+	position=8:106603351-106670246
+	transcript=ENSMUST00000000312.11
+	wt_allele="1,2,3,16"
+	del_allele="4,5,6,7,8,9,10,11,12,13,14,15"
+	sh $repository_dir/CNV_GetGenotype.sh $name $position
+	Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
+	cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
+	rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
-		allele=Pdk1-fl
-		position=2:71873224-71903858
-		transcript=ENSMUST00000006669.5
-		wt_allele="1,2,5,6,7,8,9,10,11"
-		del_allele="3,4"
-		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
-		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
-		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
+	allele=Pdk1-fl
+	position=2:71873224-71903858
+	transcript=ENSMUST00000006669.5
+	wt_allele="1,2,5,6,7,8,9,10,11"
+	del_allele="3,4"
+	sh $repository_dir/CNV_GetGenotype.sh $name $position
+	Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
+	cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
+	rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 
-		allele=Raf1-fl
-		position=6:115618569-115676635
-		transcript=ENSMUST00000000451.13
-		wt_allele="1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17"
-		del_allele="3"
-		sh $repository_dir/CNV_GetGenotype.sh $name $position
-		Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
-		cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
-		rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
+	allele=Raf1-fl
+	position=6:115618569-115676635
+	transcript=ENSMUST00000000451.13
+	wt_allele="1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17"
+	del_allele="3"
+	sh $repository_dir/CNV_GetGenotype.sh $name $position
+	Rscript $repository_dir/CNV_GetGenotype.R $name $genecode_file_exons $transcript $allele $position $wt_allele $del_allele
+	cat $name/results/Genotype/$name.Genotypes.temp.CNV.txt >> $name/results/Genotype/$name.Genotypes.txt
+	rm $name/results/Genotype/$name.Genotypes.temp.CNV.txt
 	fi
 
 	for type in $types;
 	do
-		rm $name/results/Genotype/$name.$type.Genotypes.CNV.txt
+	rm $name/results/Genotype/$name.$type.Genotypes.CNV.txt
 	done
 	rm Rplots.pdf
 fi
+
 
 echo '---- Running Manta (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -747,9 +822,7 @@ python2 $name/results/Manta/runWorkflow.py -m local -j $threads
 sh $repository_dir/SV_MantaPostprocessing.sh $name $species $config_file $runmode $types
 
 if [ $runmode = "MS" ]; then
-
 	sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Manta MS
-
 fi
 
 echo '---- Running Strelka (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
@@ -785,12 +858,12 @@ fi
 if [ $sequencing_type = 'WES' ]; then
 	for type in $types;
 	do
-		python2 $strelka_dir/bin/configureStrelkaGermlineWorkflow.py \
-		--bam $name/results/bam/$name.$type.bam \
-		--ref $genome_file --runDir $name/results/Strelka/Strelka-$type \
-		--callRegions $callregions_file --exome &&
+	python2 $strelka_dir/bin/configureStrelkaGermlineWorkflow.py \
+	--bam $name/results/bam/$name.$type.bam \
+	--ref $genome_file --runDir $name/results/Strelka/Strelka-$type \
+	--callRegions $callregions_file --exome &&
 
-		python2 $name/results/Strelka/Strelka-$type/runWorkflow.py -m local -j $threads & PIDS="$PIDS $!"
+	python2 $name/results/Strelka/Strelka-$type/runWorkflow.py -m local -j $threads & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -798,12 +871,12 @@ if [ $sequencing_type = 'WES' ]; then
 elif [ $sequencing_type = 'WGS' ]; then
 	for type in $types;
 	do
-		python2 $strelka_dir/bin/configureStrelkaGermlineWorkflow.py \
-		--bam $name/results/bam/$name.$type.bam \
-		--ref $genome_file --runDir $name/results/Strelka/Strelka-$type \
-		--callRegions $callregions_file &&
+	python2 $strelka_dir/bin/configureStrelkaGermlineWorkflow.py \
+	--bam $name/results/bam/$name.$type.bam \
+	--ref $genome_file --runDir $name/results/Strelka/Strelka-$type \
+	--callRegions $callregions_file &&
 
-		python2 $name/results/Strelka/Strelka-$type/runWorkflow.py -m local -j $threads & PIDS="$PIDS $!"
+	python2 $name/results/Strelka/Strelka-$type/runWorkflow.py -m local -j $threads & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -841,19 +914,19 @@ if [ $Mutect2 = 'yes' ]; then
 
 	for type in $types;
 	do
-		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
-		--native-pair-hmm-threads $threads \
-		-R $genome_file \
-		-I $name/results/bam/$name.$type.bam \
-		-tumor $type \
-		--f1r2-tar-gz $name/results/Mutect2/$name."$type".m2.f1r2.tar.gz \
-		-O $name/results/Mutect2/$name."$type".m2.vcf \
-		-bamout $name/results/Mutect2/$name."$type".m2.bam
+	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
+	--native-pair-hmm-threads $threads \
+	-R $genome_file \
+	-I $name/results/bam/$name.$type.bam \
+	-tumor $type \
+	--f1r2-tar-gz $name/results/Mutect2/$name."$type".m2.f1r2.tar.gz \
+	-O $name/results/Mutect2/$name."$type".m2.vcf \
+	-bamout $name/results/Mutect2/$name."$type".m2.bam
 
-		sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
-		$name $species $config_file $type $filtering $artefact_type $GATK
+	sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
+	$name $species $config_file $type $filtering $artefact_type $GATK
 
-		Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
+	Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
 	done
 fi
 
@@ -894,7 +967,9 @@ if [ $sequencing_type = 'WES' ]; then
 
 	Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter $resolution $CGC_file $TruSight_file
-	sh $repository_dir/CNV_CleanUp.sh $name
+
+	# clean up
+	find "$name/results/Copywriter/" -type f -name "$name*SegmentsChromosome*" -exec rm -r {} +
 fi
 
 if [ $runmode = "MS" ]; then
@@ -926,11 +1001,9 @@ if [ $runmode = "MS" ]; then
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy $resolution $CGC_file $TruSight_file
 fi
 
+
 echo '---- Run msisensor----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-#exec 1>> $name/results/QC/$name.report.txt
-
 if [ $runmode = "MS" ]; then
 	msisensor msi -n $name/results/bam/$name.Normal.bam \
 	-t $name/results/bam/$name.Tumor.bam \
@@ -942,16 +1015,58 @@ elif [ $runmode = "SS" ]; then
 	-d $microsatellite_file -b $threads
 fi
 
-#exec 1>$(tty)
 
+
+# PURITY ANALYSIS
 if [ $Titan = "yes" ]; then
 	echo '---- Run TitanCNA ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir $resolution $mapWig_file $gcWig_file $exons_file $sequencing_type
+
+	# rerun TITAN for each ploidy (2,3,4) and clusters (1 to numClusters)
 	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type
+
+	echo '		---- Mapping segments to genes ----' | tee -a $name/results/QC/$name.report.txt
 	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes $CGC_file $TruSight_file
+
+	# cleanup TITAN temp dirs
+	find . -maxdepth 1 -type d -name "run_ploidy*" -exec rm -r {} +
 fi
+
+if [ $Absolute = "yes" ]; then
+	echo '---- Run ABSOLUTE ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	if [ $sequencing_type = 'WES' ]; then
+	CNVmethod="Copywriter"
+	elif [ $sequencing_type = 'WGS' ]; then
+	CNVmethod="HMMCopy"
+	fi
+
+	# Mutect2 can be "yes" or "no"
+	Rscript $repository_dir/all_RunABSOLUTE.R $name $CNVmethod $species $Mutect2
+
+	rm -r $name/results/ABSOLUTE/tmp/ # remove the tmp folder coming from R
+fi
+
+
+if [ $Facets = "yes" ]; then
+	echo '---- Run FACETS ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	# first generate SNP pileup for FACETS
+	echo '     ---- Run snp-pileup ----' | tee -a $name/results/QC/$name.report.txt
+	bash ${repository_dir}/all_RunFACETS.sh $name $species $sequencing_type $config_file
+
+	# TODO: correct values?
+	cval=300
+	ndepth=10
+
+	echo '     ---- Run FACETS analysis ----' | tee -a $name/results/QC/$name.report.txt
+	Rscript $repository_dir/all_RunFACETS.R $name $species $cval $ndepth
+fi
+
 
 if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Optional for WGS: Run Delly ----' | tee -a $name/results/QC/$name.report.txt
@@ -994,56 +1109,56 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	-i $name/results/Delly/$name.breakpoints_annotated.tab
 
 	for chr in $( seq $chromosomes ); do
-		if [ $(Rscript $repository_dir/Chromothripsis_RearrangementCounter.R -i $name/results/Delly/$name.breakpoints.filtered.tab -c $chr) -ge 4 ]; then
-			echo 'Analysing Chromosome '$chr
-			mkdir -p $name'/results/Chromothripsis/Chr'$chr
-			echo '---- Hallmark: Clustering of breakpoints for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+	if [ $(Rscript $repository_dir/Chromothripsis_RearrangementCounter.R -i $name/results/Delly/$name.breakpoints.filtered.tab -c $chr) -ge 4 ]; then
+		echo 'Analysing Chromosome '$chr
+		mkdir -p $name'/results/Chromothripsis/Chr'$chr
+		echo '---- Hallmark: Clustering of breakpoints for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_DetectBreakpointClustering.R \
-			-i $name/results/Delly/$name.breakpoints.filtered.tab \
-			-c $chr -n $name -f $format
+		Rscript $repository_dir/Chromothripsis_DetectBreakpointClustering.R \
+		-i $name/results/Delly/$name.breakpoints.filtered.tab \
+		-c $chr -n $name -f $format
 
-			echo '---- Hallmark: Regularity of oscillating copy number states for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		echo '---- Hallmark: Regularity of oscillating copy number states for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_SimulateCopyNumberStates.R \
-			-i $name/results/Delly/$name.breakpoints.filtered.tab \
-			-o mouse -c $chr -n $name -s 1000 -a 1000 -f $format -v 1
+		Rscript $repository_dir/Chromothripsis_SimulateCopyNumberStates.R \
+		-i $name/results/Delly/$name.breakpoints.filtered.tab \
+		-o $species_lowercase -c $chr -n $name -s 1000 -a 1000 -f $format -v 1
 
-			echo '---- Hallmark: Interspersed loss and retention of heterozygosity for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		echo '---- Hallmark: Interspersed loss and retention of heterozygosity for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_PlotLOHPattern.R \
-			-s $name/results/HMMCopy/$name.HMMCopy.$resolution.segments.txt \
-			-d $name/results/HMMCopy/$name.HMMCopy.$resolution.log2RR.txt \
-			-v $name/results/LOH/$name.VariantsForLOH.txt \
-			-o mouse -c $chr -n $name -f $format
+		Rscript $repository_dir/Chromothripsis_PlotLOHPattern.R \
+		-s $name/results/HMMCopy/$name.HMMCopy.$resolution.segments.txt \
+		-d $name/results/HMMCopy/$name.HMMCopy.$resolution.log2RR.txt \
+		-v $name/results/LOH/$name.VariantsForLOH.txt \
+		-o $species_lowercase -c $chr -n $name -f $format
 
-			echo '---- Hallmark: Randomness of DNA fragment joins and segment order for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		echo '---- Hallmark: Randomness of DNA fragment joins and segment order for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_DetectRandomJoins.R \
-			-i $name/results/Delly/$name.breakpoints.filtered.tab \
-			-c $chr -n $name -f $format
+		Rscript $repository_dir/Chromothripsis_DetectRandomJoins.R \
+		-i $name/results/Delly/$name.breakpoints.filtered.tab \
+		-c $chr -n $name -f $format
 
-			echo '---- Hallmark: Ability to walk the derivative chromosome for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		echo '---- Hallmark: Ability to walk the derivative chromosome for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_WalkDerivativeChromosome.R \
-			-i $name/results/Delly/$name.breakpoints.filtered.tab \
-			-c $chr -n $name -f $format
+		Rscript $repository_dir/Chromothripsis_WalkDerivativeChromosome.R \
+		-i $name/results/Delly/$name.breakpoints.filtered.tab \
+		-c $chr -n $name -f $format
 
-			echo '---- Visualisation: Copy number profile combined with complex rearrangements for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
-			echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		echo '---- Visualisation: Copy number profile combined with complex rearrangements for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-			Rscript $repository_dir/Chromothripsis_PlotRearrangementGraph.R \
-			-i $name/results/Delly/$name.breakpoints.filtered.tab \
-			-d $name/results/HMMCopy/$name.HMMCopy.$resolution.log2RR.txt \
-			-c $chr -n $name -f $format
-		else
-			echo 'There are too few rearrangements in chromosome '$chr'.'
-		fi
+		Rscript $repository_dir/Chromothripsis_PlotRearrangementGraph.R \
+		-i $name/results/Delly/$name.breakpoints.filtered.tab \
+		-d $name/results/HMMCopy/$name.HMMCopy.$resolution.log2RR.txt \
+		-c $chr -n $name -f $format
+	else
+		echo 'There are too few rearrangements in chromosome '$chr'.'
+	fi
 	done
 
 fi

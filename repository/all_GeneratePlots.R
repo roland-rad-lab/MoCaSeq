@@ -8,8 +8,8 @@
 ##
 ##########################################################################################
 
-library(GenomicRanges)
-library(devEMF)
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(devEMF))
 
 DefineChromSizes = function(GenomeVersion)
 {

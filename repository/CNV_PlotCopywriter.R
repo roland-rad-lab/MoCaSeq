@@ -22,11 +22,9 @@ system(paste("mkdir -p ",name,"_Chromosomes",sep=""))
 
 chrom.sizes = DefineChromSizes(species)
 
-if (species=="Human")
-{
+if (species=="Human"){
 	chromosomes=22
-} else if (species=="Mouse")
-{
+} else if (species=="Mouse"){
 	chromosomes=19
 }
 

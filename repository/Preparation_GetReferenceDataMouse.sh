@@ -23,7 +23,7 @@ mkdir -p "ref/"$VersionMouse
 mkdir -p "ref/"$VersionMouse/VEP
 
 echo '---- Get reference data ----' | tee "ref/"$VersionMouse"/GetReferenceData.txt"
-echo '---- Generate reference data for Version '$VersionMouse' ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
+echo '---- Generate reference data for version '$VersionMouse' ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
 #rerouting STDERR to report file
@@ -32,22 +32,24 @@ exec 2>> "ref/"$VersionMouse"/GetReferenceData.txt"
 echo '---- Copying over files from repository ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
-cp $repository_dir"/../data/GRCm38.canonical_chromosomes.bed" "ref/"$VersionMouse"/"
-bgzip "ref/"$VersionMouse"/GRCm38.canonical_chromosomes.bed"
-tabix -p bed "ref/"$VersionMouse"/GRCm38.canonical_chromosomes.bed.gz"
+cp $repository_dir"/../data/GRCm38/GRCm38.canonical_chromosomes.bed" "ref/"$VersionMouse"/"
+bgzip "ref/"$VersionMouse"/GRCm38/GRCm38.canonical_chromosomes.bed"
+tabix -p bed "ref/"$VersionMouse"/GRCm38/GRCm38.canonical_chromosomes.bed.gz"
 
-cp $repository_dir"/../data/GRCm38.Census_allMon_Jan_15_11_46_18_2018_mouse.tsv" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.Census_allMon_Jan_15_11_46_18_2018_mouse.tsv" "ref/"$VersionMouse"/"
 
-cp $repository_dir"/../data/GRCm38.bammatcher_docker.conf" "ref/"$VersionMouse"/"
-cp $repository_dir"/../data/GRCm38.bammatcher_bash.conf" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.bammatcher_docker.conf" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.bammatcher_bash.conf" "ref/"$VersionMouse"/"
 
-cp $repository_dir"/../data/GRCm38.AgilentProbeGaps.txt" "ref/"$VersionMouse"/"
-cp $repository_dir"/../data/GRCm38.Genecode_M20_Exons.rds" "ref/"$VersionMouse"/"
-cp $repository_dir"/../data/GRCm38.Genecode_M20_Genes.rds" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.AgilentProbeGaps.txt" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.Genecode_M20_Exons.rds" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.Genecode_M20_Genes.rds" "ref/"$VersionMouse"/"
 
-cp $repository_dir"/../data/GRCm38.RefFlat" "ref/"$VersionMouse"/"
+cp $repository_dir"/../data/GRCm38/GRCm38.RefFlat" "ref/"$VersionMouse"/"
 
 cp $repository_dir"/../data/Samples.tsv" "ref/"$VersionMouse"/"
+
+cp $repository_dir"/../data/GRCm38/GRCm38.SureSelect_Mouse_All_Exon_V1.bed" ref/"$VersionMouse"/
 
 echo '---- Downloading reference genome ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
@@ -59,7 +61,7 @@ mv "ref/"$VersionMouse"/GCA_000001635.8_"$VersionMouse"_genomic.fna" "ref/"$Vers
 echo '---- Generate BWA Index ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
-sh $repository_dir/Preparation_GenerateBWAIndex.sh $VersionMouse $config_file
+sh $repository_dir/Preparation_GenerateBWAIndex.sh $VersionMouse $config_file $species
 
 echo '---- Generate sequence dictionary ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
@@ -76,7 +78,6 @@ date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 # Liftover with https://www.ensembl.org/Homo_sapiens/Tools/AssemblyConverter?db=core using default settings
 # Rename to .bed and move to main reference directory
 # Included in the data-directory is a version which has already been lifted over - nothing more to do but generating the sequence directionary
-cp $repository_dir"/../data/GRCm38.SureSelect_Mouse_All_Exon_V1.bed" ref/"$VersionMouse"/
 java -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar BedToIntervalList \
 -I "ref/"$VersionMouse"/GRCm38.SureSelect_Mouse_All_Exon_V1.bed" \
 -O "ref/"$VersionMouse"/GRCm38.SureSelect_Mouse_All_Exon_V1.bed.list" \
@@ -125,7 +126,7 @@ date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 $hmmcopyutils_dir/util/mappability/generateMap.pl -o "ref/"$VersionMouse"/"$VersionMouse".fna.map.bw" -b -w 150 -c 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y "ref/"$VersionMouse"/"$VersionMouse".fna"
 $hmmcopyutils_dir/util/mappability/generateMap.pl -o "ref/"$VersionMouse"/"$VersionMouse".fna.map.bw" -w 150 -c 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y "ref/"$VersionMouse"/"$VersionMouse".fna"
 
-for resolution in 1000 10000 20000 50000; 
+for resolution in 1000 10000 20000 50000;
 do
 	$hmmcopyutils_dir/bin/gcCounter -w $resolution -c 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y "ref/"$VersionMouse"/"$VersionMouse".fna" > "ref/"$VersionMouse"/"$VersionMouse".gc.$resolution.wig"
 	$hmmcopyutils_dir/bin/mapCounter -w $resolution -c 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y "ref/"$VersionMouse"/"$VersionMouse".fna.map.bw" > "ref/"$VersionMouse"/"$VersionMouse".map.$resolution.wig"

@@ -22,10 +22,10 @@ type <- args[9]
 
 if (resolution=="NULL") { resolution=20000 } 
 
-library(CopywriteR)
-library(GenomeInfoDb)
-library(naturalsort)
-library(GenomicRanges)
+suppressPackageStartupMessages(library(CopywriteR))
+suppressPackageStartupMessages(library(GenomeInfoDb))
+suppressPackageStartupMessages(library(naturalsort))
+suppressPackageStartupMessages(library(GenomicRanges))
 
 tumor_bam = paste(name,"/results/bam/",name,".Tumor.bam",sep="")
 normal_bam = paste(name,"/results/bam/",name,".Normal.bam",sep="")

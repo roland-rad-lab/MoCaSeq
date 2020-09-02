@@ -130,11 +130,15 @@ RUN	apt-get update \
 		r-base=3.6.3-1bionic \
 		r-base-dev=3.6.3-1bionic \
 	&& rm -rf /var/lib/apt/lists/* \
+	&& R -e 'devtools::install_github("mskcc/facets", build_vignettes = F)' \
+	&& R -e 'devtools::install_github("mskcc/pctGCdata")' \
+	&& R -e 'install.packages("numDeriv")' \
+	&& R -e 'install.packages("/data/resources/ABSOLUTE_1.0.6.tar.gz",repos=NULL,type="source")' \
 	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
 	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
 
 RUN cd ${TEMP_DIR} \
-	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \ 
+	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
 	&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge" \
 	; apt update \
 	&& apt install -y --no-install-recommends \
@@ -199,7 +203,7 @@ RUN	cd ${TEMP_DIR} \
 	&& wget https://github.com/dellytools/delly/releases/download/v0.8.3/delly_v0.8.3_linux_x86_64bit \
 	&& mkdir ${PACKAGE_DIR}/delly-0.8.3/ \
 	&& mv delly_v0.8.3_linux_x86_64bit ${PACKAGE_DIR}/delly-0.8.3/delly \
-	&& chmod a+x ${PACKAGE_DIR}/delly-0.8.3/delly \ 
+	&& chmod a+x ${PACKAGE_DIR}/delly-0.8.3/delly \
 	&& ln -sf ${PACKAGE_DIR}/delly-0.8.3/delly ${PACKAGE_DIR}/bin/delly \
 # Fasta-to-Fastq (https://github.com/ekg/fasta-to-fastq/)
 	&& cd ${TEMP_DIR} \
@@ -330,7 +334,7 @@ RUN	cd ${TEMP_DIR} \
 	&& tar -xjf manta-1.6.0.centos6_x86_64.tar.bz2 \
 	&& mv manta-1.6.0.centos6_x86_64 ${PACKAGE_DIR}/manta-1.6.0 \
 	&& rm manta-1.6.0.centos6_x86_64.tar.bz2 \
-# VariantQC 1.07 (https://github.com/BimberLab/DISCVRSeq)	
+# VariantQC 1.07 (https://github.com/BimberLab/DISCVRSeq)
 	&& cd ${TEMP_DIR} \
 	&& wget -nv 'https://github.com/BimberLab/DISCVRSeq/releases/download/1.07/DISCVRSeq-1.07.jar' \
 	&& mkdir -p ${PACKAGE_DIR}/DISCVRSeq-1.07/ \

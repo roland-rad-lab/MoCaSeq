@@ -18,7 +18,7 @@ position = args[5]
 wt_allele = args[6]
 del_allele = args[7]
 
-suppressMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggplot2))
 
 wt_allele=as.numeric(unlist(strsplit(wt_allele,",")))
 del_allele=as.numeric(unlist(strsplit(del_allele,",")))

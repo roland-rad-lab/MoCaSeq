@@ -19,10 +19,10 @@ gc_file <- args[6]
 exons_file <- args[7]
 sequencing_type <- args[8]
 
-suppressMessages(library(TitanCNA))
-suppressMessages(library(HMMcopy))
-suppressMessages(library(GenomeInfoDb))
-suppressMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(TitanCNA))
+suppressPackageStartupMessages(library(HMMcopy))
+suppressPackageStartupMessages(library(GenomeInfoDb))
+suppressPackageStartupMessages(library(GenomicRanges))
 
 correctReadDepth = function (tumWig, normWig, gcWig, mapWig, genomeStyle = "NCBI", 
     targetedSequence = NULL) 

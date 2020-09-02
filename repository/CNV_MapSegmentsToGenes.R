@@ -18,28 +18,26 @@ resolution = args[5]
 CGC = args[6]
 TruSight = args[7]
 
-suppressMessages(library(tidyr))
-suppressMessages(library(dplyr))
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(data.table))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(data.table))
 
 genesDT = readRDS(genecode_file)
 
 genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
 
-AnnotateSegment <- function(segDF)
-{
+AnnotateSegment <- function(segDF){
   segDF[,"chr"]=paste0("chr",segDF[,"chr"])
   segGR <- makeGRangesFromDataFrame(segDF, keep.extra.columns = T)
-  hits <- findOverlaps(segGR, genesGR)
+  hits <- suppressWarnings(findOverlaps(segGR, genesGR))
   
   #returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneID)] # only geneID
   returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName, geneID)] # more stuff
   return(data.frame(returnDat))
 }
 
-if (method=="Copywriter")
-{
+if (method=="Copywriter"){
 	segment=paste(name,"/results/",method,"/",name,".",method,".segments.Mode.txt",sep="")
 } else if (method=="HMMCopy") {
 	segment=paste(name,"/results/",method,"/",name,".",method,".",resolution,".segments.txt",sep="")
@@ -48,12 +46,12 @@ if (method=="Copywriter")
 cnv=data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
 segment=read.delim(segment)
 
-for (i in 1:nrow(segment))
-{
+for (i in 1:nrow(segment)){
 	temp=NULL
 	temp=as.data.frame(segment[i,c("Chrom","Start","End")])
 	colnames(temp)=c("chr","start","end")
 	results=AnnotateSegment(temp)
+	
 	if (nrow(results) > 0) 
 		{
 		colnames(results)=c("Chrom", "Start", "End", "Gene", "GeneID")
@@ -65,8 +63,7 @@ for (i in 1:nrow(segment))
 		}
 }
 
-if (species=="Mouse")
-{
+if (species=="Mouse"){
 	segment=makeGRangesFromDataFrame(segment,keep.extra.columns=T)
 	ncruc.gr=GRanges(4, IRanges(89311040, 89511040))
 	olaps=findOverlaps(segment,ncruc.gr)
@@ -79,7 +76,8 @@ if (species=="Mouse")
 	cnv=rbind(cnv,ncruc)
 }
 
-cnv=tbl_df(cnv) %>% mutate_each(as.character)
+cnv=tibble::as_tibble(cnv) %>% mutate_all(as.character)
+#cnv=tibble::tbl_df(cnv) %>% mutate_each(as.character)
 
 #print("For all genes on segment border, pick the absolute largest mean.")
 

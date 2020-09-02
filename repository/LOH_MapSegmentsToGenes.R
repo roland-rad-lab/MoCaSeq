@@ -16,10 +16,11 @@ genecode_file = args[3]
 CGC = args[4]
 TruSight = args[5]
 
-suppressMessages(library(tidyr))
-suppressMessages(library(dplyr))
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(data.table))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(data.table))
+
 
 genesDT = readRDS(genecode_file)
 

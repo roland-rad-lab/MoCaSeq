@@ -11,22 +11,24 @@
 name=$1
 analysis=$2
 type=$3
+species=$4
 
 if [ $analysis = 'MS' ]; then
 
 	rm $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 	rm $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz
-	rm $name/results/Mutect2/$name.m2.filt.filtered.selected.vcf.idx
-	rm $name/results/Mutect2/$name.m2.filt.filtered.selected.vcf
+	rm $name/results/Mutect2/$name.m2.filt.selected.vcf.idx
+	rm $name/results/Mutect2/$name.m2.filt.selected.vcf
 	rm $name/results/Mutect2/$name.m2.filt.vcf.idx
 	rm $name/results/Mutect2/$name.m2.filt.vcf
-	rm $name/results/Mutect2/$name.m2.vcf.idx
 	rm $name/results/Mutect2/$name.m2.postprocessed.vcf.gz
 	rm $name/results/Mutect2/$name.m2.postprocessed.vcf.gz.tbi
 	rm $name/results/Mutect2/$name.Mutect2.annotated.one.vcf
 	rm $name/results/Mutect2/$name.Mutect2.annotated.vcf
 	rm $name/results/Mutect2/$name.Mutect2.annotated.vcf.stats
 	rm $name/results/Mutect2/$name.Mutect2.annotated.vcf.stats.genes.txt
+
+	if [ $species = 'Human' ]; then
 	rm $name/results/Mutect2/$name.Mutect2.ann1.vcf
 	rm $name/results/Mutect2/$name.Mutect2.ann2.vcf
 	rm $name/results/Mutect2/$name.Mutect2.ann3.vcf
@@ -34,6 +36,7 @@ if [ $analysis = 'MS' ]; then
 	rm $name/results/Mutect2/$name.Mutect2.ann5.vcf
 	rm $name/results/Mutect2/$name.Mutect2.ann6.vcf
 	rm $name/results/Mutect2/$name.Mutect2.ann7.vcf
+	fi
 
 elif [ $analysis = 'SS' ]; then
 
@@ -53,6 +56,8 @@ elif [ $analysis = 'SS' ]; then
 	rm $name/results/Mutect2/$name.$type.m2.filt.vcf.idx
 	rm $name/results/Mutect2/$name.$type.m2.filt.vcf
 	rm $name/results/Mutect2/$name.$type.m2.vcf.idx
+
+	if [ $species = 'Human' ]; then
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann1.vcf
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann2.vcf
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann3.vcf
@@ -60,6 +65,7 @@ elif [ $analysis = 'SS' ]; then
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann5.vcf
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann6.vcf
 	rm $name/results/Mutect2/$name.$type.Mutect2.ann7.vcf
+	fi
 
 elif [ $analysis = 'Manta' ]; then
 
@@ -69,9 +75,9 @@ elif [ $analysis = 'Manta' ]; then
 	rm $name/results/Manta/$name.Manta.annotated.vcf.stats
 	rm $name/results/Manta/$name.Manta.annotated.vcf.stats.genes.txt
 	rm $name/results/Manta/$name.Manta.vcf.gz.tbi
-	
-	for type in Tumor Normal; 
-	do	
+
+	for type in Tumor Normal;
+	do
 		rm $name/results/Manta/$name.$type.Manta.annotated.one.vcf
 		rm $name/results/Manta/$name.$type.Manta.annotated.vcf
 		rm $name/results/Manta/$name.$type.Manta.annotated.vcf.stats
@@ -115,5 +121,5 @@ elif [ $analysis = 'Strelka' ]; then
 	rm $name/results/Strelka/"$name"_vs_NORMAL.vcf
 fi
 
-rm snpEff_summary.html
-rm Mutect2FilteringStats.tsv
+rm -f snpEff_summary.html
+rm -f Mutect2FilteringStats.tsv

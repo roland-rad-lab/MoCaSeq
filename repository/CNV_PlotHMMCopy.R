@@ -20,11 +20,12 @@ gc_file <- args[7]
 centromere_file <- args[8]
 varregions_file <- args[9]
 
-library(HMMcopy)
-library(DNAcopy)
-library(GenomeInfoDb)
-library(naturalsort)
-library(GenomicRanges)
+suppressPackageStartupMessages(library(HMMcopy))
+suppressPackageStartupMessages(library(DNAcopy))
+suppressPackageStartupMessages(library(GenomeInfoDb))
+suppressPackageStartupMessages(library(naturalsort))
+suppressPackageStartupMessages(library(GenomicRanges))
+
 
 # choose correct map_file and gc_file
 map_file=gsub("20000",resolution,map_file)
