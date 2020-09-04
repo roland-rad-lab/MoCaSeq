@@ -130,8 +130,16 @@ RUN	apt-get update \
 		r-base=3.6.3-1bionic \
 		r-base-dev=3.6.3-1bionic \
 	&& rm -rf /var/lib/apt/lists/* \
+	&& R -e 'install.packages("devtools")' \
+	&& R -e 'devtools::install_github("mskcc/facets", build_vignettes = F)' \
+	&& R -e 'devtools::install_github("mskcc/pctGCdata")' \
+	&& R -e 'install.packages("numDeriv")' \
+	&& R -e 'install.packages("/data/resources/ABSOLUTE_1.0.6.tar.gz",repos=NULL,type="source")' \
 	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
-	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
+	&& R -e 'install.packages("XML", repos = "http://www.omegahat.net/R")' \
+	&& R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)' \
+	&& R -e 'devtools::install_version("devEMF", version = "4.0", repos = "http://cran.us.r-project.org")' \
+	&& R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
 
 RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
@@ -378,6 +386,9 @@ RUN	cd ${TEMP_DIR} \
 	&& tar -xzf v1.6.17.tar.gz \
 	&& mv ./vcf2maf-1.6.17 ${PACKAGE_DIR} \
 	&& rm -rf v1.6.17.tar.gz
+
+# this is part of FACETS in R
+RUN g++ -std=c++11 /usr/local/lib/R/site-library/facets/extcode/snp-pileup.cpp -lhts -o /usr/local/lib/R/site-library/facets/extcode/snp-pileup
 
 WORKDIR /var/pipeline/
 

@@ -138,10 +138,6 @@ if [ $species = 'Mouse' ]; then
 	chromosomes=19
 	echo "Species $species_lowercase"
 elif [ $species = 'Human' ]; then
-
-	#echo "Human is currently being developed (state 2-september-2020), please do NOT run this pipeline for human right now"
-	#exit 1
-
 	echo 'Species set to Human'
 	chromosomes=22
 else echo "Invalid species input (${species}). Choose Mouse or Human"; exit 1
@@ -373,8 +369,17 @@ if [ $Facets = "yes" ]; then
 fi
 echo Starting workflow using $threads CPU-threads and $RAM GB of RAM | tee -a $name/results/QC/$name.report.txt
 
+
+
+
 #rerouting STDERR to report file
 exec 2>> $name/results/QC/$name.report.txt
+
+
+
+
+
+
 
 echo '---- Creating directories ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -636,8 +641,6 @@ if [ $repeat_mapping = "yes" ]; then
 	PIDS=""
 
 fi
-
-# TODO: HERE
 
 if [ $quality_control = "yes" ]; then
 	echo '---- Quality control I (Sequencing artifacts, multiple metrics) ----' | tee -a $name/results/QC/$name.report.txt
