@@ -130,10 +130,6 @@ RUN	apt-get update \
 		r-base=3.6.3-1bionic \
 		r-base-dev=3.6.3-1bionic \
 	&& rm -rf /var/lib/apt/lists/* \
-	&& R -e 'devtools::install_github("mskcc/facets", build_vignettes = F)' \
-	&& R -e 'devtools::install_github("mskcc/pctGCdata")' \
-	&& R -e 'install.packages("numDeriv")' \
-	&& R -e 'install.packages("/data/resources/ABSOLUTE_1.0.6.tar.gz",repos=NULL,type="source")' \
 	&& R -e 'install.packages(pkgs=c("BiocManager"),dependencies=TRUE)' \
 	&& R -e 'BiocManager::install(pkgs=c("tidyverse","devEMF","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","XML","LSD","randtests","svglite","dupRadar","SNPchip","TitanCNA","devtools","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
 

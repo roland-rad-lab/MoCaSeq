@@ -32,10 +32,10 @@ usage()
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
-	echo "	-abs, --Absolute         Set to 'yes' or 'no'. TODO: ADD TEXT"
-	echo "	-fac, --Facets           Set to 'yes' or 'no'. TODO: ADD TEXT"
+	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-number. TODO TEXT"
+	echo "	-fac, --Facets           Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1' or '4.1.7.0', determining which GATK version is used. Optional. Defaults to 4.1.7.0"
-	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run."
+	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run. All other parameters will be ignored"
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
 	echo "	--help                   Show this help."
   exit 1
@@ -139,8 +139,8 @@ if [ $species = 'Mouse' ]; then
 	echo "Species $species_lowercase"
 elif [ $species = 'Human' ]; then
 
-	echo "Human is currently being developed (state 2-september-2020), please do NOT run this pipeline for human right now"
-	exit 1
+	#echo "Human is currently being developed (state 2-september-2020), please do NOT run this pipeline for human right now"
+	#exit 1
 
 	echo 'Species set to Human'
 	chromosomes=22
@@ -179,16 +179,19 @@ elif [ $sequencing_type = 'WGS' ] && [ -z $Titan ]; then
 	Titan=no
 fi
 
-# If TITAN set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS
+# If TITAN set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS (needs tumor+normal WIG files)
 if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 	Mutect2=yes
 	Titan=yes
-else Titan=no
+else
+	Titan=no
+	echo 'PARAMETER WARNING: TITAN needs matched tumor/normal and can not be used on single sample runs. TITAN was set to "no".'
 fi
 
 # TODO: artifact will never be no since the default is artefact_type=none
 if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'none' ]; then
 	quality_control=yes
+	echo 'PARAMETER WARNING: Quality control was set to "yes", due to mutect2="yes" and artifact!="none".'
 # else
 # 	Titan=no
 # 	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
@@ -201,16 +204,8 @@ if [ $sequencing_type = 'WES' ] && [ -z $Absolute ]; then
 elif [ $sequencing_type = 'WGS' ] && [ -z $Absolute ]; then
 	Absolute=no
 fi
-
 # Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
-# so it can not be used on WGS+SS (any WES and WGS+MS is ok)
-if [ $Absolute = 'yes' ] && [ $sequencing_type = 'WGS' ] && [ $runmode = 'SS' ]; then
-	Absolute=no
-	echo 'PARAMETER WARNING: Absolute can not be used on single sample WGS. Absolute was set to "no".'
-else Absolute=yes
-fi
 # Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
-
 
 # Facets ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $Facets ]; then
@@ -218,7 +213,12 @@ if [ $sequencing_type = 'WES' ] && [ -z $Facets ]; then
 elif [ $sequencing_type = 'WGS' ] && [ -z $Facets ]; then
 	Facets=no
 fi
-# Facets only needs BAM files, so there are no more restrictions
+
+# Facets needs tumor and normal BAM files, so it can only be used in MS mode
+if [ $Facets = 'yes' ] && [ $runmode = 'SS' ]; then
+	Facets=no
+	echo 'PARAMETER WARNING: FACETS needs matched tumor/normal and can not be used on single sample runs. Facets was set to "no".'
+fi
 
 
 #reading configuration from $config_file
@@ -980,8 +980,12 @@ if [ $sequencing_type = 'WES' ]; then
 fi
 
 if [ $runmode = "MS" ]; then
-
 	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
+
+	if [ $sequencing_type = 'WES' ]; then
+	echo '---- HMMCopy is executed on this WES data only for testing purposes, please handle the results with caution! ----' | tee -a $name/results/QC/$name.report.txt
+	fi
+
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode $resolution $types

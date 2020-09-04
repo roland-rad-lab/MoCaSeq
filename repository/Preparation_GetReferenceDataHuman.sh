@@ -102,7 +102,7 @@ cd ../..
 
 
 
-echo '---- Generate BWA Index ----' | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
+echo '---- Generate BWA Index (~2-4h) ----' | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
 
 # FINISHED AND TESTED
