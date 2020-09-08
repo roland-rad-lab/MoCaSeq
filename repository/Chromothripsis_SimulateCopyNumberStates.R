@@ -235,7 +235,7 @@ visualizeChrom <- function(chroms,file){
 			points(xpos,rnorm(length(xpos),mean=CNstate$value[i],sd=0.1),pch='.')
 			segments(CNstate$start[i],CNstate$value[i],CNstate$end[i],CNstate$value[i],lwd=2,col='red')
 		}
-	dev.off()
+	garbage <- dev.off()
 }
 
 
@@ -355,4 +355,4 @@ segments(c(1:nrow(CNstatesAll)),apply(CNstatesAll,1,mean)-1.96*apply(CNstatesAll
 text(3,y_size,paste("n=",nrow(rearrangementList),sep=""),cex=2)
 
 print("Done")
-dev.off()
+garbage <- dev.off()

@@ -241,7 +241,7 @@ PlotOverlay = function(format="",Suffix="",Ylim="",Save_path="")
                axis(side=2,line=-1.1,at=TickLabelPosition,labels=TickLabel)
                if(format=="pdf")
                   {
-                  dev.off()
+                  garbage <- dev.off()
                   }
                }
 

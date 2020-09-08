@@ -304,7 +304,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   {
     segments(ChromBordersReduced,0,ChromBordersReduced,1,lty=3,col="grey40",lwd=0.9)
   }
-  dev.off()
+  garbage <- dev.off()
 }
 
 
@@ -356,5 +356,5 @@ plotChromosomalRatioProfile = function(cn=cn,chrom.sizes,cnSeg="",samplename="",
   axis(1,at=seq(Xmin,Xmax,StepSize),labels=(seq(Xmin,Xmax,StepSize) / 1000000))
   axis(2,las=1,pos=Xmin-YAxisScaling, outer=T, at=ypos,labels=ylabels)
   title(main = paste(chromosome,sep=""), line = -3, font.main = 1)
-  dev.off()
+  garbage <- dev.off()
 }

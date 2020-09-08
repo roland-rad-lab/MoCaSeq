@@ -33,7 +33,8 @@ usage()
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-number. TODO TEXT"
-	echo "	-fac, --Facets           Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
+	echo "	-fac, --Facets           Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
+	echo "	-bt, --BubbleTree             Set to 'yes' or 'no'. Runs the analysis of tumoral aneuploidy and clonality. Optional. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1' or '4.1.7.0', determining which GATK version is used. Optional. Defaults to 4.1.7.0"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run. All other parameters will be ignored"
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
@@ -91,6 +92,8 @@ while [ "$1" != "" ]; do case $1 in
     -de|--Delly) shift;Delly="$1";;
     -ti|--Titan) shift;Titan="$1";;
 		-abs|--Absolute) shift;Absolute="$1";;
+		-fac|--Facets) shift;Facets="$1";;
+		-bt|--BubbleTree) shift;BubbleTree="$1";;
     -gatk|--GATKVersion) shift;GATK="$1";;
     --memstats) shift;memstats="$1";;
     --test) shift;test="$1";;
@@ -128,6 +131,7 @@ if [ $test = 'yes' ]; then
 	Titan=no
 	Absolute=no
 	Facets=no
+	BubbleTree=no
 	Delly=no
 	runmode=MS
 fi
@@ -178,16 +182,17 @@ fi
 # If TITAN set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS (needs tumor+normal WIG files)
 if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 	Mutect2=yes
+	echo 'PARAMETER CHANGE: TITAN needs LOH data from Mutect2. Mutect2 was set to "yes".'
 	Titan=yes
 else
 	Titan=no
-	echo 'PARAMETER WARNING: TITAN needs matched tumor/normal and can not be used on single sample runs. TITAN was set to "no".'
+	echo 'PARAMETER CHANGE: TITAN needs matched tumor/normal and can not be used on single sample runs. TITAN was set to "no".'
 fi
 
 # TODO: artifact will never be no since the default is artefact_type=none
 if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'none' ]; then
 	quality_control=yes
-	echo 'PARAMETER WARNING: Quality control was set to "yes", due to mutect2="yes" and artifact!="none".'
+	echo 'PARAMETER CHANGE: Quality control was set to "yes", due to mutect2="yes" and artifact!="none".'
 # else
 # 	Titan=no
 # 	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
@@ -213,8 +218,31 @@ fi
 # Facets needs tumor and normal BAM files, so it can only be used in MS mode
 if [ $Facets = 'yes' ] && [ $runmode = 'SS' ]; then
 	Facets=no
-	echo 'PARAMETER WARNING: FACETS needs matched tumor/normal and can not be used on single sample runs. Facets was set to "no".'
+	echo 'PARAMETER CHANGE: FACETS needs matched tumor/normal and can not be used on single sample runs. Facets was set to "no".'
 fi
+
+
+
+# BubbleTree ist default 'yes' for WES and default 'no' for WGS
+if [ $sequencing_type = 'WES' ] && [ -z $BubbleTree ]; then
+	BubbleTree=yes
+elif [ $sequencing_type = 'WGS' ] && [ -z $BubbleTree ]; then
+	BubbleTree=no
+fi
+
+# BubbleTree needs LOH and paired samples (tumor+normal WIG files)
+# If BubbleTree set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS
+if [ $BubbleTree = 'yes' ] && [ $runmode = 'MS' ]; then
+	Mutect2=yes
+	echo 'PARAMETER CHANGE: BubbleTree needs LOH data from Mutect2. Mutect2 was set to "yes".'
+	BubbleTree=yes
+else
+	BubbleTree=no
+	echo 'PARAMETER CHANGE: BubbleTree needs matched tumor/normal and can not be used on single sample runs. BubbleTree was set to "no".'
+fi
+
+
+
 
 
 #reading configuration from $config_file
@@ -296,6 +324,11 @@ if [ $Facets = 'yes' ]; then
 	mkdir -p $name/results/FACETS
 fi
 
+if [ $BubbleTree = 'yes' ]; then
+	mkdir -p $name/results/BubbleTree
+fi
+
+
 if [ $Delly = 'yes' ] && [ $runmode = 'MS' ] && [ $sequencing_type = 'WGS' ]; then
 	mkdir -p $name/results/Delly
 	mkdir -p $name/results/Chromothripsis
@@ -366,6 +399,9 @@ if [ $Absolute = "yes" ]; then
 fi
 if [ $Facets = "yes" ]; then
 	echo Will run FACETS | tee -a $name/results/QC/$name.report.txt
+fi
+if [ $BubbleTree = "yes" ]; then
+	echo Will run BubbleTree | tee -a $name/results/QC/$name.report.txt
 fi
 echo Starting workflow using $threads CPU-threads and $RAM GB of RAM | tee -a $name/results/QC/$name.report.txt
 
@@ -1029,9 +1065,17 @@ elif [ $runmode = "SS" ]; then
 	-d $microsatellite_file -b $threads
 fi
 
-
-
 # PURITY ANALYSIS
+
+# set CNV method (for ABSOLUTE and BubbleTree)
+if [ $sequencing_type = 'WES' ]; then
+CNVmethod="Copywriter"
+elif [ $sequencing_type = 'WGS' ]; then
+CNVmethod="HMMCopy"
+fi
+
+
+
 if [ $Titan = "yes" ]; then
 	echo '---- Run TitanCNA ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1051,12 +1095,6 @@ fi
 if [ $Absolute = "yes" ]; then
 	echo '---- Run ABSOLUTE ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	if [ $sequencing_type = 'WES' ]; then
-	CNVmethod="Copywriter"
-	elif [ $sequencing_type = 'WGS' ]; then
-	CNVmethod="HMMCopy"
-	fi
 
 	# Mutect2 can be "yes" or "no"
 	Rscript $repository_dir/all_RunABSOLUTE.R $name $CNVmethod $species $Mutect2
@@ -1080,6 +1118,15 @@ if [ $Facets = "yes" ]; then
 	echo '     ---- Run FACETS analysis ----' | tee -a $name/results/QC/$name.report.txt
 	Rscript $repository_dir/all_RunFACETS.R $name $species $cval $ndepth
 fi
+
+if [ $BubbleTree = "yes" ]; then
+	echo '---- Run BubbleTree ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	Rscript $repository_dir/all_RunBubbleTree.R $name $CNVmethod
+fi
+
+
 
 
 if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; then

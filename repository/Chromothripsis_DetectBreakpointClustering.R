@@ -88,4 +88,4 @@ if(opt$format=="tif") { tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$c
   segments(1.3,8,1.3,8.3)
   segments(1,8.3,1.3,8.3)
   text(x=1.15,y=8.7,labels=paste(pText,", (n=",length(dist),")",sep=""))
-dev.off()
+garbage <- dev.off()

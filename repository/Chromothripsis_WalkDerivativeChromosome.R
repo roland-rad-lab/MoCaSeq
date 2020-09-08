@@ -124,4 +124,4 @@ p <- ggplot(boxes,aes()) + ylim(-2,2.5) + geom_rect(aes(xmin = x-1,xmax = x,ymin
 if(opt$format=="tif"){ tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".53Seq.tif"),width=2600,height=900,res=200)
 } else emf(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".53Seq.emf"),bg="white", width=12,height=6)
   plot(p)
-dev.off()
+garbage <- dev.off()

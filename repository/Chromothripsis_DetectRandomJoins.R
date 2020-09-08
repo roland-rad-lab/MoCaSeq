@@ -98,7 +98,7 @@ if(opt$format=="tif") { tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$c
 	segments(c(0,0,xmax),c(-0.01,-0.01,-0.01),c(xmax,0,xmax),c(-0.01,-0.02,-0.02),cex=2.2)
 	arrows(x0=c(0.5*xmax,0.5*xmax),y0=c(-0.03,-0.03),x1=c(0,xmax),y1=c(-0.03,-0.03),length=c(0.1,0.1),lwd=2)
 	text(x=c(0.1*xmax,0.9*xmax),y=c(-0.05,-0.05),labels=c('ordered','random'),cex=2.2)
-dev.off()
+garbage <- dev.off()
 
 
 if(opt$format=="tif") { tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chr,".RandomFragmentJoins.tif"),width=1600,height=700,res=100)
@@ -107,4 +107,4 @@ if(opt$format=="tif") { tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$c
   legend(1,0.4,legend=c("3'-to-5' deletion-type","5'-to-3' duplication-type","3'-to-3' inversion-type",
                           "5'-to-5' inversion-type"),fill=c("#76323F","#57BC90","#D9B310","#438496"),bty="n",cex=2)
   text(-1.8,0,paste0("Goodness-of-fit test (n = ",nrow(delly_breaks),")\np = ",round(test$p.value,2)),cex=2)
-dev.off()
+garbage <- dev.off()

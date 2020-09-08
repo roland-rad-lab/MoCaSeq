@@ -87,4 +87,4 @@ scale_fill_manual("legend", values = c("Tumor" = "black", "Normal" = "grey")))
 
 ggsave(paste(name,"/results/Genotype/",name,".",allele,".CNV.pdf",sep=""),width = 8, height = 4)
 
-invisible(dev.off())
+garbage <- dev.off()

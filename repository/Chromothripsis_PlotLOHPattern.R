@@ -127,4 +127,4 @@ if(opt$format=="tif"){ tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$ch
     axis(side=2,at=c(0,0.5,1),c(0,0.5,1),las=1)
     axis(side=1,c(1,seq(10e6,size,10e6)/1000000),at=c(1,seq(10e6,size,10e6)))
 
-dev.off()
+garbage <- dev.off()

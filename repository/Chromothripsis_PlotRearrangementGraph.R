@@ -121,4 +121,4 @@ var = var + geom_segment(aes(x = Position , y = y, xend = Position , yend = yend
 if(opt$format=="tif"){ tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".RearrangementGraph.tif"),1000,500)
 } else emf(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".RearrangementGraph.emf"),bg="white", width=25,height=25)
   plot(var)
-dev.off()
+garbage <- dev.off()

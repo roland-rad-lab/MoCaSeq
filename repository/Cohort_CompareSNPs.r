@@ -77,14 +77,14 @@ vec=colnames(spreads)
 
 pdf(paste0(cohort_name,"_Sample_to_Sample_Correlation.pdf"), width=20, height = 20)
 pheatmap(cor(spreads, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
-dev.off()
+garbage <- dev.off()
 
 temp=spreads
 temp[temp>0]=1
 
 pdf(paste0(cohort_name,"_Sample_to_Sample_Correlation_normed.pdf"), width=20, height = 20)
 pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3)
-dev.off()
+garbage <- dev.off()
 
 if (file.exists("Rplots.pdf")) {file.remove("Rplots.pdf")}
 
@@ -129,14 +129,14 @@ file.remove("Rplots.pdf")
 
 # pdf("Sample_to_Sample_Correlation.pdf")
 # pheatmap(cor(spreads, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3, annotation_col=col,annotation_row=col,annotation_colors=list(Group=colours))
-# dev.off()
+# garbage <- dev.off()
 
 # temp=spreads
 # temp[temp>0]=1
 
 # pdf("Sample_to_Sample_Correlation_normed.pdf")
 # pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3,annotation_col=col,annotation_row=col,annotation_colors=list(Group=colours))
-# dev.off()
+# garbage <- dev.off()
 
 # temp=spreads
 # temp[temp<=0.3]=0
@@ -146,7 +146,7 @@ file.remove("Rplots.pdf")
 
 # pdf("Sample_to_Sample_Correlation_hetero.pdf")
 # pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3, annotation_col=col,annotation_row=col,annotation_colors=list(Group=colours))
-# dev.off()
+# garbage <- dev.off()
 
 # temp=spreads
 # temp[temp<=0.7]=0
@@ -155,7 +155,7 @@ file.remove("Rplots.pdf")
 
 # pdf("Sample_to_Sample_Correlation_homo.pdf")
 # pheatmap(cor(temp, use = "complete.obs"),fontsize_row = 3, fontsize_col = 3,annotation_col=col,annotation_row=col,annotation_colors=list(Group=colours))
-# dev.off()
+# garbage <- dev.off()
 
 # col[,"colours"] <- colours[match(col$Group, names(colours))]
 
@@ -212,15 +212,15 @@ file.remove("Rplots.pdf")
 # 	     xlab = "t-SNE dimension 1", ylab = "t-SNE dimension 2", 
 # 	     main = "2D t-SNE projection")
 # 	#text(rtsne_out$Y,labels=unlist(strsplit(rownames(spreads),"_NormalOnly")),pos=3,cex= 0.7)
-# 	dev.off()
+# 	garbage <- dev.off()
 # }
 
 
 # # pdf("True_Values_normed.pdf")
 # # pheatmap(spreads[runif(10000,1,nrow(temp)),],show_rownames=F)
-# # dev.off()
+# # garbage <- dev.off()
 
 
 # # pdf("True_Values.pdf")
 # # pheatmap(spreads[runif(10000,1,nrow(spreads)),],show_rownames=F)
-# # dev.off()
+# # garbage <- dev.off()

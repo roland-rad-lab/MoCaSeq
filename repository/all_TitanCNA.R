@@ -336,7 +336,7 @@ for (chr in unique(results$Chr)){
 		pI <- plotIdiogram(chr, build="hg19", unit="bp", label.y=label.y, new=FALSE, ylim=ylim)
   	}
 
-	dev.off()
+	garbage <- dev.off()
 }
 
 ################################################
@@ -348,7 +348,7 @@ pdf(outFile,width=20,height=6)
 plotCNlogRByChr(dataIn=results, chr=chrs, segs = segs, ploidy=ploidy,
                 normal = norm, geneAnnot=NULL, spacing=4, main=id, xlab="",
                 ylim=plotYlim, cex=0.5, cex.axis=1.5, cex.lab=1.5, cex.main=1.5)
-dev.off()
+garbage <- dev.off()
 
 outFile <- paste0(outplot, "/", id, "_cluster", numClustersStr, "_CNASEG.pdf")
 #png(outFile,width=1000,height=300)
@@ -356,7 +356,7 @@ pdf(outFile,width=20,height=6)
 maxCorCN <- max(segs$Corrected_Copy_Number, na.rm = TRUE)
 plotSegmentMedians(dataIn=segs, chr=chrs, resultType = "LogRatio", plotType = "CopyNumber", 
 				plot.new=T, ylim=c(0,maxCorCN), cex.axis=1.5, cex.lab=1.5, cex.main=1.5)
-dev.off()
+garbage <- dev.off()
 
 outFile <- paste0(outplot, "/", id, "_cluster", numClustersStr, "_LOH.pdf")
 #png(outFile,width=1000,height=300)
@@ -364,7 +364,7 @@ pdf(outFile,width=20,height=6)
 plotAllelicRatio(dataIn=results, chr=chrs, geneAnnot=NULL, spacing=4,
                  main=id, xlab="", ylim=c(0,1), cex=0.5, cex.axis=1.5,
                  cex.lab=1.5, cex.main=1.5)
-dev.off()
+garbage <- dev.off()
 
 outFile <- paste0(outplot, "/", id, "_cluster", numClustersStr, "_LOHSEG.pdf")
 #png(outFile,width=1000,height=300)
@@ -372,7 +372,7 @@ pdf(outFile,width=20,height=6)
 maxCorCN <- max(segs$Corrected_Copy_Number, na.rm = TRUE)
 plotSegmentMedians(dataIn=segs, chr=chrs, resultType = "AllelicRatio", plotType = "CopyNumber", 
 				plot.new=T, ylim=c(0,maxCorCN), cex.axis=1.5, cex.lab=1.5, cex.main=1.5)
-dev.off()
+garbage <- dev.off()
 
 outFile <- paste0(outplot, "/", id, "_cluster", numClustersStr, "_CF.pdf")
 #png(outFile,width=1000,height=300)
@@ -380,7 +380,7 @@ pdf(outFile,width=20,height=6)
 plotClonalFrequency(dataIn=results, chr=chrs, norm, geneAnnot=NULL,
                     spacing=4, main=id, xlab="", ylim=c(0,1), cex.axis=1.5,
                     cex.lab=1.5, cex.main=1.5)
-dev.off()
+garbage <- dev.off()
 
 if (as.numeric(numClusters) <= 2){
 	outFile <- paste0(outplot, "/", id, "_cluster", numClustersStr, "_subclone.pdf")
@@ -388,5 +388,5 @@ if (as.numeric(numClusters) <= 2){
 	pdf(outFile,width=20,height=6)
 	plotSubcloneProfiles(dataIn=results, chr=chrs, cex = 0.5, spacing=4,
                              main=id, cex.axis=1.5, xlab="")
-	dev.off()
+	garbage <- dev.off()
 }

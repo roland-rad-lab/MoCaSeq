@@ -90,9 +90,6 @@ if [ $input_format = 'Mutect2' ]; then
 		--fork 4 --cache_version 96 --af --af_1kg --af_esp \
 		--force_overwrite --dir_cache $cache_dir
 
-		echo "DEBUG4 $type"
-		echo $name.$type.$input_format.vcf
-
 		perl $vcf2maf_dir/vcf2maf.pl \
 		--input-vcf $name/results/$input_format/$name.$type.$input_format.vcf \
 		--output-maf $name/results/$input_format/$name.$type.$input_format.vep.maf \
@@ -100,8 +97,6 @@ if [ $input_format = 'Mutect2' ]; then
 		--ncbi-build $assembly --ref-fasta $genome_file \
 		--vcf-normal-id Normal --vcf-tumor-id Tumor \
 		--tumor-id $name --species $species
-
-		echo "DEBUG5 $type"
 
 		awk 'BEGIN{FS=OFS="\t"} FNR==1{print $0}' $name/results/$input_format/$name.$type.$input_format.vep.maf > $name/results/$input_format/$name.$type.$input_format.vep.maf.tmp
 		awk 'BEGIN{FS=OFS="\t"} FNR==2{print $0,$NF="t_maf"}' $name/results/$input_format/$name.$type.$input_format.vep.maf >> $name/results/$input_format/$name.$type.$input_format.vep.maf.tmp
