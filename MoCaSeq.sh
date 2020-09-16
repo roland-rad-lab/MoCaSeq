@@ -17,8 +17,8 @@ usage()
 	echo "	-nr, --fastq_normal_rev  Path to second normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-tf, --fastq_tumor_fw    Path to first tumor fastq. Do NOT use if running single-sample normal only."
 	echo "	-tr, --fastq_tumor_rev   Path to second tumor fastq. Do NOT use if running single-sample normal only."
-	echo "	-nb, --bam_normal        Path to normal BAM. Do NOT use in combination with -nf or -nr. When used, -rb MUST be specified."
-	echo "	-tb, --bam_tumor         Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, -rb MUST be specified."
+	echo "	-nb, --bam_normal        Path to normal BAM. Do NOT use in combination with -nf or -nr. When used, -rm MUST be specified."
+	echo "	-tb, --bam_tumor         Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, -rm MUST be specified."
 	echo "	-rm, --repeat_mapping    If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no')."
 	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'. Defaults to WES."
 	echo "	-c, --config             Path to configuration file. Optional."
@@ -170,6 +170,39 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; exit 1
 fi
 
+# CHECK IF ALL NEEDED FILE EXIST
+if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
+echo "ERROR, File not found: $fastq_normal_1"
+exit 1
+fi
+
+if [ "$fastq_normal_2" != "" ] && [ ! -f "$fastq_normal_2" ]; then
+echo "ERROR, File not found: $fastq_normal_2"
+exit 1
+fi
+
+if [ "$fastq_tumor_1" != "" ] && [ ! -f "$fastq_tumor_1" ]; then
+echo "ERROR, File not found: $fastq_tumor_1"
+exit 1
+fi
+
+if [ "$fastq_tumor_2" != "" ] && [ ! -f "$fastq_tumor_2" ]; then
+echo "ERROR, File not found: $fastq_tumor_2"
+exit 1
+fi
+
+if [ "$bam_normal" != "" ] && [ ! -f "$bam_normal" ]; then
+echo "ERROR, File not found: $bam_normal"
+exit 1
+fi
+
+if [ "$bam_tumor" != "" ] && [ ! -f "$bam_tumor" ]; then
+echo "ERROR, File not found: $bam_tumor"
+exit 1
+fi
+
+
+
 # SET PARAMETERS FOR PURITY ANALYSIS
 
 # TITAN ist default 'yes' for WES and default 'no' for WGS
@@ -186,16 +219,22 @@ if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 	Titan=yes
 else
 	Titan=no
+
+	if [ $Titan = 'yes' ]; then
 	echo 'PARAMETER CHANGE: TITAN needs matched tumor/normal and can not be used on single sample runs. TITAN was set to "no".'
+	fi
 fi
 
 # TODO: artifact will never be no since the default is artefact_type=none
 if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'none' ]; then
 	quality_control=yes
 	echo 'PARAMETER CHANGE: Quality control was set to "yes", due to mutect2="yes" and artifact!="none".'
-# else
-# 	Titan=no
-# 	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
+else
+	Titan=no
+
+	if [ $Titan = 'yes' ]; then
+	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
+	fi
 fi
 
 
@@ -221,8 +260,6 @@ if [ $Facets = 'yes' ] && [ $runmode = 'SS' ]; then
 	echo 'PARAMETER CHANGE: FACETS needs matched tumor/normal and can not be used on single sample runs. Facets was set to "no".'
 fi
 
-
-
 # BubbleTree ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $BubbleTree ]; then
 	BubbleTree=yes
@@ -233,12 +270,19 @@ fi
 # BubbleTree needs LOH and paired samples (tumor+normal WIG files)
 # If BubbleTree set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS
 if [ $BubbleTree = 'yes' ] && [ $runmode = 'MS' ]; then
+
+	if [ $Mutect2 = 'no' ]; then
 	Mutect2=yes
 	echo 'PARAMETER CHANGE: BubbleTree needs LOH data from Mutect2. Mutect2 was set to "yes".'
+	fi
+
 	BubbleTree=yes
 else
 	BubbleTree=no
+
+	if [ $BubbleTree = 'yes' ]; then
 	echo 'PARAMETER CHANGE: BubbleTree needs matched tumor/normal and can not be used on single sample runs. BubbleTree was set to "no".'
+	fi
 fi
 
 
@@ -434,6 +478,7 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
 	if [ $runmode = 'MS' ]; then
+	#rsync /home/tin/file2.txt /home/tin/file3.txt /home/tin/Documents
 	cp $fastq_normal_1 $name/fastq/$name.Normal.R1.fastq.gz
 	cp $fastq_normal_2 $name/fastq/$name.Normal.R2.fastq.gz
 	cp $fastq_tumor_1 $name/fastq/$name.Tumor.R1.fastq.gz
@@ -449,7 +494,7 @@ if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 	fi
 
 elif [ $repeat_mapping = "yes" ]; then
-
+	echo '     ---- Converting Bam to Fastq ----' | tee -a $name/results/QC/$name.report.txt
 	if [ $runmode = 'MS' ]; then
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
 	-INPUT $bam_tumor \
@@ -527,8 +572,18 @@ if [ $repeat_mapping = "yes" ]; then
 
 	echo '---- Trimming reads ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	# FastQC has to be executed! all_DeterminePhred.sh will grep for the score in the QC output files
 	for type in $types;
 	do
+
+	# check if the needed file exists
+	fastqc_file=$name/results/QC/$name.$type.R1_fastqc.zip
+	if [[ ! -f "$fastqc_file" ]]; then
+	echo "FastQC file not found! Check if FastQC finished successfully and generated this file: $fastqc_file"
+	exit 1
+	fi
+
 	trimmomatic_file=$(basename $trimmomatic_dir)
 	if [ -z $phred ]; then phred=$(sh $repository_dir/all_DeterminePhred.sh $name $type); fi
 	echo "Determined phred score for trimming: $phred"
@@ -545,6 +600,7 @@ if [ $repeat_mapping = "yes" ]; then
 	SLIDINGWINDOW:10:25 \
 	ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
 	done
+	# output (in temp dir): _not_passed.fastq.gz, passed.fastq.gz for each type
 
 	wait $PIDS
 	PIDS=""
@@ -565,11 +621,8 @@ if [ $repeat_mapping = "yes" ]; then
 
 	echo '---- Removing fastq files ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-	for type in $types;
-	do
-	rm $name/fastq/$name.$type.R1.fastq.gz & PIDS="$PIDS $!"
-	rm $name/fastq/$name.$type.R2.fastq.gz & PIDS="$PIDS $!"
-	done
+
+	find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 
 	wait $PIDS
 	PIDS=""
@@ -589,13 +642,12 @@ if [ $repeat_mapping = "yes" ]; then
 	-O $temp_dir/$name.$type.cleaned.bam \
 	-VALIDATION_STRINGENCY LENIENT
 	done
+	# output (in temp dir): .cleaned.bam for each type
 
 	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
 	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
-
 	wait $PIDS
 	PIDS=""
-
 
 	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -608,7 +660,7 @@ if [ $repeat_mapping = "yes" ]; then
 	$temp_dir/$name.$type.cleaned.bam &&
 	#NIKLAS TODO: sambamba can break for large files
 
-	rm $temp_dir/$name.$type.cleaned.bam &&
+	#rm $temp_dir/$name.$type.cleaned.bam &&
 
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 	-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
@@ -653,8 +705,8 @@ if [ $repeat_mapping = "yes" ]; then
 	-O $name/results/bam/$name.$type.bam \
 	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
+	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
 	echo "Running BaseRecalibrator 2 for $type"
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
@@ -676,9 +728,11 @@ if [ $repeat_mapping = "yes" ]; then
 
 	wait $PIDS
 	PIDS=""
-
 fi
 
+# here AGKrackhardt_ZFQ9G4
+
+# RUN QUALITY CONTROL
 if [ $quality_control = "yes" ]; then
 	echo '---- Quality control I (Sequencing artifacts, multiple metrics) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -745,6 +799,7 @@ if [ $quality_control = "yes" ]; then
 
 fi
 
+# CHECK FOR CORRECT BAM PAIRING
 if [ $runmode = "MS" ]; then
 	echo '---- Check for matched BAM-files ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -756,6 +811,7 @@ if [ $runmode = "MS" ]; then
 	--output $name/results/QC/$name.Tumor.Normal.bammatcher.txt
 fi
 
+# SET GENOTYPES FOR MOUSE
 if [ $species = "Mouse" ]; then
 	echo '---- Get genotypes ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -872,6 +928,7 @@ if [ $runmode = "MS" ]; then
 	sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Manta MS
 fi
 
+# RUN STRELKA
 echo '---- Running Strelka (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
@@ -930,6 +987,7 @@ elif [ $sequencing_type = 'WGS' ]; then
 	PIDS=""
 fi
 
+# RUN MUTECT2
 if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Running Mutect2 (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1112,7 +1170,6 @@ if [ $Facets = "yes" ]; then
 	echo '     ---- Run snp-pileup ----' | tee -a $name/results/QC/$name.report.txt
 	bash ${repository_dir}/all_RunFACETS.sh $name $species $sequencing_type $config_file
 
-	# TODO: correct values?
 	cval=300
 	ndepth=10
 

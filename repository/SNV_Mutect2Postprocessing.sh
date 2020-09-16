@@ -24,6 +24,7 @@ java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
 -I $name/results/Mutect2/$name.m2.f1r2.tar.gz \
 -O $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 
+# filter artifacts
 java -jar $GATK_dir/gatk.jar FilterMutectCalls \
 --variant $name/results/Mutect2/"$name".m2.vcf \
 --output $name/results/Mutect2/"$name".m2.filt.vcf \

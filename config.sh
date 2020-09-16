@@ -49,7 +49,7 @@ if [ $species = 'Mouse' ]; then
 fi
 
 if [ $species = 'Human' ]; then
-	genome_dir=$genomes_dir/GRCh38.p6
+	genome_dir=$genomes_dir/GRCh38.p12
 	snp_file=$genome_dir/00-common_all.vcf.gz
 	# alternate_snp_file=$genome_dir/MGP.v6.snp_and_indels.exclude_wild.vcf.gz
 	genome_file=$genome_dir/GRCh38.p12.fna
@@ -58,7 +58,7 @@ if [ $species = 'Human' ]; then
 	bammatcher_file=$genome_dir/GRCh38.bammatcher_docker.conf
 	snpeff_version=GRCh38.92
 	microsatellite_file=$genome_dir/GRCh38.p12.microsatellites
-	callregions_file=$genome_dir/GRCh38_canonic_chromosomes.bed.gz
+	callregions_file=$genome_dir/GRCh38.canonical_chromosomes.bed.gz
 	CGC_file=$genome_dir/Census_allMon_Feb_11_14_43_15_2019.tsv
 	TruSight_file=$genome_dir/TruSight_Panel_V2_Gene_List.txt
 	chromosomes=22
@@ -70,9 +70,7 @@ if [ $species = 'Human' ]; then
 	genecode_file_exons=$genome_dir/gencode_humanV31_exons.rds
 	genecode_file_genes=$genome_dir/gencode_humanV31_genes.rds
 
-	# set for mouse but missing in _DNA
-	# vepdata_dir=$genome_dir/VEP
-	# vepdata_dir=$genome_dir/VEP
+	vepdata_dir=$genome_dir/VEP
 
 	# needed for SNV_[Mutect2/Strelka]Postprocessing
 	dbsnp_file=$genome_dir/00-all.vcf.gz

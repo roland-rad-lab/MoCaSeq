@@ -37,6 +37,9 @@ if [ $input_format = 'Strelka' ]; then
 elif [ $input_format = 'Mutect2' ]; then
 	normalid=Normal
 	tumorid=Tumor
+elif [ $input_format = 'Manta' ]; then
+	normalid=Normal
+	tumorid=Tumor
 fi
 
 if [ $runmode = 'MS' ]; then
@@ -57,7 +60,8 @@ if [ $runmode = 'MS' ]; then
 	--force_overwrite --dir_cache $cache_dir
 
 
-	perl $vcf2maf_dir/vcf2maf.pl \
+	#perl $vcf2maf_dir/vcf2maf.pl \
+	perl $repository_dir/vcf2maf_modified.pl \
 	--input-vcf $name/results/$input_format/$name.$input_format.vcf \
 	--output-maf $name/results/$input_format/$name.$input_format.vep.maf \
 	--vep-path $vep_dir --vep-data $vepdata_dir \
@@ -90,7 +94,8 @@ if [ $input_format = 'Mutect2' ]; then
 		--fork 4 --cache_version 96 --af --af_1kg --af_esp \
 		--force_overwrite --dir_cache $cache_dir
 
-		perl $vcf2maf_dir/vcf2maf.pl \
+		#perl $vcf2maf_dir/vcf2maf.pl \
+		perl $repository_dir/vcf2maf_modified.pl \
 		--input-vcf $name/results/$input_format/$name.$type.$input_format.vcf \
 		--output-maf $name/results/$input_format/$name.$type.$input_format.vep.maf \
 		--vep-path $vep_dir --vep-data $vepdata_dir \
