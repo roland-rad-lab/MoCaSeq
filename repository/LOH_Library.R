@@ -8,8 +8,8 @@
 ##
 ##########################################################################################
 
-library("GenomicRanges")
-library("Biostrings")
+suppressPackageStartupMessages(library("GenomicRanges"))
+suppressPackageStartupMessages(library("Biostrings"))
 
 LOH_FilterReads = function(data)
 {

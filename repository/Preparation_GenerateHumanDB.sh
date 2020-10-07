@@ -61,22 +61,25 @@ mv "ref/"$VersionHuman"/GRCh38.p12.sort.gtf" "ref/"$VersionHuman"/GRCh38.p12.gtf
 bgzip "ref/"$VersionHuman"/GRCh38.p12.gtf"
 tabix -p gff "ref/"$VersionHuman"/GRCh38.p12.gtf.gz"
 
-cp $repository_dir"/../data/GRCh38.CosmicCodingMuts.v88.vcf.gz" "ref/"$VersionHuman"/"
-cp $repository_dir"/../data/GRCh38.CosmicNonCodingVariants.v88.vcf.gz" "ref/"$VersionHuman"/"
+cp $repository_dir"/../data/GRCh38/GRCh38.CosmicCodingMuts.v88.vcf.gz" "ref/"$VersionHuman"/"
+cp $repository_dir"/../data/GRCh38/GRCh38.CosmicNonCodingVariants.v88.vcf.gz" "ref/"$VersionHuman"/"
 gunzip "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz"
 gunzip "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz"
 sed -i 's/CNT/CNT_NonCoding/g' "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf"
 sed -i 's/CNT/CNT_Coding/g' "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf"
-rm "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz"
-rm "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz"
+bgzip "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf"
+bgzip "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf"
+tabix ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz
+tabix ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz
 
-wget -nv -P "ref/"$VersionHuman"/" ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.5a.zip
+echo "Downloading dbNSFP4.1a.zip (~30GB, this can take a while)"
+wget -nv -P "ref/"$VersionHuman"/" ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFP4.1a.zip
 cd "ref/"$VersionHuman"/"
-unzip dbNSFPv3.5a.zip
-(head -n 1 dbNSFP3.5a_variant.chr1 ; cat dbNSFP3.5a_variant.chr* | grep -v "^#" ) > dbNSFP3.5a.txt
-bgzip dbNSFP3.5a.txt
-tabix -s 1 -b 2 -e 2 dbNSFP3.5a.txt.gz
-rm dbNSFP3.5a_variant.chr* dbNSFP3.5a.readme.txt dbNSFP3.5_gene dbNSFP3.5_gene.complete
-rm LICENSE.txt search_dbNSFP35a.class search_dbNSFP35a.java search_dbNSFP35a.readme.pdf
-rm try.vcf tryhg18.in tryhg19.in dbNSFPv3.5a.zip
+unzip dbNSFP4.1a.zip
+(zcat dbNSFP4.1a_variant.chr1 | head -n 1; zcat dbNSFP4.1a_variant.chr* | grep -v "^#" ) > dbNSFP4.1a.txt
+bgzip dbNSFP4.1a.txt
+tabix -s 1 -b 2 -e 2 dbNSFP4.1a.txt.gz
+rm dbNSFP4.1a_variant.chr* dbNSFP4.1a.readme.txt dbNSFP4.1_gene.gz dbNSFP4.1_gene.complete.gz
+rm LICENSE.txt search_dbNSFP41a.jar search_dbNSFP41a.java search_dbNSFP41a.readme.pdf
+rm try.vcf tryhg18.in tryhg19.in dbNSFP4.1a.zip tryhg38.in
 cd ../..

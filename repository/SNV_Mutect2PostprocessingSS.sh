@@ -180,4 +180,4 @@ elif [ $species = 'Mouse' ]; then
 
 fi
 
-sh $repository_dir/SNV_CleanUp.sh $name SS $type
+sh $repository_dir/SNV_CleanUp.sh $name SS $type $species

@@ -59,6 +59,10 @@ artefact_type=none
 filtering=hard
 phred=
 Mutect2=yes
+Titan=no
+Absolute=no
+Facets=no
+BubbleTree=no
 Delly=no
 runmode=MS
 GATK=4.1.7.0
@@ -167,7 +171,7 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] && [ -z $fastq_tumor_2 ] && [ ! -z $bam_normal ] && [ ! -z $bam_tumor ]; then
 	runmode="MS"
 	types="Tumor Normal"
-else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; exit 1
+else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
 # CHECK IF ALL NEEDED FILE EXIST
@@ -335,7 +339,12 @@ else
 	echo '---- Reference files found! ----' | tee -a ${name}/results/QC/${name}.report.txt
 fi
 
+# check if all needed files are given in the reference folder
+# || exit 1 will exit if the secondary script fails and itself calls "exit 1"
+$repository_dir/CheckReferenceFiles.sh $FileList  || exit 1
 
+
+# CREATE SUBDIRS
 if [ ! -d $temp_dir ]; then
   mkdir -p $temp_dir/
 fi
@@ -371,7 +380,6 @@ fi
 if [ $BubbleTree = 'yes' ]; then
 	mkdir -p $name/results/BubbleTree
 fi
-
 
 if [ $Delly = 'yes' ] && [ $runmode = 'MS' ] && [ $sequencing_type = 'WGS' ]; then
 	mkdir -p $name/results/Delly
@@ -454,8 +462,7 @@ echo Starting workflow using $threads CPU-threads and $RAM GB of RAM | tee -a $n
 
 #rerouting STDERR to report file
 exec 2>> $name/results/QC/$name.report.txt
-
-
+#exec 2>&1 | tee $name/results/QC/$name.report.txt
 
 
 
@@ -495,6 +502,11 @@ if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
 elif [ $repeat_mapping = "yes" ]; then
 	echo '     ---- Converting Bam to Fastq ----' | tee -a $name/results/QC/$name.report.txt
+
+	# remove unmapped reads (to avoid "Mapq Should Be 0 For Unmapped Read")
+	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
+	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
+
 	if [ $runmode = 'MS' ]; then
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
 	-INPUT $bam_tumor \
@@ -622,7 +634,8 @@ if [ $repeat_mapping = "yes" ]; then
 	echo '---- Removing fastq files ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
+	#TODO: SET RM
+	#find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 
 	wait $PIDS
 	PIDS=""
@@ -645,7 +658,8 @@ if [ $repeat_mapping = "yes" ]; then
 	# output (in temp dir): .cleaned.bam for each type
 
 	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
-	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
+	#TODO: SET RM
+	#find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 	wait $PIDS
 	PIDS=""
 
@@ -657,8 +671,9 @@ if [ $repeat_mapping = "yes" ]; then
 	/opt/bin/sambamba sort \
 	-t $threads -m ${RAM}GB --tmpdir $temp_dir \
 	-o $temp_dir/$name.$type.cleaned.sorted.bam \
-	$temp_dir/$name.$type.cleaned.bam &&
+	$temp_dir/$name.$type.cleaned.bam #&&
 	#NIKLAS TODO: sambamba can break for large files
+	#TODO: SET RM
 
 	#rm $temp_dir/$name.$type.cleaned.bam &&
 
@@ -667,18 +682,20 @@ if [ $repeat_mapping = "yes" ]; then
 	-I $temp_dir/$name.$type.cleaned.sorted.bam \
 	-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
 	-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
-	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
+	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM #&&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-	rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+	#TODO: SET RM
+	#rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+	#rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
 	/opt/bin/sambamba markdup --tmpdir $temp_dir \
 	--t $threads \
 	--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
 	$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam #&&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+	#TODO: SET RM
+	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -703,7 +720,7 @@ if [ $repeat_mapping = "yes" ]; then
 	-R $genome_file \
 	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
 	-O $name/results/bam/$name.$type.bam \
-	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
+	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table #&&
 
 	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
 	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
@@ -720,17 +737,15 @@ if [ $repeat_mapping = "yes" ]; then
 	/opt/bin/sambamba index \
 	-t $threads \
 	$name/results/bam/$name.$type.bam \
-	$name/results/bam/$name.$type.bam.bai &&
+	$name/results/bam/$name.$type.bam.bai #&&
 
-	# TODO: this should be bam.bai right? else cannot remove 'MoCaSeq_Test/results/bam/MoCaSeq_Test.Normal.bai
-	rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
+	#TODO: SET RM
+	#rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
 	PIDS=""
 fi
-
-# here AGKrackhardt_ZFQ9G4
 
 # RUN QUALITY CONTROL
 if [ $quality_control = "yes" ]; then
@@ -988,6 +1003,7 @@ elif [ $sequencing_type = 'WGS' ]; then
 fi
 
 # RUN MUTECT2
+# 1. matched tumor-normal
 if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Running Mutect2 (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1010,9 +1026,10 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Mutect2 $species $CGC_file $TruSight_file
 
-	Rscript $repository_dir/SNV_Signatures.R $name
+	Rscript $repository_dir/SNV_Signatures.R $name $species
 fi
 
+# 1. single-sample
 if [ $Mutect2 = 'yes' ]; then
 	echo '---- Running Mutect2 (single-sample) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1053,6 +1070,7 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 
 resolution=20000
 
+# RUN Copywriter
 if [ $sequencing_type = 'WES' ]; then
 
 	echo '---- Run CopywriteR ----' | tee -a $name/results/QC/$name.report.txt
@@ -1077,11 +1095,12 @@ if [ $sequencing_type = 'WES' ]; then
 	find "$name/results/Copywriter/" -type f -name "$name*SegmentsChromosome*" -exec rm -r {} +
 fi
 
+# RUN HMMCopy (bin-size 20000)
 if [ $runmode = "MS" ]; then
 	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
 
 	if [ $sequencing_type = 'WES' ]; then
-	echo '---- HMMCopy is executed on this WES data only for testing purposes, please handle the results with caution! ----' | tee -a $name/results/QC/$name.report.txt
+	echo '     ---- HMMCopy is executed on this WES data only for testing purposes, please handle the results with caution! ----' | tee -a $name/results/QC/$name.report.txt
 	fi
 
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1089,6 +1108,7 @@ if [ $runmode = "MS" ]; then
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode $resolution $types
 fi
 
+# RUN HMMCopy (bin-size 1000)
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 
 	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
@@ -1100,6 +1120,9 @@ if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 1000 $CGC_file $TruSight_file
 fi
 
+# for MS + WES, PlotHMMCopy will be called but unable to find the HMMCopy/name.HMMCopy.20000.segments.txt which would be generated in the previous step (but is not because of sequencing_type=WGS)
+
+# PLOT HMMCopy
 if [ $runmode = "MS" ]; then
 
 	echo '---- Plot HMMCopy ----' | tee -a $name/results/QC/$name.report.txt
@@ -1132,8 +1155,6 @@ CNVmethod="Copywriter"
 elif [ $sequencing_type = 'WGS' ]; then
 CNVmethod="HMMCopy"
 fi
-
-
 
 if [ $Titan = "yes" ]; then
 	echo '---- Run TitanCNA ----' | tee -a $name/results/QC/$name.report.txt

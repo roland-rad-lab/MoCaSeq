@@ -11,16 +11,26 @@
 args <- commandArgs(TRUE)
 
 name = args[1]
+species = args[2]
 
-library(SomaticSignatures)
-library(SomaticCancerAlterations)
-library(BSgenome.Hsapiens.UCSC.hg38)
-library(BSgenome.Mmusculus.UCSC.mm10)
-library(ggplot2)
-library(datasets)
-library(dplyr)
-library(tidyr)
-library(deconstructSigs)
+suppressPackageStartupMessages(library(SomaticSignatures))
+suppressPackageStartupMessages(library(SomaticCancerAlterations))
+suppressPackageStartupMessages(library(BSgenome.Hsapiens.UCSC.hg38))
+suppressPackageStartupMessages(library(BSgenome.Mmusculus.UCSC.mm10))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(datasets))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(deconstructSigs))
+
+if(species == "Human"){
+  BSgenome <- BSgenome.Hsapiens.UCSC.hg38
+} else if(species == "Mouse") {
+  BSgenome <- BSgenome.Mmusculus.UCSC.mm10
+} else {
+  stop(paste0("Unknown or undefined species: ", species))
+}
+    
 
 file=paste0(name,"/results/Mutect2/",name,".Mutect2.vcf")
 sampledf=data.frame()
@@ -33,7 +43,7 @@ sampledf=t
 sampledf=sampledf %>% filter(chr %in% c(1:19,"X","Y"))
 sampledf$chr=paste0("chr",sampledf$chr)
 
-sigs.input <- mut.to.sigs.input(mut.ref = sampledf, sample.id = "Sample", chr = "chr", pos = "pos", ref = "ref", alt = "alt", bsg=BSgenome.Mmusculus.UCSC.mm10)
+sigs.input <- mut.to.sigs.input(mut.ref = sampledf, sample.id = "Sample", chr = "chr", pos = "pos", ref = "ref", alt = "alt", bsg=BSgenome)
 
 sample = whichSignatures(tumor.ref = sigs.input, signatures.ref = signatures.nature2013, associated=c("Signature.1A", "Signature.2",  "Signature.3",  "Signature.4",  "Signature.5",  "Signature.6",  "Signature.7",  "Signature.8",  "Signature.9",  "Signature.10", "Signature.11", "Signature.12", "Signature.13", "Signature.14", "Signature.15", "Signature.16", "Signature.17", "Signature.18", "Signature.19", "Signature.20", "Signature.21"), sample.id = name, contexts.needed = TRUE, tri.counts.method = 'default', signature.cutoff = 0.2)
 pdf(paste0(name,"/results/Mutect2/",name,"_Nature_Pie.pdf",sep=""))

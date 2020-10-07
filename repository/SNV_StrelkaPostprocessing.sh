@@ -45,7 +45,7 @@ java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
 echo '---- Strelka Postprocessing II (Filtering out known SNV/Indel using dbSNP or the Sanger Mouse database) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-for method in indel snp; 
+for method in indel snp;
 do
 (
 bgzip $name/results/Strelka/"$name".str.$method.postprocessed.vcf
@@ -87,9 +87,19 @@ elif [ $species = 'Mouse' ]; then
 	assembly=GRCm38
 fi
 
-for method in snp indel; 
+chacheVersion=$(echo $vep_dir | sed 's@.*vep-@@')
+
+for method in snp indel;
 do
 	(
+	# check how many mutation lines (without # at beginning) are found
+	# skip to next if 0 mutation are found, to avoid erros
+	# MutationLines=$(grep -v "^#" $name/results/Strelka/$name.Strelka.$method.vcf | wc -l)
+	# if [[ "$MutationLines" -eq 0 ]]; then
+	# echo "0 $method mutations found in $name.Strelka.$method.vcf"
+	# continue
+	# fi
+
 	$vep_dir/./vep --cache --species $species \
 	-i $name/results/Strelka/$name.Strelka.$method.vcf \
 	-o $name/results/Strelka/$name.Strelka.$method.vep.vcf \
@@ -101,8 +111,10 @@ do
 	--shift_hgvs 1 --check_existing --total_length --allele_number \
 	--no_escape --xref_refseq --failed 1 --vcf --flag_pick_allele \
 	--pick_order canonical,tsl,biotype,rank,ccds,length --format vcf \
-	--fork 4 --cache_version 95 --polyphen b --af --af_1kg --af_esp \
-	--af_gnomad --force_overwrite
+	--fork 4 --cache_version $chacheVersion --polyphen b --af --af_1kg --af_esp \
+	--af_gnomad --force_overwrite --dir $vepdata_dir
+
+	# --> adding cache_version 96 and --dir fixes the issues!
 
 	perl $vcf2maf_dir/vcf2maf.pl \
 	--input-vcf $name/results/Strelka/$name.Strelka.$method.vcf \
@@ -116,7 +128,7 @@ do
 	--input-maf $name/results/Strelka/$name.Strelka.$method.vep.maf \
 	--output-dir $name/results/Strelka/ \
 	--output-vcf $name/results/Strelka/$name.Strelka.$method.maf.vcf \
-	--ref-fasta $genome_file --per-tn-vcfs 
+	--ref-fasta $genome_file --per-tn-vcfs
 
 	sed -i "s/$name\\tNORMAL/TUMOR\\tNORMAL/g" $name/results/Strelka/$name.Strelka.$method.maf.vcf
 

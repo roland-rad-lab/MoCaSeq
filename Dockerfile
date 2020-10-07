@@ -145,7 +145,7 @@ RUN R -e 'install.packages("bit")'
 RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)'
 RUN R -e 'devtools::install_version("devEMF", version = "4.0", repos = "http://cran.us.r-project.org")'
 
-RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations"),version="3.10",ask=FALSE,update=TRUE)'
+RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations", "BubbleTree"),version="3.10",ask=FALSE,update=TRUE)'
 
 RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
