@@ -42,6 +42,7 @@ usage()
   exit 1
 }
 
+
 # default parameters
 fastq_normal_1=
 fastq_normal_2=
