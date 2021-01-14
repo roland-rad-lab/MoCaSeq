@@ -23,7 +23,7 @@ if [ $analysis = 'MS' ]; then
 	rm -f $name/results/Mutect2/$name.m2.filt.vcf
 	rm -f $name/results/Mutect2/$name.m2.postprocessed.vcf.gz
 	rm -f $name/results/Mutect2/$name.m2.postprocessed.vcf.gz.tbi
-	rm -f $name/results/Mutect2/$name.Mutect2.annotated.one.vcf
+	#rm -f $name/results/Mutect2/$name.Mutect2.annotated.one.vcf
 	rm -f $name/results/Mutect2/$name.Mutect2.annotated.vcf
 	rm -f $name/results/Mutect2/$name.Mutect2.annotated.vcf.stats
 	rm -f $name/results/Mutect2/$name.Mutect2.annotated.vcf.stats.genes.txt
@@ -41,7 +41,7 @@ if [ $analysis = 'MS' ]; then
 elif [ $analysis = 'SS' ]; then
 
 	rm -f $name/results/Mutect2/$name.$type.m2.postprocessed.snp_removed.vcf.gz
-	rm -f $name/results/Mutect2/$name.$type.Mutect2.annotated.one.vcf
+	#rm -f $name/results/Mutect2/$name.$type.Mutect2.annotated.one.vcf
 	rm -f $name/results/Mutect2/$name.$type.Mutect2.annotated.vcf.stats.genes.txt
 	rm -f $name/results/Mutect2/$name.$type.Mutect2.annotated.vcf.stats
 	rm -f $name/results/Mutect2/$name.$type.Mutect2.annotated.vcf
@@ -102,7 +102,7 @@ elif [ $analysis = 'Strelka' ]; then
 	rm -f $name/results/Strelka/$name.Strelka.ann5.vcf
 	rm -f $name/results/Strelka/$name.Strelka.ann6.vcf
 	rm -f $name/results/Strelka/$name.Strelka.ann7.vcf
-	rm -f $name/results/Strelka/$name.Strelka.annotated.one.vcf
+	#rm -f $name/results/Strelka/$name.Strelka.annotated.one.vcf
 	rm -f $name/results/Strelka/$name.Strelka.annotated.vcf
 	rm -f $name/results/Strelka/$name.Strelka.annotated.vcf.stats
 	rm -f $name/results/Strelka/$name.Strelka.annotated.vcf.stats.genes.txt

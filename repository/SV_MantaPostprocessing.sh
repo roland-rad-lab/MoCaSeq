@@ -20,7 +20,7 @@ if [ $runmode = 'MS' ]; then
 
 	cp $name/results/Manta/results/variants/somaticSV.vcf.gz $name/results/Manta/$name.man.vcf.gz
 
-	gunzip $name/results/Manta/$name.man.vcf.gz
+	gunzip -f $name/results/Manta/$name.man.vcf.gz
 
 	cat $name/results/Manta/$name.man.vcf | java -jar "$snpeff_dir"/SnpSift.jar filter "( ( ( FILTER = 'PASS' ) & ( ( GEN[Tumor].SR[1] + GEN[Tumor].SR[0] ) * 0.05 <= GEN[Tumor].SR[1] ) ) | ( ( FILTER = 'PASS' ) & ( ( GEN[Tumor].PR[1] + GEN[Tumor].PR[0] ) * 0.05 <= GEN[Tumor].PR[1] ) ) )" > $name/results/Manta/$name.Manta.vcf
 
@@ -30,7 +30,7 @@ if [ $runmode = 'MS' ]; then
 
 	bcftools stats $name/results/Manta/$name.Manta.vcf.gz > $name/results/Manta/$name.Manta.vcf.gz.stats
 
-	gunzip $name/results/Manta/$name.Manta.vcf.gz
+	gunzip -f $name/results/Manta/$name.Manta.vcf.gz
 
 	java -Xmx16g -jar $snpeff_dir/snpEff.jar $snpeff_version -canon \
 	-csvStats $name/results/Manta/$name.Manta.annotated.vcf.stats \
@@ -42,10 +42,10 @@ if [ $runmode = 'MS' ]; then
 	java -jar "$snpeff_dir"/SnpSift.jar extractFields $name/results/Manta/$name.Manta.annotated.one.vcf CHROM POS REF ALT "GEN[Tumor].SR[0]" "GEN[Tumor].SR[1]" "GEN[Tumor].PR[0]" "GEN[Tumor].PR[1]" "GEN[Normal].SR[0]" "GEN[Normal].SR[1]" "GEN[Normal].PR[0]" "GEN[Normal].PR[1]" ANN[*].GENE  ANN[*].EFFECT ANN[*].IMPACT ANN[*].FEATUREID ANN[*].HGVS_C ANN[*].HGVS_P > $name/results/Manta/$name.Manta.txt
 
 elif [ $runmode = 'SS' ]; then
-	
+
 	cp $name/results/Manta/results/variants/diploidSV.vcf.gz $name/results/Manta/$name.man.vcf.gz
 
-	gunzip $name/results/Manta/$name.man.vcf.gz
+	gunzip -f $name/results/Manta/$name.man.vcf.gz
 
 	cat $name/results/Manta/$name.man.vcf | java -jar "$snpeff_dir"/SnpSift.jar filter "( ( FILTER = 'PASS' ) )" > $name/results/Manta/$name.$type.Manta.vcf
 
@@ -55,7 +55,7 @@ elif [ $runmode = 'SS' ]; then
 
 	bcftools stats $name/results/Manta/$name.$type.Manta.vcf.gz > $name/results/Manta/$name.$type.Manta.vcf.gz.stats
 
-	gunzip $name/results/Manta/$name.$type.Manta.vcf.gz
+	gunzip -f $name/results/Manta/$name.$type.Manta.vcf.gz
 
 	java -Xmx16g -jar "$snpeff_dir"/snpEff.jar $snpeff_version -canon \
 	-csvStats $name/results/Manta/$name.Manta.annotated.vcf.stats \

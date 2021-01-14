@@ -53,10 +53,15 @@ fi
 if [ $species = 'Human' ]; then
 	genome_dir=$genomes_dir/GRCh38.p12
 	snp_file=$genome_dir/00-common_all.vcf.gz # used for filtering "all"
-	alternate_snp_file=$genome_dir/00-all.vcf.gz # used for filtering "hard"
+	alternate_snp_file=$genome_dir/00-all.vcf.gz # used for filtering "hard" (which is more conservative than all)
 	genome_file=$genome_dir/GRCh38.p12.fna
 	genomeindex_dir=$genome_dir/bwa_index/GRCh38.p12
-	interval_file=$genome_dir/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed.list
+
+	#exons_file=$genome_dir/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed
+	exons_file=$genome_dir/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed
+	interval_file=${exons_file}.list #$genome_dir/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed.list
+
+
 	bammatcher_file=$genome_dir/GRCh38.bammatcher_docker.conf
 	snpeff_version=GRCh38.92
 	microsatellite_file=$genome_dir/GRCh38.p12.microsatellites
@@ -66,7 +71,6 @@ if [ $species = 'Human' ]; then
 	chromosomes=22
 	gcWig_file=$genome_dir/GRCh38.p12.gc.20000.wig
 	mapWig_file=$genome_dir/GRCh38.p12.map.20000.wig
-	exons_file=$genome_dir/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed
 	centromere_file=$genome_dir/GRCh38.centromers.txt
 	varregions_file="NULL"
 	genecode_file_exons=$genome_dir/gencode_humanV31_exons.rds

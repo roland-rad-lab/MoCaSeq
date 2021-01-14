@@ -26,8 +26,8 @@ usage()
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --RAM                Amount of Gb RAM. Optional. Defaults to 32."
 	echo "	-temp, --temp_dir        Path to temporary directory. Optional. Defaults to current working directory."
-	echo "	-art, --artefact         Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes'. Defaults to none."
-	echo "	-filt, --filtering       Set to 'all' (AF >= 0.05, , Variant in Tumor >= 2, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, Variant in Tumor >= 3, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'."
+	echo "	-art, --artefact         Set to 'no' for no filter or 'yes' to automatically filter read-orientation bias artifacts using GATK (ob-priors). This includes OxoG oxidation artefacts and FFPE artefacts. Optional. Defaults to yes."
+	echo "	-filt, --filtering       Set to 'soft' (AF >= 0.05, , Variant in Tumor >= 2, Variant in Normal <= 1, Coverage >= 5, dbSNP common for human), 'hard' (AF >= 0.1, Variant in Tumor >= 3, Variant in Normal = 0, Coverage >= 10, dbSNP all for human) or 'none' (no filters). Optional. Defaults to 'soft'."
 	echo "	-p, --phred              If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional."
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
@@ -56,8 +56,8 @@ quality_control=yes
 threads=8
 RAM=32
 temp_dir=/var/pipeline/temp
-artefact_type=none
-filtering=hard
+artefact_type=yes
+filtering=soft
 phred=
 Mutect2=yes
 Titan=no
@@ -129,8 +129,8 @@ if [ $test = 'yes' ]; then
 	threads=4
 	RAM=8
 	temp_dir=/var/pipeline/temp
-	artefact_type=none
-	filtering=all
+	artefact_type=no
+	filtering=hard
 	phred=
 	Mutect2=yes
 	Titan=no
@@ -223,34 +223,22 @@ if [ $Titan = 'yes' ] && [ $runmode = 'MS' ]; then
 	echo 'PARAMETER CHANGE: TITAN needs LOH data from Mutect2. Mutect2 was set to "yes".'
 	Titan=yes
 else
-	Titan=no
-
 	if [ $Titan = 'yes' ]; then
 	echo 'PARAMETER CHANGE: TITAN needs matched tumor/normal and can not be used on single sample runs. TITAN was set to "no".'
 	fi
-fi
-
-# TODO: artifact will never be no since the default is artefact_type=none
-if [ $Mutect2 = 'yes' ] && [ $artefact_type != 'none' ]; then
-	quality_control=yes
-	echo 'PARAMETER CHANGE: Quality control was set to "yes", due to mutect2="yes" and artifact!="none".'
-else
 	Titan=no
-
-	if [ $Titan = 'yes' ]; then
-	echo 'PARAMETER WARNING: TITAN needs Mutect2="yes" and artefact!="none". TITAN was set to "no".'
-	fi
 fi
 
 
 # Absolute ist default 'yes' for WES and default 'no' for WGS
+# Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
+# Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
 if [ $sequencing_type = 'WES' ] && [ -z $Absolute ]; then
 	Absolute=yes
 elif [ $sequencing_type = 'WGS' ] && [ -z $Absolute ]; then
 	Absolute=no
 fi
-# Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
-# Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
+
 
 # Facets ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $Facets ]; then
@@ -283,15 +271,13 @@ if [ $BubbleTree = 'yes' ] && [ $runmode = 'MS' ]; then
 
 	BubbleTree=yes
 else
-	BubbleTree=no
 
 	if [ $BubbleTree = 'yes' ]; then
 	echo 'PARAMETER CHANGE: BubbleTree needs matched tumor/normal and can not be used on single sample runs. BubbleTree was set to "no".'
 	fi
+
+	BubbleTree=no
 fi
-
-
-
 
 
 #reading configuration from $config_file
@@ -432,7 +418,7 @@ echo Reading configuration file from $config_file | tee -a $name/results/QC/$nam
 echo Setting location of repository to $repository_dir | tee -a $name/results/QC/$name.report.txt
 echo Setting location of genome to $genome_dir | tee -a $name/results/QC/$name.report.txt
 echo Setting location for temporary files to $temp_dir| tee -a $name/results/QC/$name.report.txt
-echo Assuming $artefact_type-artefacts for SNV-calling | tee -a $name/results/QC/$name.report.txt
+echo Filtering orientation bias artefacts for SNV-calling: $artefact_type | tee -a $name/results/QC/$name.report.txt
 echo $filtering is setting for filtering of SNV calls | tee -a $name/results/QC/$name.report.txt
 
 echo Quality scores are assumed as $phred | tee -a $name/results/QC/$name.report.txt
@@ -463,7 +449,7 @@ echo Starting workflow using $threads CPU-threads and $RAM GB of RAM | tee -a $n
 
 #rerouting STDERR to report file
 exec 2>> $name/results/QC/$name.report.txt
-#exec 2>&1 | tee $name/results/QC/$name.report.txt
+# exec 2>&1 | tee $name/results/QC/$name.report.txt # print to log file and console
 
 
 
@@ -635,8 +621,7 @@ if [ $repeat_mapping = "yes" ]; then
 	echo '---- Removing fastq files ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	#TODO: SET RM
-	#find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
+	find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 
 	wait $PIDS
 	PIDS=""
@@ -659,44 +644,40 @@ if [ $repeat_mapping = "yes" ]; then
 	# output (in temp dir): .cleaned.bam for each type
 
 	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
-	#TODO: SET RM
-	#find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
+	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
 	wait $PIDS
 	PIDS=""
 
 	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+	#NIKLAS TODO: sambamba can break for large files
 	for type in $types;
 	do
 	/opt/bin/sambamba sort \
 	-t $threads -m ${RAM}GB --tmpdir $temp_dir \
 	-o $temp_dir/$name.$type.cleaned.sorted.bam \
-	$temp_dir/$name.$type.cleaned.bam #&&
-	#NIKLAS TODO: sambamba can break for large files
-	#TODO: SET RM
+	$temp_dir/$name.$type.cleaned.bam &&
 
-	#rm $temp_dir/$name.$type.cleaned.bam &&
+	rm $temp_dir/$name.$type.cleaned.bam &&
 
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 	-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
 	-I $temp_dir/$name.$type.cleaned.sorted.bam \
 	-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
 	-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
-	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM #&&
+	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
-	#TODO: SET RM
-	#rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-	#rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+	rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+	rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
 	/opt/bin/sambamba markdup --tmpdir $temp_dir \
 	--t $threads \
 	--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
 	$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam #&&
+	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
 
-	#TODO: SET RM
-	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -708,7 +689,7 @@ if [ $repeat_mapping = "yes" ]; then
 
 	for type in $types;
 	do
-	echo "Running BaseRecalibrator 1 for $type"
+	echo "Running Postprocessing II for $type"
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 	-R $genome_file \
 	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
@@ -716,17 +697,15 @@ if [ $repeat_mapping = "yes" ]; then
 	--use-original-qualities \
 	-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	echo "Running ApplyBQSR for $type"
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
 	-R $genome_file \
 	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
 	-O $name/results/bam/$name.$type.bam \
-	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table #&&
+	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
-	#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
-	echo "Running BaseRecalibrator 2 for $type"
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 	-R $genome_file \
 	-I $name/results/bam/$name.$type.bam \
@@ -738,10 +717,9 @@ if [ $repeat_mapping = "yes" ]; then
 	/opt/bin/sambamba index \
 	-t $threads \
 	$name/results/bam/$name.$type.bam \
-	$name/results/bam/$name.$type.bam.bai #&&
+	$name/results/bam/$name.$type.bam.bai &&
 
-	#TODO: SET RM
-	#rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
+	rm $name/results/bam/$name.$type.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -811,7 +789,8 @@ if [ $quality_control = "yes" ]; then
 	echo '---- Summarizing quality control data ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	multiqc $name/results/QC -n $name -o $name/results/QC/ --pdf --interactive
+	#multiqc $name/results/QC -n $name -o $name/results/QC/ --pdf --interactive
+	python3.7 -m multiqc $name/results/QC -f -n $name -o $name/results/QC/ --force --interactive
 
 fi
 
@@ -1164,7 +1143,7 @@ if [ $Titan = "yes" ]; then
 	Rscript $repository_dir/all_RunTitanCNA.R $name $species $repository_dir $resolution $mapWig_file $gcWig_file $exons_file $sequencing_type
 
 	# rerun TITAN for each ploidy (2,3,4) and clusters (1 to numClusters)
-	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type
+	sh $repository_dir/all_RunTitanCNA.sh $name $repository_dir $threads $sequencing_type $species
 
 	echo '		---- Mapping segments to genes ----' | tee -a $name/results/QC/$name.report.txt
 	Rscript $repository_dir/LOH_MapSegmentsToGenes.R $name $species $genecode_file_genes $CGC_file $TruSight_file

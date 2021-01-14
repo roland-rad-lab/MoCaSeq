@@ -125,6 +125,12 @@ RUN	apt update \
 	pysam \
 	fisher
 
+RUN apt install -y --no-install-recommends python3.7 \
+	&& wget -nv https://bootstrap.pypa.io/get-pip.py \
+	&& python3.7 get-pip.py \
+	&& pip3.7 install multiqc \
+	&& rm get-pip.py
+
 RUN	apt-get update \
 	&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
 	&& add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
@@ -134,6 +140,10 @@ RUN	apt-get update \
 		r-base-dev=3.6.3-1bionic \
 	&& rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends libgit2-dev
+
+RUN R -e 'install.packages("usethis")'
 RUN R -e 'install.packages("devtools")'
 RUN R -e 'devtools::install_github("mskcc/facets", build_vignettes = F)'
 RUN R -e 'devtools::install_github("mskcc/pctGCdata")'
@@ -144,8 +154,39 @@ RUN R -e 'install.packages("XML", repos = "http://www.omegahat.net/R")'
 RUN R -e 'install.packages("bit")'
 RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)'
 RUN R -e 'devtools::install_version("devEMF", version = "4.0", repos = "http://cran.us.r-project.org")'
+RUN R -e 'install.packages("rapportools")'
 
-RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations", "BubbleTree"),version="3.10",ask=FALSE,update=TRUE)'
+RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations", "BubbleTree", "SNPchip"),version="3.10",ask=FALSE,update=TRUE)'
+
+RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)' # package ff is updated in biocmanager, but we need this version
+
+RUN cd ${TEMP_DIR} \
+	&& wget https://bootstrap.pypa.io/get-pip.py \
+	&& python3.6 get-pip.py \
+	&& pip3.6 install Cython \
+	&& pip3.6 install wheel nose cython numpy scipy networkx \
+	&& apt-get update \
+	&& apt-get install -y python-dev \
+	&& apt-get install -y python3-dev \
+	&& pip3.6 install --no-cache-dir pomegranate \
+	&& pip3.6 install cnvkit
+
+RUN apt install python3.7 \
+	&& curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+	&& python3.7 get-pip.py \
+	&& pip3.7 install multiqc \
+	&& rm get-pip.py
+
+RUN apt-get install -y --no-install-recommends python-tk \
+	&& python3.7 -m pip install seaborn \
+	&& python3.7 -m pip install sinfo \
+	&& python3.7 -m pip install datatable \
+	&& python3.7 -m pip install scanpy \
+	&& python3.7 -m pip install pysam \
+	&& python3.7 -m pip install dask \
+	&& python3.7 -m pip install toolz \
+	&& python3.7 -m pip install 'fsspec>=0.3.3' \
+	&& python3.7 -m pip install openpyxl
 
 RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \

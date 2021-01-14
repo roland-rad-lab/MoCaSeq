@@ -20,22 +20,31 @@ GATK=$6
 echo '---- Mutect2 Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
--I $name/results/Mutect2/$name.m2.f1r2.tar.gz \
--O $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 
-# filter artifacts
-java -jar $GATK_dir/gatk.jar FilterMutectCalls \
---variant $name/results/Mutect2/"$name".m2.vcf \
---output $name/results/Mutect2/"$name".m2.filt.vcf \
---reference $genome_file \
---ob-priors $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+# this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
+if [ $artefact_type = 'no' ]; then
+	# just copy without filtering
+	cp $name/results/Mutect2/"$name".m2.vcf $name/results/Mutect2/"$name".m2.filt.vcf
+
+elif [ $artefact_type = 'yes' ]; then
+	java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
+	-I $name/results/Mutect2/$name.m2.f1r2.tar.gz \
+	-O $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+
+	# filter artifacts
+	java -jar $GATK_dir/gatk.jar FilterMutectCalls \
+	--variant $name/results/Mutect2/"$name".m2.vcf \
+	--output $name/results/Mutect2/"$name".m2.filt.vcf \
+	--reference $genome_file \
+	--ob-priors $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+fi
+
 
 java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
 -V $name/results/Mutect2/$name.m2.filt.vcf \
 -output $name/results/Mutect2/$name.m2.filt.selected.vcf
 
-if [ $filtering = 'all' ]; then
+if [ $filtering = 'soft' ]; then
 	cat $name/results/Mutect2/$name.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS') & (GEN[Tumor].AF >= 0.05) & \
@@ -65,7 +74,7 @@ bgzip -f $name/results/Mutect2/$name.m2.postprocessed.vcf
 
 tabix -p vcf $name/results/Mutect2/$name.m2.postprocessed.vcf.gz
 
-if [ $filtering = 'all' ]; then
+if [ $filtering = 'soft' ]; then
 	bcftools isec -C -c none -O z -w 1 \
 	-o $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz \
 	$name/results/Mutect2/$name.m2.postprocessed.vcf.gz \
@@ -83,7 +92,7 @@ bcftools norm -m -any \
 $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz \
 -O z -o $name/results/Mutect2/$name.Mutect2.vcf.gz
 
-gunzip -f $name/results/Mutect2/$name.Mutect2.vcf.gz
+gunzip -f -f $name/results/Mutect2/$name.Mutect2.vcf.gz
 
 echo '---- Mutect2 Postprocessing III (Annotate calls) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -132,10 +141,12 @@ if [ $species = 'Human' ]; then
 	 CHROM POS REF ALT "GEN[Tumor].AF" "GEN[Tumor].AD[0]" "GEN[Tumor].AD[1]" \
 	 "GEN[Normal].AD[0]" "GEN[Normal].AD[1]" ANN[*].GENE  ANN[*].EFFECT \
 	 ANN[*].IMPACT ANN[*].FEATUREID ANN[*].HGVS_C ANN[*].HGVS_P \
-	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID G5 AC AN AF CNT_Coding \
+	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID G5 CAF AC AN AF CNT_Coding \
 	 CNT_NonCoding CLNDN CLNSIG CLNREVSTAT dbNSFP_SIFT_pred \
 	 dbNSFP_Polyphen2_HDIV_pred dbNSFP_Polyphen2_HVAR_pred dbNSFP_PROVEAN_pred \
 	 > $name/results/Mutect2/"$name".Mutect2.txt
+
+	 # CAF column: the allele frequency based on 1000Genomes. The first number is the REF frequency, the second the ALT frequency
 
 elif [ $species = 'Mouse' ]; then
 	java -Xmx16g -jar $snpeff_dir/snpEff.jar $snpeff_version -canon \

@@ -20,9 +20,9 @@ GATK=$6
 echo '---- Strelka Postprocessing I (Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-gunzip $name/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz
+gunzip -f $name/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz
 
-gunzip $name/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz
+gunzip -f $name/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz
 
 cat $name/results/Strelka/Strelka/results/variants/somatic.snvs.vcf \
 | java -jar "$snpeff_dir"/SnpSift.jar filter \
@@ -52,7 +52,7 @@ bgzip $name/results/Strelka/"$name".str.$method.postprocessed.vcf
 
 tabix -p vcf $name/results/Strelka/"$name".str.$method.postprocessed.vcf.gz
 
-if [ $filtering = 'all' ]; then
+if [ $filtering = 'soft' ]; then
 	bcftools isec -C -c none -O z -w 1 \
 	-o $name/results/Strelka/"$name".str.$method.postprocessed.snp_removed.vcf.gz \
 	$name/results/Strelka/"$name".str.$method.postprocessed.vcf.gz \
@@ -70,7 +70,7 @@ fi
 mv $name/results/Strelka/"$name".str.$method.postprocessed.snp_removed.vcf.gz \
 $name/results/Strelka/"$name".Strelka.$method.vcf.gz
 
-gunzip $name/results/Strelka/"$name".Strelka.$method.vcf.gz
+gunzip -f $name/results/Strelka/"$name".Strelka.$method.vcf.gz
 ) &
 done
 
@@ -198,7 +198,7 @@ if [ $species = 'homo_sapiens' ]; then
 	 CHROM POS REF ALT "GEN[TUMOR].AD[0]" "GEN[TUMOR].AD[1]" \
 	 "GEN[NORMAL].AD[0]" "GEN[NORMAL].AD[1]" ANN[*].GENE  ANN[*].EFFECT \
 	 ANN[*].IMPACT ANN[*].FEATUREID ANN[*].HGVS_C ANN[*].HGVS_P \
-	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID G5 AC AN AF CNT_Coding \
+	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID CAF G5 AC AN AF CNT_Coding \
 	 CNT_NonCoding CLNDN CLNSIG CLNREVSTAT dbNSFP_SIFT_pred \
 	 dbNSFP_Polyphen2_HDIV_pred dbNSFP_Polyphen2_HVAR_pred dbNSFP_PROVEAN_pred \
 	 > $name/results/Strelka/"$name".Strelka.txt

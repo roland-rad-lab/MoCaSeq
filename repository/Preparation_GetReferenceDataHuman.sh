@@ -52,7 +52,8 @@ cp $repository_dir"/../data/Samples.tsv" "ref/"$VersionHuman"/"
 
 cp $repository_dir"/../data/GRCh38/GRCh38.TruSight_Panel_V2_Gene_List.txt" "ref/"$VersionHuman"/"
 
- cp $repository_dir"/../data/GRCh38/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed" "ref/$VersionHuman"/
+cp $repository_dir"/../data/GRCh38/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed" "ref/$VersionHuman"/
+cp $repository_dir"/../data/GRCh38/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed" "ref/$VersionHuman"/
 
 
 echo '---- Downloading centromere files ----' | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
@@ -79,7 +80,7 @@ cd "ref/"$VersionHuman
 
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/819/615/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_genomic.fna.gz
 
-gunzip GCF_000819615.1_ViralProj14015_genomic.fna.gz
+gunzip -f GCF_000819615.1_ViralProj14015_genomic.fna.gz
 
 sed '1c>Phix' GCF_000819615.1_ViralProj14015_genomic.fna > GCF_000819615.1_ViralProj14015_genomic.temp.fna
 
@@ -128,6 +129,10 @@ java -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar BedToIntervalLis
 -O "ref/"$VersionHuman"/GRCh38.SureSelect_Human_All_Exon_V5_hg38.bed.list" \
 -SD "ref/"$VersionHuman"/"$VersionHuman".dict"
 
+java -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar BedToIntervalList \
+-I "ref/"$VersionHuman"/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed" \
+-O "ref/"$VersionHuman"/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed.list" \
+-SD "ref/"$VersionHuman"/"$VersionHuman".dict"
 
 
 echo '---- Downloading reference genome (for VEP) ----' | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"

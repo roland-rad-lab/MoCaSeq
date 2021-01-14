@@ -18,7 +18,7 @@ map_file <- args[5]
 gc_file <- args[6]
 exons_file <- args[7]
 sequencing_type <- args[8]
-
+  
 suppressPackageStartupMessages(library(TitanCNA))
 suppressPackageStartupMessages(library(HMMcopy))
 suppressPackageStartupMessages(library(GenomeInfoDb))

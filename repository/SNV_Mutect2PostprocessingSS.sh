@@ -21,10 +21,25 @@ GATK=$7
 echo '---- Mutect2 SS Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-java -jar $GATK_dir/gatk.jar FilterMutectCalls \
---variant $name/results/Mutect2/$name.$type.m2.vcf \
---output $name/results/Mutect2/$name.$type.m2.filt.vcf \
---reference $genome_file
+
+# this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
+if [ $artefact_type = 'no' ]; then
+	# just copy without filtering
+	cp $name/results/Mutect2/$name.$type.m2.vcf $name/results/Mutect2/$name.$type.m2.filt.vcf
+
+elif [ $artefact_type = 'yes' ]; then
+	# first get the ob-file
+	java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
+	--input $name/results/Mutect2/$name.m2.f1r2.tar.gz \
+	--output $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
+
+	# filter with ob-priors
+	java -jar $GATK_dir/gatk.jar FilterMutectCalls \
+	--variant $name/results/Mutect2/$name.$type.m2.vcf \
+	--output $name/results/Mutect2/$name.$type.m2.filt.vcf \
+	--reference $genome_file \
+	-ob-priors $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
+fi
 
 java -jar $snpeff_dir/SnpSift.jar extractFields \
 $name/results/Mutect2/"$name".$type.m2.filt.vcf \
@@ -32,50 +47,24 @@ CHROM POS REF ALT "GEN["$type"].AF" "GEN["$type"].AD[0]" \
 "GEN["$type"].AD[1]" MMQ[1] MBQ[1] \
 > $name/results/Mutect2/$name.$type.Mutect2.Positions.txt
 
-if [ $artefact_type = 'none' ]; then
-	cp $name/results/Mutect2/$name.$type.m2.filt.vcf \
-	$name/results/Mutect2/$name.$type.m2.filt.AM.vcf
-elif [ $artefact_type = 'CT' ]; then
-	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
-	-V $name/results/Mutect2/$name.$type.m2.filt.vcf -P \
-	$name/results/QC/$name.$type.bam.artifacts.pre_adapter_detail_metrics \
-	--artifact-modes C/T --output $name/results/Mutect2/$name.$type.m2.filt.AM.vcf
-elif [ $artefact_type = 'GT' ]; then
-	java -jar $GATK_dir/gatk.jar FilterByOrientationBias \
-	-V $name/results/Mutect2/$name.$type.m2.filt.vcf -P \
-	$name/results/QC/$name.$type.bam.artifacts.pre_adapter_detail_metrics \
-	--artifact-modes G/T --output $name/results/Mutect2/$name.$type.m2.filt.AM.vcf
-fi
-
-if [ $artefact_type = 'none' ]; then
-	cp $name/results/Mutect2/$name.$type.m2.filt.AM.vcf \
-	$name/results/Mutect2/$name.$type.m2.filt.AM.filtered.vcf
-elif [ $artefact_type = 'CT' ] || [ $artefact_type = 'GT' ]; then
-	cat $name/results/Mutect2/$name.$type.m2.filt.AM.vcf \
-	| java -jar $snpeff_dir/SnpSift.jar filter \
-	"( ( ( FILTER = 'PASS'  ) & (exists GEN[$type].OBP) & \
-	(GEN[$type].OBP <= 0.05) ) | ( ( FILTER = 'PASS' ) ) )" \
-	> $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.vcf
-fi
-
 java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
--V $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.vcf \
--output $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.selected.vcf
+-V $name/results/Mutect2/$name.$type.m2.filt.vcf \
+-output $name/results/Mutect2/$name.$type.m2.filt.selected.vcf
 
-if [ $filtering = 'all' ]; then
-	cat $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.selected.vcf \
+if [ $filtering = 'soft' ]; then
+	cat $name/results/Mutect2/$name.$type.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.05) & \
 	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 5) )" \
 	> $name/results/Mutect2/$name.$type.m2.postprocessed.vcf
 elif [ $filtering = 'hard' ]; then
-	cat $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.selected.vcf \
+	cat $name/results/Mutect2/$name.$type.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.1) & \
 	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 10) )" \
 	> $name/results/Mutect2/$name.$type.m2.postprocessed.vcf
 elif [ $filtering = 'none' ]; then
-	cat $name/results/Mutect2/$name.$type.m2.filt.AM.filtered.selected.vcf \
+	cat $name/results/Mutect2/$name.$type.m2.filt.selected.vcf \
 	| java -jar $snpeff_dir/SnpSift.jar filter \
 	"( ( FILTER = 'PASS' ) )" \
 	> $name/results/Mutect2/$name.$type.m2.postprocessed.vcf
@@ -88,7 +77,7 @@ bgzip -f $name/results/Mutect2/$name.$type.m2.postprocessed.vcf
 
 tabix -p vcf $name/results/Mutect2/$name.$type.m2.postprocessed.vcf.gz
 
-if [ $filtering = 'all' ]; then
+if [ $filtering = 'soft' ]; then
 	bcftools isec -C -c none -O z -w 1 \
 	-o $name/results/Mutect2/$name.$type.m2.postprocessed.snp_removed.vcf.gz \
 	$name/results/Mutect2/$name.$type.m2.postprocessed.vcf.gz \
@@ -105,7 +94,7 @@ fi
 
 bcftools norm -m -any $name/results/Mutect2/$name.$type.m2.postprocessed.snp_removed.vcf.gz -O z -o $name/results/Mutect2/$name.$type.Mutect2.vcf.gz
 
-gunzip $name/results/Mutect2/$name.$type.Mutect2.vcf.gz
+gunzip -f $name/results/Mutect2/$name.$type.Mutect2.vcf.gz
 
 echo '---- Mutect2 SS Postprocessing III (Annotate calls) ----' | tee -a $name/results/QC/$name.report.txt
 echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -155,7 +144,7 @@ if [ $species = 'Human' ]; then
 	 CHROM POS REF ALT "GEN[$type].AF" "GEN[$type].AD[0]" \
 	 "GEN[$type].AD[1]" ANN[*].GENE  ANN[*].EFFECT ANN[*].IMPACT \
 	 ANN[*].FEATUREID ANN[*].HGVS_C ANN[*].HGVS_P \
-	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID G5 AC AN AF CNT_Coding \
+	 dbNSFP_MetaLR_pred dbNSFP_MetaSVM_pred ID CAF G5 AC AN AF CNT_Coding \
 	 CNT_NonCoding CLNDN CLNSIG CLNREVSTAT dbNSFP_SIFT_pred \
 	 dbNSFP_Polyphen2_HDIV_pred dbNSFP_Polyphen2_HVAR_pred dbNSFP_PROVEAN_pred \
 	 > $name/results/Mutect2/$name.$type.Mutect2.txt

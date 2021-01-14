@@ -18,8 +18,8 @@ species=Human
 
 wget -nv -P "ref/"$VersionHuman"/" ftp://ftp.ncbi.nih.gov//snp/organisms/human_9606_b150_GRCh38p7/VCF/GATK/00-common_all.vcf.gz
 wget -nv -P "ref/"$VersionHuman"/" ftp://ftp.ncbi.nih.gov//snp/organisms/human_9606_b150_GRCh38p7/VCF/00-All.vcf.gz
-gunzip "ref/"$VersionHuman"/00-common_all.vcf.gz"
-gunzip "ref/"$VersionHuman"/00-All.vcf.gz"
+gunzip -f "ref/"$VersionHuman"/00-common_all.vcf.gz"
+gunzip -f "ref/"$VersionHuman"/00-All.vcf.gz"
 awk '{gsub(/^chr/,""); print}' "ref/"$VersionHuman"/00-common_all.vcf" > "ref/"$VersionHuman"/00-common_all_nochr.vcf"
 awk '{gsub(/^chr/,""); print}' "ref/"$VersionHuman"/00-All.vcf" > "ref/"$VersionHuman"/00-All_nochr.vcf"
 
@@ -54,7 +54,7 @@ mv "ref/"$VersionHuman"/"clinvar.vcf.gz "ref/"$VersionHuman"/"GRCh38.clinvar.vcf
 mv "ref/"$VersionHuman"/"clinvar.vcf.gz.tbi "ref/"$VersionHuman"/"GRCh38.clinvar.vcf.gz.tbi
 
 wget -nv -P "ref/"$VersionHuman"/" ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_28/gencode.v28.basic.annotation.gtf.gz
-gunzip "ref/"$VersionHuman"/gencode.v28.basic.annotation.gtf.gz"
+gunzip -f "ref/"$VersionHuman"/gencode.v28.basic.annotation.gtf.gz"
 awk '{gsub(/^chr/,""); print}' "ref/"$VersionHuman"/gencode.v28.basic.annotation.gtf" > "ref/"$VersionHuman"/GRCh38.p12.no_chr.gtf"
 cat "ref/"$VersionHuman"/GRCh38.p12.no_chr.gtf" | sort -k1,1 -k4,4n > "ref/"$VersionHuman"/GRCh38.p12.sort.gtf"
 mv "ref/"$VersionHuman"/GRCh38.p12.sort.gtf" "ref/"$VersionHuman"/GRCh38.p12.gtf"
@@ -63,8 +63,8 @@ tabix -p gff "ref/"$VersionHuman"/GRCh38.p12.gtf.gz"
 
 cp $repository_dir"/../data/GRCh38/GRCh38.CosmicCodingMuts.v88.vcf.gz" "ref/"$VersionHuman"/"
 cp $repository_dir"/../data/GRCh38/GRCh38.CosmicNonCodingVariants.v88.vcf.gz" "ref/"$VersionHuman"/"
-gunzip "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz"
-gunzip "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz"
+gunzip -f "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz"
+gunzip -f "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz"
 sed -i 's/CNT/CNT_NonCoding/g' "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf"
 sed -i 's/CNT/CNT_Coding/g' "ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf"
 bgzip "ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf"

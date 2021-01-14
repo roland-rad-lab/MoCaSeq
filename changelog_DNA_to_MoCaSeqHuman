@@ -3,10 +3,26 @@ INFOS:
   -TITAN can not be run on SS, because it neets LOH from Mutect2
 
 
+NEW BUILD
+# Just add an ENV entry in your Dockerfile:
+# ENV PYTHONPATH "${PYTHONPATH}:opt/MoCaSeq/repository/vcf_annotation/gjainPyLib.py"
+
+git clone https://github.com/bcb-sut/CANCERSIGN.git
+cd CANCERSIGN
+chmod +x cancersign
+export PATH=$PATH:/home/rad/packages/CANCERSIGN
+#install R: ggrepel, NbClust
+
+# MODIFY THE CountMutations.R
+#	1) from hg19 to hg38
+#	2) add catalog[, position := as.numeric(position)]
+
+# MODIFY THE Plot3merSignatures.R
+# 1) add M[, motif := NULL]
+
 
 TODO:
   -alles mit #TODO in code
-  - docker install R packages
   - for purity use: --output $name/results/Mutect2/"$name".m2.filt.vcf
   - from segment.Rdata to Copywriter.seg
 
@@ -26,6 +42,42 @@ FRAGEN:
 
 CHANGELOG:
 
+11)
+
+SNV_Mutect2Postprocessing(SS+MS)
+  - added artefact filtering
+
+all_RunBubbleTree
+  - reworked code based on ggplot formating and added new functions for plots for each chromosome
+  - added ggplot2 library
+
+changed all gunzip to gunzip -f, so that the "do you wish to overwrite" will not block the entire pipeline while rerunning specific tasks (like Mutect2-Postprocessing)
+
+all_RunTitanCNA.sh
+  - added mouse and human specific chromosome numbers (without X)
+  - modified genomeinfo to include mouse/human information
+
+added new sureselect bait beds for V7
+
+added -f to multiqc (will overwrite existing files, only needed for rerunning this step)
+
+10)
+Dockerfile
+  - added CNVKit
+  - fixed ff error for SNPchip
+  - moved multiQC to python 3.7
+
+SNVCleanUp: the files .vcf.stats are not removed anymore, so one can rerun the filtering without having to rerun Mutect2 (GATK needs the stats)
+
+Postprocessing(Mutect, Strelka): added CAF (SNP allele frequency from dbSNP)
+
+9)
+- added check for empty reference files
+
+8)
+- added multiple human reference files
+- multiple small fixes and new outprints
+- new script to check if all reference files are found (CheckReferenceFiles.sh)
 7)
 SNV_Signatures.R:
   - library load messages suppressed
@@ -44,6 +96,7 @@ $info{"CHR2"} = $cols[0];
 $info{"END"} = $cols[1];
 #print map { "$_ => %info{$_}\n" } keys %info;
 #print "\n";
+
 
 4)
 added error catch: stop if fastQC was not successful (else phred score grep can be wrong)

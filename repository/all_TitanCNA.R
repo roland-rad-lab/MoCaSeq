@@ -100,12 +100,16 @@ option_list <- list(
 	make_option(c("--plotYlim"), type = "character", default = "c(-2,4)",
             help = "The Y-axis limits to use for plotting log ratio coverage results. [Default: %default]"),
 	make_option(c("--verbose"), type = "logical", default = FALSE,
-            help = "Be verbose; TRUE or FALSE [Default: %default]")
+            help = "Be verbose; TRUE or FALSE [Default: %default]"),
+	make_option(c("--species"), type = "character", default = FALSE,
+	            help = "Selected species; Human or Mouse [Default: %default]")
 )
 
 parseobj <- OptionParser(option_list=option_list, usage = "usage: Rscript %prog [options]")
 opt <- parse_args(parseobj)
 options(bitmapType='cairo', scipen=0)
+
+print("DEBUG0")
 
 libdir <- opt$libdir
 if (!is.null(libdir) && libdir != "None"){
@@ -117,6 +121,7 @@ if (!is.null(libdir) && libdir != "None"){
 }
 
 id <- opt$id
+species <- opt$species
 hetfile <- opt$hetFile
 cnfile <- opt$cnFile
 numClusters <- opt$numClusters
@@ -181,17 +186,31 @@ if (is.null(outplot)){
 dir.create(outplot, showWarnings=verbose)
 outImage <- gsub(".titan.txt", ".RData", outfile)
 
-bsg <- paste0("BSgenome.Hsapiens.UCSC.", genomeBuild)
+if(species == "Human"){
+  bsg <- paste0("BSgenome.Hsapiens.UCSC.", genomeBuild)
+  cytobandFile <- "~/pipeline/ref/GRCh38.p12/GRCh38_cytoBand.txt"
+} else if(species == "Mouse"){
+  genomeBuild <- "mm10"
+  bsg <- paste0("BSgenome.Mmusculus.UCSC.", genomeBuild)
+  cytobandFile <- "~/pipeline/ref/GRCm38.p6/GRCm38_cytoBand.txt"
+} else {
+  stop(paste0("Incorrect species name: ", species))
+}
+
 if (!require(bsg, character.only=TRUE, quietly=TRUE, warn.conflicts=FALSE)) {
 	seqinfo <- Seqinfo(genome=genomeBuild)
 } else {
 	seqinfo <- seqinfo(get(bsg))
 }
-#seqlevelsStyle(chrs) <- genomeStyle
+
 chrs <- mapSeqlevels(chrs, genomeStyle, drop = FALSE)[1, ]
 ## exclude chrX if gender==male ##
 if (gender == "male" || gender == "Male" || gender == "MALE"){
-	chrs <- chrs[chrs!=grep("X", chrs, value=TRUE)]
+  # if X is not given this will delete all chromosomes!
+  #chrs <- chrs[chrs!=grep("X", chrs, value=TRUE)]
+  
+  # this is better
+  chrs <- setdiff(chrs, "X")
 }
 
 pseudo_counts <- 1e-300
@@ -226,6 +245,7 @@ if (!is.null(mapWig)){
 }else{
   mScore <- NULL
 }
+
 data <- filterData(data,chrs,minDepth=minDepth,maxDepth=maxDepth,
                    centromeres = centromere, centromere.flankLength = 1e6,
                    map=mScore,mapThres=mapThres)
@@ -290,9 +310,10 @@ save.image(file=outImage)
 numClustersToPlot <- nrow(convergeParams$s)
 dir.create(outplot, showWarnings=verbose)
 
-if (genomeBuild == "hg38" && file.exists(cytobandFile)){
+if (file.exists(cytobandFile)){
 	cytoband <- fread(cytobandFile)
 	names(cytoband) <- c("chrom", "start", "end", "name", "gieStain")
+	cytoband[, chrom := gsub("chr", "", chrom)]
 	cytoband <- cytoband[chrom %in% chrs]
 	cytoband$chrom <- setGenomeStyle(cytoband$chrom, genomeStyle = genomeStyle)
 	cytoband <- as.data.frame(cytoband)
@@ -329,11 +350,12 @@ for (chr in unique(results$Chr)){
 		ylim <- c(-0.2,-0.1)
 		label.y <- -0.35
 	}
+	
 	if (genomeBuild == "hg38" && file.exists(cytobandFile)){
-		sl <- seqlengths(seqinfo[chr])
+		  sl <- seqlengths(seqinfo[chr])
   		pI <- plotIdiogram.hg38(chr, cytoband=cytoband, seqinfo=seqinfo, xlim=c(0, max(sl)), unit="bp", label.y=label.y, new=FALSE, ylim=ylim)	
   	}else{
-		pI <- plotIdiogram(chr, build="hg19", unit="bp", label.y=label.y, new=FALSE, ylim=ylim)
+	  	pI <- plotIdiogram(chr, build=genomeBuild, unit="bp", label.y=label.y, new=FALSE, ylim=ylim)
   	}
 
 	garbage <- dev.off()

@@ -55,7 +55,7 @@ echo '---- Downloading reference genome ----' | tee -a "ref/"$VersionMouse"/GetR
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
 wget -nv -P "ref/"$VersionMouse "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/635/GCA_000001635.8_"$VersionMouse"/GCA_000001635.8_"$VersionMouse"_genomic.fna.gz"
-gunzip "ref/"$VersionMouse"/GCA_000001635.8_"$VersionMouse"_genomic.fna.gz"
+gunzip -f "ref/"$VersionMouse"/GCA_000001635.8_"$VersionMouse"_genomic.fna.gz"
 mv "ref/"$VersionMouse"/GCA_000001635.8_"$VersionMouse"_genomic.fna" "ref/"$VersionMouse"/"$VersionMouse".fna"
 
 echo '---- Generate BWA Index ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"

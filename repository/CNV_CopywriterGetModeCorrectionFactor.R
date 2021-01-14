@@ -23,7 +23,8 @@ segmentData = read.table(paste(name,".Copywriter.segments.MAD.txt",sep=""),heade
 
 Shift = ShiftData$Shift
 segmentData$seg.mean = segmentData$Mean-Shift
-segmentData=segmentData[,c("Chrom", "Start", "End", "Mean")]
+segmentData=segmentData[,c("Chrom", "Start", "End", "seg.mean")]
+names(segmentData)[names(segmentData) == "seg.mean"] <- "Mean"
 write.table(segmentData,file=paste(name,".Copywriter.segments.Mode.txt",sep=""),quote=F,sep="\t",row.names=F,col.names=T)
 
 logReadCounts = read.table("CNAprofiles/log2_read_counts.igv",header=T,sep="\t")

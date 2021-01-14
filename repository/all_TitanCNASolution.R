@@ -5,7 +5,7 @@
 #' contact: <gavinha@gmail.com> or <gavinha@broadinstitute.org>
 #' date:	  May 14, 2017
 
-library(optparse)
+suppressPackageStartupMessages(library(optparse))
 
 option_list <- list(
   make_option(c("--ploidyRun2"), type = "character", help = "Directory containing TitanCNA results for initialized ploidy=2. [Required]"),
@@ -19,8 +19,8 @@ parseobj <- OptionParser(option_list=option_list, usage = "usage: Rscript %prog 
 opt <- parse_args(parseobj)
 print(opt)
 
-library(stringr)
-library(data.table)
+suppressPackageStartupMessageslibrary(stringr))
+suppressPackageStartupMessageslibrary(data.table))
 
 phi2Dir <- opt$ploidyRun2
 phi3Dir <- opt$ploidyRun3
