@@ -16,6 +16,7 @@ name = args[1]
 cnv_method = args[2]
 species = args[3]
 mutect2 = args[4]
+runmode = args[5] # SS or MS
 
 suppressPackageStartupMessages(library(ABSOLUTE))
 
@@ -30,8 +31,8 @@ if (cnv_method=="Copywriter")
 	segments$loc.end = floor(segments$loc.end)
 	segments = segments[,c("chrom","loc.start","loc.end","num.mark","seg.mean")]
 	colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
-	write.table(segments, paste0(name,"/results/Copywriter/",name,".seg.dat.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
-	seg.dat.fn <- file.path(paste0(name,"/results/Copywriter/",name,".seg.dat.fn"))
+	write.table(segments, paste0(name,"/results/ABSOLUTE/",name,".Copywriter.seg.dat.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+	seg.dat.fn <- file.path(paste0(name,"/results/ABSOLUTE/",name,".Copywriter.seg.dat.fn"))
 } else if (cnv_method=="HMMCopy") {
 	segments = read.delim(paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt"))
 	segments = segments[segments[,"Chrom"] %in% seq(1,22,1),]
@@ -51,8 +52,24 @@ if (cnv_method=="Copywriter")
 	}
 	segments=segments[,c("Chrom","Start","End","Num_Probes","Mean")]
 	colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
-	write.table(segments, paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
-	seg.dat.fn <- file.path(paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt.fn"))
+	write.table(segments, paste0(name,"/results/ABSOLUTE/",name,".HMMCopy.20000.segments.txt.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+	seg.dat.fn <- file.path(paste0(name,"/results/ABSOLUTE/",name,".HMMCopy.20000.segments.txt.fn"))
+} else if(cnv_methood == "CNVKit"){
+  
+  if(runmode == "MS"){
+    segfile <- paste0(name,"/results/CNVKit/matched/",name,".cns")
+  } else if(runmode == "SS"){
+    segfile <- paste0(name,"/results/CNVKit/single/",name,".Tumor.cns")
+  } else {
+    stop(paste0("Incorrect runmode parameter: ", runmode))
+  }
+  
+  segments = read.delim(segfile)
+  segments = segments[segments[,"chromosome"] %in% seq(1,22,1),]
+  segments=segments[,c("chromosome","start","end","probes","log2")]
+  colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
+  write.table(segments, paste0(name,"/results/ABSOLUTE/",name,".CNVKit.seg.dat.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+  seg.dat.fn <- file.path(paste0(name,"/results/ABSOLUTE/",name,".CNVKit.seg.dat.fn"))
 }
 
 # depending on if Mutect2 was called this is changed

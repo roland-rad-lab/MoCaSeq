@@ -45,6 +45,7 @@ if [ $species = 'Mouse' ]; then
 	varregions_file=$genome_dir/GRCm38.AgilentProbeGaps.txt
 	genecode_file_exons=$genome_dir/GRCm38.Genecode_M20_Exons.rds
 	genecode_file_genes=$genome_dir/GRCm38.Genecode_M20_Genes.rds
+	genecode_file_genes_bed=$genome_dir/GRCm38.Genecode_M20_Genes.bed
 	vepdata_dir=$genome_dir/VEP
 
 	FileList="$snp_file $alternate_snp_file $genome_file $genomeindex_dir/GRCm38.p6.sa $interval_file $bammatcher_file $microsatellite_file $callregions_file $CGC_file $gcWig_file $mapWig_file $exons_file $varregions_file $genecode_file_exons $genecode_file_genes $vepdata_dir/mus_musculus/96_GRCm38/info.txt"
@@ -75,6 +76,7 @@ if [ $species = 'Human' ]; then
 	varregions_file="NULL"
 	genecode_file_exons=$genome_dir/gencode_humanV31_exons.rds
 	genecode_file_genes=$genome_dir/gencode_humanV31_genes.rds
+	genecode_file_genes_bed=$genome_dir/gencode_humanV31_genes.bed
 
 	vepdata_dir=$genome_dir/VEP
 
@@ -86,6 +88,9 @@ if [ $species = 'Human' ]; then
 	clinvar_file=$genome_dir/GRCh38.clinvar.vcf.gz
 	gnomadexome_file=$genome_dir/gnomad.exomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz
 	gnomadgenome_file=$genome_dir/gnomad.genomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz
+
+	# for CNVKit
+	RefFlat=$genome_dir/GRCh38.p12.RefFlat
 
 	FileList="$snp_file $alternate_snp_file $genome_file $genomeindex_dir.sa $interval_file $bammatcher_file $microsatellite_file $callregions_file $CGC_file $TruSight_file $gcWig_file $mapWig_file $exons_file $centromere_file $genecode_file_exons $genecode_file_genes $vepdata_dir/homo_sapiens/96_GRCh38/info.txt $dbsnp_file $dbnsfp_file $cosmiccoding_file $cosmicnoncoding_file $clinvar_file $gnomadexome_file $gnomadgenome_file"
 

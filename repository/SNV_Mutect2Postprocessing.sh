@@ -39,6 +39,8 @@ elif [ $artefact_type = 'yes' ]; then
 	--ob-priors $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
 fi
 
+# output filtering statistics
+grep "^[^#;]" $name/results/Mutect2/"$name".m2.filt.vcf | cut -f 7 | sort | uniq -c | sort -nr > $name/results/Mutect2/"$name".m2.filt.filtersummary.txt
 
 java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
 -V $name/results/Mutect2/$name.m2.filt.vcf \

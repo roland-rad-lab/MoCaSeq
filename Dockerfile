@@ -108,7 +108,7 @@ RUN	apt update \
 	&& curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
 	&& apt-get install git-lfs \
 	&& git lfs install \
-	&& wget -nv https://bootstrap.pypa.io/get-pip.py \
+	&& curl https://bootstrap.pypa.io/2.7/get-pip.py --output get-pip.py \
 	&& python2 get-pip.py \
 	&& rm get-pip.py \
 	&& pip2 install numpy \

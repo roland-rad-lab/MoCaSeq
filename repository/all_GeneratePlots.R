@@ -58,12 +58,7 @@ ConvertGenomicCords = function(dat,chrom.sizes,Start,CopyNumber,Chromosome)
   for(i in names(chrom.sizes))
   {
     cur <- dat[dat[,Chromosome]==i,c(Start,CopyNumber)]
-    if (cur > 0) 
-    {
-       cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
-    } else {
-       cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
-    }
+    cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
     borders <- c(borders,last)
     last = last + chrom.sizes[i]
     ChromBorders = c(ChromBorders,last)
@@ -284,9 +279,22 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
     pdf(paste(samplename,".",method,".",toolname,normalization,y_output,"pdf",sep=""),width=25,height=10)
   }
   par(mar=c(4, 4, 0, 0))
-  if(toolname=="CNVKit"){cn <- cn[c(TRUE,rep(FALSE,9)), ]}
+
+
+  # # not every 10th for CNVKit, but instead just smaller dots
+  # if(toolname=="CNVKit"){
+  #   plot(cn$position,cn$copy,pch=".",
+  #        ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
+  # } else {
+  #   plot(cn$position,cn$copy,pch=20,cex=Cex,
+  #        ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
+  # }
+  # 
+
   plot(cn$position,cn$copy,pch=20,cex=Cex,
-      ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
+       ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),yaxs="i",ylab="",xlab="",yaxt="n")
+  
+  
   segments(min(ChromBorders),0,ChromBorders[LastEntry],col="#A9A9A9",lwd=2)
   axis(2,las=1,pos=YaxisPosition, outer=T, at=ypos,labels=ylabels)
   axis(1,las=1, labels=rep("",length(ChromBorders)),at=ChromBorders)
@@ -304,7 +312,12 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   {
     segments(ChromBordersReduced,0,ChromBordersReduced,1,lty=3,col="grey40",lwd=0.9)
   }
-  garbage <- dev.off()
+  
+  # clear if file was saved
+  if(outformat!="")
+  {
+    garbage <- dev.off()
+  }
 }
 
 

@@ -30,7 +30,7 @@ if [ $artefact_type = 'no' ]; then
 elif [ $artefact_type = 'yes' ]; then
 	# first get the ob-file
 	java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
-	--input $name/results/Mutect2/$name.m2.f1r2.tar.gz \
+	--input $name/results/Mutect2/$name.$type.m2.f1r2.tar.gz \
 	--output $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
 
 	# filter with ob-priors
@@ -40,6 +40,9 @@ elif [ $artefact_type = 'yes' ]; then
 	--reference $genome_file \
 	-ob-priors $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
 fi
+
+# output filtering statistics
+grep "^[^#;]" $name/results/Mutect2/$name.$type.m2.filt.vcf | cut -f 7 | sort | uniq -c | sort -nr > $name/results/Mutect2/$name.$type.m2.filt.filtersummary.txt
 
 java -jar $snpeff_dir/SnpSift.jar extractFields \
 $name/results/Mutect2/"$name".$type.m2.filt.vcf \

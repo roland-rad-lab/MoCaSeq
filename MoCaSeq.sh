@@ -30,6 +30,7 @@ usage()
 	echo "	-filt, --filtering       Set to 'soft' (AF >= 0.05, , Variant in Tumor >= 2, Variant in Normal <= 1, Coverage >= 5, dbSNP common for human), 'hard' (AF >= 0.1, Variant in Tumor >= 3, Variant in Normal = 0, Coverage >= 10, dbSNP all for human) or 'none' (no filters). Optional. Defaults to 'soft'."
 	echo "	-p, --phred              If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional."
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
+	echo "	-ck, --CNVKit           Set to 'yes' or 'no'. Needed for LOH analysis. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Runs TITAN to model subclonal copy number alterations, predict LOH and estimate tumor purity. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'."
@@ -60,6 +61,7 @@ artefact_type=yes
 filtering=soft
 phred=
 Mutect2=yes
+CNVKit=yes
 Titan=no
 Absolute=no
 Facets=no
@@ -94,6 +96,7 @@ while [ "$1" != "" ]; do case $1 in
 	-filt|--filtering) shift;filtering="$1";;
     -p|--phred) shift;phred="$1";;
     -mu|--Mutect2) shift;Mutect2="$1";;
+    -ck|--CNVKit) shift;CNVKit="$1";;
     -de|--Delly) shift;Delly="$1";;
     -ti|--Titan) shift;Titan="$1";;
 		-abs|--Absolute) shift;Absolute="$1";;
@@ -112,6 +115,18 @@ fi
 
 # init variables of test run
 test_dir=${config_file%/*}/test
+
+# function to check if a file exists and is not empty
+function CheckFile {
+  file=$1
+
+  if [ ! -s "$file" ]
+  then
+   echo "ERROR! File not created successfully: $file"
+   exit 1
+   fi
+}
+
 
 #test=yes
 if [ $test = 'yes' ]; then
@@ -133,6 +148,7 @@ if [ $test = 'yes' ]; then
 	filtering=hard
 	phred=
 	Mutect2=yes
+	CNVKit=no
 	Titan=no
 	Absolute=no
 	Facets=no
@@ -348,6 +364,11 @@ if [ $Mutect2 = 'yes' ]; then
 	mkdir -p $name/results/Mutect2
 fi
 
+if [ $CNVKit = 'yes' ]; then
+	CNVKit_folder=$name/results/CNVKit
+	mkdir -p ${CNVKit_folder}
+fi
+
 if [ $Mutect2 = 'yes' ] && [ $runmode = 'MS' ]; then
 	mkdir -p $name/results/LOH
 fi
@@ -427,6 +448,9 @@ echo Using GATK v$GATK | tee -a $name/results/QC/$name.report.txt
 if [ $Mutect2 = "yes" ]; then
 	echo Will run Mutect2 | tee -a $name/results/QC/$name.report.txt
 fi
+if [ $CNVKit = "yes" ]; then
+	echo Will run CNVKit | tee -a $name/results/QC/$name.report.txt
+fi
 if [ $Delly = "yes" ]; then
 	echo Will run Delly | tee -a $name/results/QC/$name.report.txt
 fi
@@ -471,8 +495,9 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 # 1. this will either copy fastqs to location OR do sam2fastq
 if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
+	echo '---- Copying FASTQs ----' | tee -a $name/results/QC/$name.report.txt
+
 	if [ $runmode = 'MS' ]; then
-	#rsync /home/tin/file2.txt /home/tin/file3.txt /home/tin/Documents
 	cp $fastq_normal_1 $name/fastq/$name.Normal.R1.fastq.gz
 	cp $fastq_normal_2 $name/fastq/$name.Normal.R2.fastq.gz
 	cp $fastq_tumor_1 $name/fastq/$name.Tumor.R1.fastq.gz
@@ -644,52 +669,56 @@ if [ $repeat_mapping = "yes" ]; then
 	# output (in temp dir): .cleaned.bam for each type
 
 	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
-	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
-	wait $PIDS
-	PIDS=""
+	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} +
 
 	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	#NIKLAS TODO: sambamba can break for large files
 	for type in $types;
 	do
-	/opt/bin/sambamba sort \
-	-t $threads -m ${RAM}GB --tmpdir $temp_dir \
-	-o $temp_dir/$name.$type.cleaned.sorted.bam \
-	$temp_dir/$name.$type.cleaned.bam &&
+		echo "Postprocessing I: Marking duplicates for $type" | tee -a $name/results/QC/$name.report.txt &&
 
-	rm $temp_dir/$name.$type.cleaned.bam &&
+		# this will take the mapped bam, sort it by QNAME, convert to SAM
+		# next give it to SAMBLASTER for read dup marking, followed by sorting back to coordinates and format to BAM
+		/opt/bin/sambamba sort \
+		--sort-by-name \
+		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
+		-o /dev/stdout $temp_dir/$name.$type.cleaned.bam | samtools view -h | /opt/samblaster-0.1.26/samblaster | samtools view -Sb | /opt/bin/sambamba sort \
+		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
+		-o $temp_dir/$name.$type.cleaned.sorted.marked.bam /dev/stdin &&
 
-	java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-	-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
-	-I $temp_dir/$name.$type.cleaned.sorted.bam \
-	-O $temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-	-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
-	-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
+		#rm $temp_dir/$name.$type.cleaned.bam &&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-	rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+		echo "Postprocessing I: Adding read groups for $type" | tee -a $name/results/QC/$name.report.txt &&
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
+		-I $temp_dir/$name.$type.cleaned.sorted.marked.bam \
+		-O $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
+		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
-	/opt/bin/sambamba markdup --tmpdir $temp_dir \
-	--t $threads \
-	--overflow-list-size=$HASH_TABLE_SIZE --hash-table-size=$HASH_TABLE_SIZE \
-	$temp_dir/$name.$type.cleaned.sorted.readgroups.bam \
-	$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+		#rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+		#rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+		echo "Postprocessing I done for $type" | tee -a $name/results/QC/$name.report.txt & PIDS="$PIDS $!"
+		#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
 	PIDS=""
 
+	# sambamba tends to break occasionally, so we check the files to stop Mutect2 from working on broken files
+	for type in $types;
+	do
+		CheckFile $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
+	done
+
 	echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-
 	for type in $types;
 	do
-	echo "Running Postprocessing II for $type"
+	echo "Postprocessing II for $type"  | tee -a $name/results/QC/$name.report.txt &&
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 	-R $genome_file \
 	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
@@ -713,7 +742,7 @@ if [ $repeat_mapping = "yes" ]; then
 	--use-original-qualities \
 	-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-	echo "Running Sambamba Index for $type"
+	echo "Running Sambamba Index for $type"  | tee -a $name/results/QC/$name.report.txt &&
 	/opt/bin/sambamba index \
 	-t $threads \
 	$name/results/bam/$name.$type.bam \
@@ -1034,6 +1063,7 @@ fi
 
 sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Mutect2 $runmode $types
 
+# 2. LOH analysis
 if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Generate LOH data ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1045,10 +1075,24 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	$name $species $repository_dir
 fi
 
+
+
+
 echo '---- Generate and plot copy number data ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
 resolution=20000
+
+# RUN CNVKit
+# this subscript will take care of WGS/WES and SS/MS checks and runs
+if [ $CNVKit = 'yes' ]; then
+	echo '---- Starting CNVKit ----' | tee -a $name/results/QC/$name.report.txt
+
+	# types is a space separated string, so it needs the ""
+	sh $repository_dir/CNV_RunCNVKit.sh $name $runmode $sequencing_type $config_file $species $threads "$types"
+
+	Rscript $repository_dir/CNV_PlotCNVKit.R $name $species $repository_dir "$types"
+fi
+
 
 # RUN Copywriter
 if [ $sequencing_type = 'WES' ]; then
@@ -1129,13 +1173,7 @@ fi
 
 # PURITY ANALYSIS
 
-# set CNV method (for ABSOLUTE and BubbleTree)
-if [ $sequencing_type = 'WES' ]; then
-CNVmethod="Copywriter"
-elif [ $sequencing_type = 'WGS' ]; then
-CNVmethod="HMMCopy"
-fi
-
+# note: this can only be run with matched samples (which is catched at the start)
 if [ $Titan = "yes" ]; then
 	echo '---- Run TitanCNA ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1152,17 +1190,7 @@ if [ $Titan = "yes" ]; then
 	find . -maxdepth 1 -type d -name "run_ploidy*" -exec rm -r {} +
 fi
 
-if [ $Absolute = "yes" ]; then
-	echo '---- Run ABSOLUTE ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	# Mutect2 can be "yes" or "no"
-	Rscript $repository_dir/all_RunABSOLUTE.R $name $CNVmethod $species $Mutect2
-
-	rm -r $name/results/ABSOLUTE/tmp/ # remove the tmp folder coming from R
-fi
-
-
+# note: this can only be run with matched samples (which is catched at the start)
 if [ $Facets = "yes" ]; then
 	echo '---- Run FACETS ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1178,7 +1206,26 @@ if [ $Facets = "yes" ]; then
 	Rscript $repository_dir/all_RunFACETS.R $name $species $cval $ndepth
 fi
 
-if [ $BubbleTree = "yes" ]; then
+# set CNV method (for ABSOLUTE and BubbleTree)
+if [ $sequencing_type = 'WES' ]; then
+CNVmethod="Copywriter"
+elif [ $sequencing_type = 'WGS' ] && [ $runmode = "MS" ]; then
+CNVmethod="HMMCopy"
+elif [ $sequencing_type = 'WGS' ] && [ $runmode = "SS" ]; then
+CNVmethod="CNVKit"
+fi
+
+if [ $Absolute = "yes" ]; then
+	echo '---- Run ABSOLUTE ----' | tee -a $name/results/QC/$name.report.txt
+	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+	# Mutect2 can be "yes" or "no"
+	Rscript $repository_dir/all_RunABSOLUTE.R $name $CNVmethod $species $Mutect2 $runmode
+
+	rm -r $name/results/ABSOLUTE/tmp/ # remove the tmp folder coming from R
+fi
+
+if [ $runmode = "MS" ] && [ $BubbleTree = 'yes' ]; then
 	echo '---- Run BubbleTree ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
