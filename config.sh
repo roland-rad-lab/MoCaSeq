@@ -48,7 +48,7 @@ if [ $species = 'Mouse' ]; then
 	genecode_file_genes_bed=$genome_dir/GRCm38.Genecode_M20_Genes.bed
 	vepdata_dir=$genome_dir/VEP
 
-	FileList="$snp_file $alternate_snp_file $genome_file $genomeindex_dir/GRCm38.p6.sa $interval_file $bammatcher_file $microsatellite_file $callregions_file $CGC_file $gcWig_file $mapWig_file $exons_file $varregions_file $genecode_file_exons $genecode_file_genes $vepdata_dir/mus_musculus/96_GRCm38/info.txt"
+	FileList="$snp_file $alternate_snp_file $genome_file $genomeindex_dir.sa $interval_file $bammatcher_file $microsatellite_file $callregions_file $CGC_file $gcWig_file $mapWig_file $exons_file $varregions_file $genecode_file_exons $genecode_file_genes $vepdata_dir/mus_musculus/96_GRCm38/info.txt"
 fi
 
 if [ $species = 'Human' ]; then

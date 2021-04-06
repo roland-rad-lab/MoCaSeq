@@ -329,15 +329,15 @@ echo '---- Checking for available reference files ----' | tee -a $name/results/Q
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 # Niklas: removed the "-z ...txt" since it should be "! -f" to work and therefore was not used anyways
-if [ ! grep -Fxq "DONE" $genome_dir/GetReferenceData.txt ]; then
+if grep --quiet DONE $genome_dir/GetReferenceData.txt; then
 	echo '---- Reference files not found - Files will be downloaded ----' | tee -a $name/results/QC/${name}.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/${name}.report.txt
-  rm -rf $genome_dir
-	if [ $species = 'Mouse' ]; then
-	sh $repository_dir/Preparation_GetReferenceDataMouse.sh $config_file $temp_dir
-	elif [ $species = 'Human' ]; then
-	sh $repository_dir/Preparation_GetReferenceDataHuman.sh $config_file $temp_dir
-	fi
+	# echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/${name}.report.txt
+  # rm -rf $genome_dir
+	# if [ $species = 'Mouse' ]; then
+	# sh $repository_dir/Preparation_GetReferenceDataMouse.sh $config_file $temp_dir
+	# elif [ $species = 'Human' ]; then
+	# sh $repository_dir/Preparation_GetReferenceDataHuman.sh $config_file $temp_dir
+	# fi
 else
 	echo '---- Reference files found! ----' | tee -a ${name}/results/QC/${name}.report.txt
 fi
