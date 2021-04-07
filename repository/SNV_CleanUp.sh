@@ -15,12 +15,12 @@ species=$4
 
 if [ $analysis = 'MS' ]; then
 
-	rm -f $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+	rm -f $name/results/Mutect2/$name.$type.m2.read-orientation-model.tar.gz
 	rm -f $name/results/Mutect2/$name.m2.postprocessed.snp_removed.vcf.gz
 	rm -f $name/results/Mutect2/$name.m2.filt.selected.vcf.idx
 	rm -f $name/results/Mutect2/$name.m2.filt.selected.vcf
-	rm -f $name/results/Mutect2/$name.m2.filt.vcf.idx
-	rm -f $name/results/Mutect2/$name.m2.filt.vcf
+	rm -f $name/results/Mutect2/$name.$type.m2.filt.vcf.idx
+	rm -f $name/results/Mutect2/$name.$type.m2.filt.vcf
 	rm -f $name/results/Mutect2/$name.m2.postprocessed.vcf.gz
 	rm -f $name/results/Mutect2/$name.m2.postprocessed.vcf.gz.tbi
 	#rm -f $name/results/Mutect2/$name.Mutect2.annotated.one.vcf

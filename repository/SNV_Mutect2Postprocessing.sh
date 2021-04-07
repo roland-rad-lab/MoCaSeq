@@ -16,6 +16,15 @@ artefact_type=$5
 GATK=$6
 type=$7
 
+echo "found name '${name}'"
+echo "found species '${species}'"
+echo "found config_file '${config_file}'"
+echo "found filtering '${filtering}'"
+echo "found artefact_type '${artefact_type}'"
+echo "found GATK '${GATK}'"
+echo "found type '${type}'"
+
+
 . $config_file
 
 echo '---- Mutect2 Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a ${name}/results/QC/${name}.report.txt

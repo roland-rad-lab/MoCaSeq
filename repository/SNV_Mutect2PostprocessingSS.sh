@@ -16,10 +16,18 @@ artefact_type=$5
 GATK=$6
 type=$7
 
+echo "found name '${name}'"
+echo "found species '${species}'"
+echo "found config_file '${config_file}'"
+echo "found filtering '${filtering}'"
+echo "found artefact_type '${artefact_type}'"
+echo "found GATK '${GATK}'"
+echo "found type '${type}'"
+
 . $config_file
 
-echo '---- Mutect2 SS Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a ${name}/results/QC/${name}.report.txt
-echo "$(date) \t timestamp: $(date +%s)" | tee -a ${name}/results/QC/${name}.report.txt
+echo "---- Mutect2 SS Postprocessing I (OrientationFilter, Indel size selection, filtering) for '${type}' ----" | tee -a ${name}/results/QC/${name}.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a ${name}/results/QC/${name}.report.txt
 
 
 # this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
@@ -70,7 +78,7 @@ elif [ $filtering = 'none' ]; then
 fi
 
 echo '---- Mutect2 SS Postprocessing II (Filtering out known SNV/Indel using dbSNP or the Sanger Mouse database) ----' | tee -a $name/results/QC/$name.report.txt
-echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 bgzip -f $name/results/Mutect2/$name.$type.m2.postprocessed.vcf
 
@@ -96,7 +104,7 @@ bcftools norm -m -any $name/results/Mutect2/$name.$type.m2.postprocessed.snp_rem
 gunzip -f $name/results/Mutect2/$name.$type.Mutect2.vcf.gz
 
 echo '---- Mutect2 SS Postprocessing III (Annotate calls) ----' | tee -a $name/results/QC/$name.report.txt
-echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 if [ $species = 'Human' ]; then
 

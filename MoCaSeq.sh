@@ -194,6 +194,12 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
+# CHECK IF NEEDED PARAMETERS ARE DEFINED
+if [ -z "${filtering}" ]; then
+	echo "ERROR, filtering needs a non empty value"
+	exit 1
+fi
+
 # CHECK IF ALL NEEDED FILE EXIST
 if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
 echo "ERROR, File not found: $fastq_normal_1"
@@ -1021,8 +1027,8 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	if [[ $para == "yes" ]]; then
-		sh $repository_dir/SNV_Mutect2Parallel.sh \
-			$name $species $config_file $runmode $artifact_type $GATK matched
+		bash $repository_dir/SNV_Mutect2Parallel.sh \
+			$name $species $config_file $runmode $artefact_type $GATK $RAM matched
 	else
 		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
 		--native-pair-hmm-threads $threads \
@@ -1044,7 +1050,7 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Mutect2 Postprocessing (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/SNV_Mutect2Postprocessing.sh \
+	bash $repository_dir/SNV_Mutect2Postprocessing.sh \
 	$name $species $config_file $filtering $artefact_type $GATK matched
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Mutect2 $species $CGC_file $TruSight_file
@@ -1060,8 +1066,8 @@ if [ $Mutect2 = 'yes' ]; then
 	for type in $types;
 	do
 		if [[ $para == "yes" ]]; then
-			sh $repository_dir/SNV_Mutect2Parallel.sh \
-				$name $species $config_file $runmode $artifact_type $GATK $type
+			bash $repository_dir/SNV_Mutect2Parallel.sh \
+				$name $species $config_file SS $artefact_type $GATK $RAM $type
 		else
 			java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
 			--native-pair-hmm-threads $threads \
@@ -1078,7 +1084,7 @@ if [ $Mutect2 = 'yes' ]; then
 				--output $name/results/Mutect2/${name}.${type}.m2.read-orientation-model.tar.gz
 			fi
 		fi
-	sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
+	bash $repository_dir/SNV_Mutect2PostprocessingSS.sh \
 	$name $species $config_file $filtering $artefact_type $GATK $type
 
 	Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
