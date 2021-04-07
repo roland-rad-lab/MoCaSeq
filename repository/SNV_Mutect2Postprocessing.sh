@@ -14,37 +14,35 @@ config_file=$3
 filtering=$4
 artefact_type=$5
 GATK=$6
+type=$7
 
 . $config_file
 
-echo '---- Mutect2 Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
-echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+echo '---- Mutect2 Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a ${name}/results/QC/${name}.report.txt
+echo "$(date) \t timestamp: $(date +%s)" | tee -a ${name}/results/QC/${name}.report.txt
 
 
 # this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
 if [ $artefact_type = 'no' ]; then
 	# just copy without filtering
-	cp $name/results/Mutect2/"$name".m2.vcf $name/results/Mutect2/"$name".m2.filt.vcf
+	cp ${name}/results/Mutect2/${name}.${type}.m2.vcf ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf
 
 elif [ $artefact_type = 'yes' ]; then
-	java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
-	-I $name/results/Mutect2/$name.m2.f1r2.tar.gz \
-	-O $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
-
+	# We expect the ob-file to already be available
 	# filter artifacts
 	java -jar $GATK_dir/gatk.jar FilterMutectCalls \
-	--variant $name/results/Mutect2/"$name".m2.vcf \
-	--output $name/results/Mutect2/"$name".m2.filt.vcf \
+	--variant ${name}/results/Mutect2/${name}.${type}.m2.vcf \
+	--output ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf \
 	--reference $genome_file \
-	--ob-priors $name/results/Mutect2/$name.m2.read-orientation-model.tar.gz
+	--ob-priors ${name}/results/Mutect2/${name}.${type}.m2.read-orientation-model.tar.gz
 fi
 
 # output filtering statistics
-grep "^[^#;]" $name/results/Mutect2/"$name".m2.filt.vcf | cut -f 7 | sort | uniq -c | sort -nr > $name/results/Mutect2/"$name".m2.filt.filtersummary.txt
+grep "^[^#;]" ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf | cut -f 7 | sort | uniq -c | sort -nr > ${name}/results/Mutect2/${name}.m2.filt.filtersummary.txt
 
 java -jar $GATK_dir/gatk.jar SelectVariants --max-indel-size 10 \
--V $name/results/Mutect2/$name.m2.filt.vcf \
--output $name/results/Mutect2/$name.m2.filt.selected.vcf
+-V ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf \
+-output ${name}/results/Mutect2/${name}.m2.filt.selected.vcf
 
 if [ $filtering = 'soft' ]; then
 	cat $name/results/Mutect2/$name.m2.filt.selected.vcf \
@@ -172,14 +170,14 @@ fi
 discvrseq_file=$(basename $discvrseq_dir)
 
 java -jar $GATK_dir/gatk.jar IndexFeatureFile \
---input $name/results/Mutect2/"$name".m2.filt.vcf
+--input $name/results/Mutect2/${name}.${type}.m2.filt.vcf
 
 java -jar $GATK_dir/gatk.jar IndexFeatureFile \
 --input $name/results/Mutect2/"$name".Mutect2.vcf
 
 java -Xmx16g -jar $discvrseq_dir"/"$discvrseq_file".jar" VariantQC \
 -R $genome_file \
--V $name/results/Mutect2/"$name".m2.filt.vcf \
+-V $name/results/Mutect2/${name}.${type}.m2.filt.vcf \
 -O $name/results/Mutect2/"$name".m2.filt.vcf.html \
  -L 1 -L 2 -L 3 -L 4 -L 5 -L 6 -L 7 -L 8 -L 9 -L 10 -L 11 -L 12 -L 13 -L 14 -L 15 -L 16 -L 17 -L 18 -L 19 -L X -L Y
 

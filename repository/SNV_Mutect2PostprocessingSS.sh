@@ -11,34 +11,30 @@
 name=$1
 species=$2
 config_file=$3
-type=$4
-filtering=$5
-artefact_type=$6
-GATK=$7
+filtering=$4
+artefact_type=$5
+GATK=$6
+type=$7
 
 . $config_file
 
-echo '---- Mutect2 SS Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a $name/results/QC/$name.report.txt
-echo "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+echo '---- Mutect2 SS Postprocessing I (OrientationFilter, Indel size selection, filtering) ----' | tee -a ${name}/results/QC/${name}.report.txt
+echo "$(date) \t timestamp: $(date +%s)" | tee -a ${name}/results/QC/${name}.report.txt
 
 
 # this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
 if [ $artefact_type = 'no' ]; then
 	# just copy without filtering
-	cp $name/results/Mutect2/$name.$type.m2.vcf $name/results/Mutect2/$name.$type.m2.filt.vcf
+	cp ${name}/results/Mutect2/${name}.${type}.m2.vcf ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf
 
 elif [ $artefact_type = 'yes' ]; then
-	# first get the ob-file
-	java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
-	--input $name/results/Mutect2/$name.$type.m2.f1r2.tar.gz \
-	--output $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
-
+	# We expect the ob-file to already be available
 	# filter with ob-priors
 	java -jar $GATK_dir/gatk.jar FilterMutectCalls \
-	--variant $name/results/Mutect2/$name.$type.m2.vcf \
-	--output $name/results/Mutect2/$name.$type.m2.filt.vcf \
+	--variant ${name}/results/Mutect2/${name}.${type}.m2.vcf \
+	--output ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf \
 	--reference $genome_file \
-	-ob-priors $name/results/Mutect2/$name.$type.m2.artifact-priors.tar.gz
+	-ob-priors ${name}/results/Mutect2/${name}.${type}.m2.read-orientation-model.tar.gz
 fi
 
 # output filtering statistics
