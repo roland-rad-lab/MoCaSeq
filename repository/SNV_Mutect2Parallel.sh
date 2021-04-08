@@ -85,7 +85,7 @@ else
 fi
 
 set +e
-# Now we can ignore failing commands again
+# Now we can ignore failing commands again (e.g. grep)
 
 echo '---- Mutect2 Parallel Combine Chromosomes ----' | tee -a ${name}/results/QC/${name}.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -135,7 +135,8 @@ do
 done
 
 # combine BAM files
-cmd_samtools_merge="samtools merge -c -p ${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam"
+#cmd_samtools_merge="samtools merge -c -p ${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam"
+cmd_samtools_merge="samtools merge -c -p ${name}/results/Mutect2/${name}.${type}.m2.bam"
 for chromosome in ${chromosome_names};
 do
 	cmd_samtools_merge="${cmd_samtools_merge} ${name}/results/Mutect2/${name}.${type}.${chromosome}.m2.bam"
@@ -152,11 +153,12 @@ do
 	rm ${name}/results/Mutect2/${name}.${type}.${chromosome}.m2.bai
 done
 
-samtools sort \
--@ 4 \
--o ${name}/results/Mutect2/${name}.${type}.m2.bam \
--T ${name}/results/Mutect2/${name}.${type}.m2.bam.part. \
-${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam
+# Should be safe to assume it's sorted
+#samtools sort \
+#-@ 4 \
+#-o ${name}/results/Mutect2/${name}.${type}.m2.bam \
+#-T ${name}/results/Mutect2/${name}.${type}.m2.bam.part. \
+#${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam
 
 samtools index ${name}/results/Mutect2/${name}.${type}.m2.bam
-rm ${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam
+#rm ${name}/results/Mutect2/${name}.${type}.m2.unsorted.bam
