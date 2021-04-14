@@ -194,12 +194,6 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
-# CHECK IF NEEDED PARAMETERS ARE DEFINED
-if [ -z "${filtering}" ]; then
-	echo "ERROR, filtering needs a non empty value"
-	exit 1
-fi
-
 # CHECK IF ALL NEEDED FILE EXIST
 if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
 echo "ERROR, File not found: $fastq_normal_1"
