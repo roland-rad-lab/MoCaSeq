@@ -30,7 +30,7 @@ usage()
 	echo "	-filt, --filtering       Set to 'soft' (AF >= 0.05, , Variant in Tumor >= 2, Variant in Normal <= 1, Coverage >= 5, dbSNP common for human), 'hard' (AF >= 0.1, Variant in Tumor >= 3, Variant in Normal = 0, Coverage >= 10, dbSNP all for human) or 'none' (no filters). Optional. Defaults to 'soft'."
 	echo "	-p, --phred              If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional."
 	echo "	-mu, --Mutect2           Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'."
-	echo "	-ck, --CNVKit           Set to 'yes' or 'no'. Needed for LOH analysis. Optional. Defaults to 'yes'."
+	echo "	-ck, --CNVKit            Set to 'yes' or 'no'. Needed for LOH analysis. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Runs TITAN to model subclonal copy number alterations, predict LOH and estimate tumor purity. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'."
@@ -39,6 +39,7 @@ usage()
 	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1' or '4.1.7.0', determining which GATK version is used. Optional. Defaults to 4.1.7.0"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run. All other parameters will be ignored"
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
+	echo "  --para                   Run Mutect2 in parallel"
 	echo "	--help                   Show this help."
   exit 1
 }
@@ -73,6 +74,7 @@ test=no
 memstats=0
 config_file=
 species=Mouse
+para=
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -105,6 +107,7 @@ while [ "$1" != "" ]; do case $1 in
     -gatk|--GATKVersion) shift;GATK="$1";;
     --memstats) shift;memstats="$1";;
     --test) shift;test="$1";;
+		--para) shift;para="yes";;
     --help) usage;shift;;
 	*) usage;shift;;
 esac; shift; done
@@ -1017,21 +1020,32 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Running Mutect2 (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
-	--native-pair-hmm-threads $threads \
-	-R $genome_file \
-	-I $name/results/bam/$name.Tumor.bam \
-	-I $name/results/bam/$name.Normal.bam \
-	-tumor Tumor -normal Normal \
-	--f1r2-tar-gz $name/results/Mutect2/$name.m2.f1r2.tar.gz \
-	-O $name/results/Mutect2/$name.m2.vcf \
-	-bamout $name/results/Mutect2/$name.m2.bam
+	if [[ $para == "yes" ]]; then
+		bash $repository_dir/SNV_Mutect2Parallel.sh \
+			$name $species $config_file $runmode $artefact_type $GATK $RAM matched
+	else
+		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
+		--native-pair-hmm-threads $threads \
+		-R $genome_file \
+		-I $name/results/bam/${name}.Tumor.bam \
+		-I $name/results/bam/${name}.Normal.bam \
+		-tumor Tumor -normal Normal \
+		--f1r2-tar-gz ${name}/results/Mutect2/${name}.matched.m2.f1r2.tar.gz \
+		-O ${name}/results/Mutect2/${name}.matched.m2.vcf \
+		-bamout ${name}/results/Mutect2/${name}.matched.m2.bam
+
+		if [ $artefact_type = 'yes' ]; then
+			java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
+			-I ${name}/results/Mutect2/${name}.matched.m2.f1r2.tar.gz \
+			-O ${name}/results/Mutect2/${name}.matched.m2.read-orientation-model.tar.gz
+		fi
+	fi
 
 	echo '---- Mutect2 Postprocessing (matched tumor-normal) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/SNV_Mutect2Postprocessing.sh \
-	$name $species $config_file $filtering $artefact_type $GATK
+	bash $repository_dir/SNV_Mutect2Postprocessing.sh \
+	$name $species $config_file $filtering $artefact_type $GATK matched
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Mutect2 $species $CGC_file $TruSight_file
 
@@ -1045,17 +1059,27 @@ if [ $Mutect2 = 'yes' ]; then
 
 	for type in $types;
 	do
-	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
-	--native-pair-hmm-threads $threads \
-	-R $genome_file \
-	-I $name/results/bam/$name.$type.bam \
-	-tumor $type \
-	--f1r2-tar-gz $name/results/Mutect2/$name."$type".m2.f1r2.tar.gz \
-	-O $name/results/Mutect2/$name."$type".m2.vcf \
-	-bamout $name/results/Mutect2/$name."$type".m2.bam
+		if [[ $para == "yes" ]]; then
+			bash $repository_dir/SNV_Mutect2Parallel.sh \
+				$name $species $config_file SS $artefact_type $GATK $RAM $type
+		else
+			java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
+			--native-pair-hmm-threads $threads \
+			-R $genome_file \
+			-I $name/results/bam/${name}.${type}.bam \
+			-tumor $type \
+			--f1r2-tar-gz ${name}/results/Mutect2/${name}.${type}.m2.f1r2.tar.gz \
+			-O ${name}/results/Mutect2/${name}.${type}.m2.vcf \
+			-bamout ${name}/results/Mutect2/${name}.${type}.m2.bam
 
-	sh $repository_dir/SNV_Mutect2PostprocessingSS.sh \
-	$name $species $config_file $type $filtering $artefact_type $GATK
+			if [ $artefact_type = 'yes' ]; then
+				java -jar $GATK_dir/gatk.jar LearnReadOrientationModel \
+				--input $name/results/Mutect2/${name}.${type}.m2.f1r2.tar.gz \
+				--output $name/results/Mutect2/${name}.${type}.m2.read-orientation-model.tar.gz
+			fi
+		fi
+	bash $repository_dir/SNV_Mutect2PostprocessingSS.sh \
+	$name $species $config_file $filtering $artefact_type $GATK $type
 
 	Rscript $repository_dir/SNV_SelectOutputSS.R $name $type $species $CGC_file $TruSight_file
 	done
