@@ -111,3 +111,13 @@ RunAbsolute(seg.dat.fn, sigma.p, max.sigma.h, min.ploidy, max.ploidy, primary.di
             maf.fn=maf.fn, min.mut.af=min.mut.af, output.fn.base=NULL, verbose=T)
 
 
+# read the results and print it like a normal human being
+abs.rawfile <- paste0(results.dir, "/", name, ".ABSOLUTE.RData")
+load(abs.rawfile)
+seg.list <- list(seg.dat)
+seg.results <- seg.list[[1]][["mode.res"]][["mode.tab"]]
+colnames(seg.results)[1] <- "purity"
+colnames(seg.results)[2] <- "ploidy"
+
+abs.tabfile <- paste0(results.dir, "/", name, ".ABSOLUTE.results.tsv")
+write.table(seg.results, abs.tabfile, quote = F, sep="\t", row.names = F)
