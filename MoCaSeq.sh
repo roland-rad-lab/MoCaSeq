@@ -952,6 +952,7 @@ python2 $name/results/Manta/runWorkflow.py -m local -j $threads
 sh $repository_dir/SV_MantaPostprocessing.sh $name $species $config_file $runmode $types
 
 if [ $runmode = "MS" ]; then
+	# generate MAF file with variant effect predicted (VEP) (i.e. frameshift -> Frame_Shift_Del)
 	sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Manta MS
 fi
 
@@ -983,6 +984,7 @@ if [ $runmode = "MS" ]; then
 
 	Rscript $repository_dir/SNV_SelectOutput.R $name Strelka $species $CGC_file $TruSight_file
 
+	# generate MAF file with variant effect predicted (VEP) (i.e. frameshift -> Frame_Shift_Del)
 	sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Strelka $runmode $types
 fi
 
@@ -1085,6 +1087,7 @@ if [ $Mutect2 = 'yes' ]; then
 	done
 fi
 
+# generate MAF file with variant effect predicted (VEP) (i.e. frameshift -> Frame_Shift_Del)
 sh $repository_dir/SNV_RunVEP.sh $name $config_file $species Mutect2 $runmode $types
 
 # 2. LOH analysis
