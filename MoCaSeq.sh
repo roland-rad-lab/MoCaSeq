@@ -1290,9 +1290,10 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	echo '---- Preparing input files and calculating coverage ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
+	# this coverage is for control.coverage <= CoverageFilter (so lower = more stringend)
 	coverage=$(sh $repository_dir/Chromothripsis_GetCoverage.sh $name)
 
-	sh $repository_dir/Chromothripsis_FormatTable.sh $name
+	sh $repository_dir/Chromothripsis_FormatTable.sh $name $temp_dir
 
 	Rscript $repository_dir/Chromothripsis_AnnotateRatios.R \
 	-i $name/results/Delly/$name.breakpoints.tab \
