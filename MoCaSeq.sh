@@ -226,7 +226,6 @@ exit 1
 fi
 
 
-
 # SET PARAMETERS FOR PURITY ANALYSIS
 
 # TITAN ist default 'yes' for WES and default 'no' for WGS
@@ -690,7 +689,7 @@ if [ $repeat_mapping = "yes" ]; then
 		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.marked.bam /dev/stdin &&
 
-		#rm $temp_dir/$name.$type.cleaned.bam &&
+		rm $temp_dir/$name.$type.cleaned.bam &&
 
 		echo "Postprocessing I: Adding read groups for $type" | tee -a $name/results/QC/$name.report.txt &&
 		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
@@ -700,11 +699,11 @@ if [ $repeat_mapping = "yes" ]; then
 		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
 		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
-		#rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-		#rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
+		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
 
 		echo "Postprocessing I done for $type" | tee -a $name/results/QC/$name.report.txt & PIDS="$PIDS $!"
-		#rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -1023,8 +1022,20 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	if [[ $para == "yes" ]]; then
+
+		echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 8'
+		threads_save=$threads # save the given settings
+		RAM_save=$RAM
+		threads=4
+		RAM=8
+
 		bash $repository_dir/SNV_Mutect2Parallel.sh \
 			$name $species $config_file $runmode $artefact_type $GATK $RAM matched
+
+		# reset to previous settings
+		threads=$threads_save
+		RAM=$RAM_save
+
 	else
 		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
 		--native-pair-hmm-threads $threads \
@@ -1062,8 +1073,20 @@ if [ $Mutect2 = 'yes' ]; then
 	for type in $types;
 	do
 		if [[ $para == "yes" ]]; then
+
+			echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 8'
+			threads_save=$threads # save the given settings
+			RAM_save=$RAM
+			threads=4
+			RAM=8
+
 			bash $repository_dir/SNV_Mutect2Parallel.sh \
 				$name $species $config_file SS $artefact_type $GATK $RAM $type
+
+			# reset to previous settings
+			threads=$threads_save
+			RAM=$RAM_save
+
 		else
 			java -Xmx${RAM}G -jar $GATK_dir/gatk.jar Mutect2 \
 			--native-pair-hmm-threads $threads \
