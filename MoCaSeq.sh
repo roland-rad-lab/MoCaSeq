@@ -1021,11 +1021,11 @@ if [ $Mutect2 = 'yes' ] && [ $runmode = "MS" ]; then
 
 	if [[ $para == "yes" ]]; then
 
-		echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 8'
+		echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 6'
 		threads_save=$threads # save the given settings
 		RAM_save=$RAM
 		threads=4
-		RAM=8
+		RAM=6
 
 		bash $repository_dir/SNV_Mutect2Parallel.sh \
 			$name $species $config_file $runmode $artefact_type $GATK $RAM matched
@@ -1072,11 +1072,11 @@ if [ $Mutect2 = 'yes' ]; then
 	do
 		if [[ $para == "yes" ]]; then
 
-			echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 8'
+			echo 'PARAMETER CHANGE: For parallel Mutect2, threads were set to 4 and RAM to 6'
 			threads_save=$threads # save the given settings
 			RAM_save=$RAM
 			threads=4
-			RAM=8
+			RAM=6
 
 			bash $repository_dir/SNV_Mutect2Parallel.sh \
 				$name $species $config_file SS $artefact_type $GATK $RAM $type
