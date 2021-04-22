@@ -17,11 +17,7 @@ types=$6
 
 . $config_file
 
-if [ $species = 'Human' ]; then
-	chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y
-elif [ $species = 'Mouse' ]; then
-	chromosomes=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,X,Y
-fi
+chromosomes=$(echo "${chromosome_names}" | tr " " ",")
 
 if [ $runmode = 'MS' ]; then
 	types="Tumor Normal"
@@ -31,7 +27,9 @@ for type in $types;
 do
 	(
 	echo "Binning read counts in $type file @ $resolution resolution..."
-	$hmmcopyutils_dir/bin/readCounter -b -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
+	echo "Binning read counts for ${chromosomes}..."
+	# readCounter requires indices as .bam.bai (there is a -b option to build them automatically but it doesn't check if they exist first)
+	$hmmcopyutils_dir/bin/readCounter -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
 	) &
 done
 
