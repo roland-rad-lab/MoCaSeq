@@ -31,7 +31,7 @@ for type in $types;
 do
 	(
 	echo "Binning read counts in $type file @ $resolution resolution..."
-	$hmmcopyutils_dir/bin/readCounter -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
+	$hmmcopyutils_dir/bin/readCounter -b -w $resolution -q20 -c $chromosomes $name/results/bam/$name.$type.bam > $name/results/HMMCopy/$name.$type.$resolution.wig
 	) &
 done
 
