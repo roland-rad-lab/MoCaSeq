@@ -2,14 +2,18 @@
 
 nextflow.enable.dsl=2
 
-params.input = null
-
-
 include {
 	extract_data;
 	file_has_extension
 } from "./lib-nf/input"
 
+inlude {
+	GENOME
+} from "./lib-nf/local/subworkflow/genome"
+
+include {
+	MUTECT
+} from "./lib-nf/local/subworkflow/mutect"
 
 
 tsv_path = null
@@ -35,5 +39,26 @@ if (tsv_path) {
 	ch_input_sample = extract_data (tsv_path)
 
 } else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
+
+ch_branched_input = ch_input_sample.view ().branch {
+	bam: it["Normal.BAM"] != 'NA' //These are all BAMs
+}
+
+//Removing R1/R2 in case of BAM input
+ch_branched_input_bam = ch_branched_input.bam.map {
+	m ->
+    [m["Sample_Name"], m["Normal.BAM"]]
+}
+
+ch_branched_input_bam_human
+
+workflow
+{
+	take:
+		ch_branched_input_bam_human
+	main:
+	PREPARE_GENOME (params.genome_build.human)
+	MUTECT (GENOME.out, ch_bam_channel)
+}
 
 
