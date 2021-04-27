@@ -54,14 +54,18 @@ def extract_data (tsv_file)
 			}
 			accumulator
 		}.map { it ->
-			it.value.inject ([:]) { m, v ->
-				if ( m.size () == 0 )
+			it.value.inject ([:]) { accumulator, item ->
+				if ( accumulator.size () == 0 )
 				{
-					m["Sample_Name"] = it.key
+					accumulator["sampleName"] = it.key
 				}
-				if ( v[6] == "Normal")
+				if ( item[6] == "Normal")
 				{
-					m["Normal.BAM"] = v[8]
+					accumulator["NormalBAM"] = item[8]
+				}
+				if ( item[6] == "Tumor" )
+				{
+					accumulator["TumorBAM"] = item[8]
 				}
 				m
 			}

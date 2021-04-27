@@ -5,15 +5,15 @@ nextflow.enable.dsl=2
 include {
 	extract_data;
 	file_has_extension
-} from "./lib-nf/input"
+} from "./modules/input"
 
-inlude {
-	GENOME
-} from "./lib-nf/local/subworkflow/genome"
+include {
+	PREPARE_GENOME
+} from "./modules/local/subworkflow/genome"
 
 include {
 	MUTECT
-} from "./lib-nf/local/subworkflow/mutect"
+} from "./modules/local/subworkflow/mutect"
 
 
 tsv_path = null
@@ -58,7 +58,7 @@ workflow
 		ch_branched_input_bam_human
 	main:
 	PREPARE_GENOME (params.genome_build.human)
-	MUTECT (GENOME.out, ch_bam_channel)
+	MUTECT (PREPARE_GENOME.out, ch_bam_channel)
 }
 
 

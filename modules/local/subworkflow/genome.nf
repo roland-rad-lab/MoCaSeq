@@ -9,8 +9,8 @@ workflow PREPARE_GENOME {
 		ch_chrom_sizes = Channel.empty ()
 
 	emit:
-		fasta       = ch_fasta
-		chrom_sizes = ch_chrom_sizes
+		out.fasta       = ch_fasta
+		out.chrom_sizes = ch_chrom_sizes
 
 }
 
