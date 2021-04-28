@@ -13,9 +13,10 @@ workflow PREPARE_GENOME
 		ch_chrom_sizes = Channel.empty ()
 
 	emit:
-		fasta       = ch_fasta
-		chrom_names = ch_chrom_names.splitCsv()
-		chrom_sizes = ch_chrom_sizes
+		["fasta": ch_fasta, "chrom_names": ch_chrom_names.splitCsv (), "chrom_sizes": ch_chrom_sizes]
+		//fasta       = ch_fasta
+		//chrom_names = ch_chrom_names.splitCsv()
+		//chrom_sizes = ch_chrom_sizes
 
 }
 

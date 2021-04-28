@@ -36,21 +36,32 @@ def extract_data (tsv_file)
 			if ( row.Type.isEmpty () ) exit 1, "[MoCaSeq] error: the Type column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 			if ( row.BAM.isEmpty() ) exit 1, "[MoCaSeq] error: the BAM column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 
+                        if ( !(row.Type == "Normal" || row.Type == "Tumor") ) exit 1, "MoCaSeq] error: Type was not [Normal|Tumor]. Check row\n ${row}"
 
-			def samplename = row.Sample_Name
-			def organism = row.Organism
-			def type = row.Type
-			def bam = row.BAM.matches('NA') ? 'NA' : file_from_path (row.BAM)
+                        def r1 = row.R1.matches('NA') ? null : file_from_path (row.R1)
+                        def r2 = row.R2.matches('NA') ? null : file_from_path (row.R2)
+                        def bam = row.BAM.matches('NA') ? null : file_from_path (row.BAM)
 
-			[ samplename, libraryid, lane, colour, seqtype, organism, type, r1, r2, bam ]
+                        [
+                                "sampleName": row.Sample_Name,
+                                "libraryId": row.Library_ID,
+                                "lane": row.Lane,
+                                "colour": row.Colour_Chemistry,
+                                "seqType": row.SeqType,
+                                "organism": row.Organism,
+                                "type": row.Type,
+                                "r1": r1,
+                                "r2": r2,
+                                "bam": bam
+                        ]	
 		}.reduce ( [:] ) { accumulator, item ->
-			if ( accumulator.containsKey (item[0]) )
+			if ( accumulator.containsKey (item["sampleName"]) )
 			{
-				accumulator[item[0]].add (item)
+				accumulator[item["sampleName"]].add (item)
 			}
 			else
 			{
-				accumulator[item[0]] = [item]
+				accumulator[item["sampleName"]] = [item]
 			}
 			accumulator
 		}.map { it ->
@@ -59,15 +70,15 @@ def extract_data (tsv_file)
 				{
 					accumulator["sampleName"] = it.key
 				}
-				if ( item[6] == "Normal")
+				if ( item["type"] == "Normal")
 				{
-					accumulator["NormalBAM"] = item[8]
+					accumulator["NormalBAM"] = item["bam"]
 				}
-				if ( item[6] == "Tumor" )
+				if ( item["type"] == "Tumor" )
 				{
-					accumulator["TumorBAM"] = item[8]
+					accumulator["TumorBAM"] = item["bam"]
 				}
-				m
+				accumulator
 			}
 		}
 }
