@@ -9,8 +9,11 @@ def file_has_extension (it, extension)
 // Return file if it exists
 def file_from_path (it)
 {
-	if (!file(it).exists()) exit 1, "[MoCaSeq] error: Cannot find supplied FASTQ or BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information. Check file: ${it}" 
-	return file(it)
+	if (it == null || it.isEmpty () ) exit 1, "[MoCaSeq] error: No value supplied for FASTQ or BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information."
+	// If glob == true file returns a list if it contains wildcard chars
+	def f = file(it, glob: false)
+	if (!f.exists()) exit 1, "[MoCaSeq] error: Cannot find supplied FASTQ or BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information. Check file: ${it}"
+	return f
 }
 
 // Check if a row has the expected number of columns
@@ -30,7 +33,7 @@ def extract_data (tsv_file)
 			def expected_keys = ['Sample_Name', 'Library_ID', 'Lane', 'Colour_Chemistry', 'SeqType', 'Organism', 'Type', 'R1', 'R2', 'BAM']
 			if ( !row.keySet ().containsAll (expected_keys) ) exit 1, "[MoCaSeq] error: Invalid TSV input - malformed column names. Please check input TSV. Column names should be: ${expected_keys.join(", ")}"
 
-			row_check_column_n (row, 9)
+			row_check_column_n (row, 10)
 
 			if ( row.Sample_Name.isEmpty() ) exit 1, "[MoCaSeq] error: the Sample_Name column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 			if ( row.Type.isEmpty () ) exit 1, "[MoCaSeq] error: the Type column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
