@@ -7,7 +7,8 @@ process mutect_matched {
 	 tag "${meta.sampleName}"
 
 	input:
-	tuple val(meta), path (bam_normal), path (bam_tumor)
+	val (reference)
+	tuple val(meta), path (bam_normal), path (bam_tumor), val (interval)
 
 	output:
 	tuple val(meta), path("${meta.sampleName}.m2.matched.vcf"), emit: results
@@ -17,7 +18,7 @@ process mutect_matched {
 
 	java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \
 	--native-pair-hmm-threads 4 \
-	--reference genome \
+	--reference ${reference} \
 	--input ${bam_normal} \
 	--input ${bam_tumor} \
 	--normal-sample Normal --tumor-sample Tumor \

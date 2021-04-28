@@ -5,14 +5,15 @@ include { mutect_matched } from "../software/mutect/main"
 workflow MUTECT
 {
 	take:
-		genome
-		data
+		ch_fasta
+		ch_interval
+		ch_data
 	main:
-		ch_data_chrom = data.map { it ->
+		ch_data_interval = ch_data.map { it ->
 			tuple ( it, it["NormalBAM"], it["TumorBAM"] )
-		}.combine (genome["chrom_names"])
+		}.combine (ch_interval)
 
-		mutect_matched (ch_data_chrom)
+		mutect_matched (ch_fasta, ch_data_interval)
 
 	emit:
 		results = mutect_matched.out.results
