@@ -6,7 +6,7 @@ process mutect_matched {
 	tuple val(meta), path (bam_normal), path (bam_tumor)
 
 	output:
-	tuple val(meta), path("${meta.sampleName}.m2.matched.vcf")
+	tuple val(meta), path("${meta.sampleName}.m2.matched.vcf"), emit: results
 
 	script:
 	"""#!/usr/bin/env bash

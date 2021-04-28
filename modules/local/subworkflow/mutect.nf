@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
-include {  } from "../software/mutect/main.nf"
+include { mutect_matched } from "../software/mutect/main.nf"
 
-workflow mutect
+workflow MUTECT
 {
 	take:
 		genome
@@ -10,11 +10,11 @@ workflow mutect
 	main:
 		ch_data_chrom = data.map { it ->
 			tuple ( it, it["NormalBAM"], it["TumorBAM"] )
-		}.combine (genome.chrom_names.auto_sex)
+		}.combine (genome.chrom_names)
 
 		mutect_matched (ch_data_chrom)
 
 	emit:
-		mutect_matched.out
+		results = mutect_matched.out.results
 }
 
