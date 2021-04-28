@@ -40,26 +40,24 @@ if (tsv_path) {
 
 } else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
 
-ch_branched_input = ch_input_sample.view ().branch {
-	bam: it["Normal.BAM"] != 'NA' //These are all BAMs
+ch_branched_input = ch_input_sample.branch {
+	bam: it["normalBAM"] != 'NA' //These are all BAMs
 }
 
 //Removing R1/R2 in case of BAM input
 ch_branched_input_bam_branched = ch_branched_input.bam.branch {
-	human: it["Organism"] == "Human"
+	human: it["organism"] == "Human"
 }
 
-ch_branched_input_bam_branched_human = ch_branched_input_bam_branched.human.map { m ->
-    [m, m["NormalBAM"], m["TumorBAM"]]
+ch_branched_input_bam_branched_human = ch_branched_input_bam_branched.human.map { it ->
+    [it, it["normalBAM"], it["tumorBAM"]]
 }
-
-
 
 workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
-	MUTECT (PREPARE_GENOME.out, ch_branched_input_bam_branched_human)
+	MUTECT (PREPARE_GENOME.out["fasta"], PREPARE_GENOME.out["chrom_names"], ch_branched_input_bam_branched_human)
 }
 
 

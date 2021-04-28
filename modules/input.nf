@@ -67,19 +67,20 @@ def extract_data (tsv_file)
 				accumulator[item["sampleName"]] = [item]
 			}
 			accumulator
-		}.map { it ->
+		}.flatMap ().map { it ->
 			it.value.inject ([:]) { accumulator, item ->
 				if ( accumulator.size () == 0 )
 				{
 					accumulator["sampleName"] = it.key
+					accumulator["organism"] = item["organism"]
 				}
 				if ( item["type"] == "Normal")
 				{
-					accumulator["NormalBAM"] = item["bam"]
+					accumulator["normalBAM"] = item["bam"]
 				}
 				if ( item["type"] == "Tumor" )
 				{
-					accumulator["TumorBAM"] = item["bam"]
+					accumulator["tumorBAM"] = item["bam"]
 				}
 				accumulator
 			}
