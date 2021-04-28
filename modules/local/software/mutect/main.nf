@@ -19,7 +19,7 @@ process mutect_matched {
 	--native-pair-hmm-threads 4 \
 	--reference genome \
 	--input ${bam_normal} \
-	--input ${bam_tumor} \	
+	--input ${bam_tumor} \
 	--normal-sample Normal --tumor-sample Tumor \
 	--f1r2-tar-gz ${meta.sampleName}.matched.m2.f1r2.tar.gz \
 	--output ${meta.sampleName}.matched.m2.vcf \
