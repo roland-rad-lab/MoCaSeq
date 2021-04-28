@@ -45,12 +45,15 @@ ch_branched_input = ch_input_sample.view ().branch {
 }
 
 //Removing R1/R2 in case of BAM input
-ch_branched_input_bam = ch_branched_input.bam.map {
-	m ->
-    [m["Sample_Name"], m["Normal.BAM"]]
+ch_branched_input_bam_branched = ch_branched_input.bam.branch {
+	human: it["Organism"] == "Human"
 }
 
-ch_branched_input_bam_human
+ch_branched_input_bam_branched_human = ch_branched_input_bam_branched.human.map { m ->
+    [m, m["NormalBAM"], m["TumorBAM"]]
+}
+
+
 
 workflow
 {
@@ -58,7 +61,7 @@ workflow
 		ch_branched_input_bam_human
 	main:
 	PREPARE_GENOME (params.genome_build.human)
-	MUTECT (PREPARE_GENOME.out, ch_bam_channel)
+	MUTECT (PREPARE_GENOME.out, ch_branched_input_bam_branched_human)
 }
 
 
