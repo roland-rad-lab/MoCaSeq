@@ -57,8 +57,6 @@ ch_branched_input_bam_branched_human = ch_branched_input_bam_branched.human.map 
 
 workflow
 {
-	take:
-		ch_branched_input_bam_human
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	MUTECT (PREPARE_GENOME.out, ch_branched_input_bam_branched_human)
