@@ -8,6 +8,7 @@ process mutect_matched {
 
 	input:
 	val (reference)
+	each val (interval)
 	tuple val(meta), path (bam_normal), path (bam_tumor), val (interval)
 
 	output:
@@ -16,17 +17,18 @@ process mutect_matched {
 	script:
 	"""#!/usr/bin/env bash
 
-	java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \
-	--native-pair-hmm-threads 4 \
-	--reference ${reference} \
-	--input ${bam_normal} \
-	--input ${bam_tumor} \
-	--normal-sample Normal --tumor-sample Tumor \
-	--f1r2-tar-gz ${meta.sampleName}.matched.m2.f1r2.tar.gz \
-	--output ${meta.sampleName}.matched.m2.vcf \
-	-bamout ${meta.sampleName}.matched.m2.bam \
-	--assembly-region-out ${meta.sampleName}.matched.m2.assembly.txt \
-	2> ${meta.sampleName}.matched.log \
+java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
+	--native-pair-hmm-threads 4 \\
+	--reference ${reference} \\
+	--intervals ${interval} \\
+	--input ${bam_normal} \\
+	--input ${bam_tumor} \\
+	--normal-sample Normal --tumor-sample Tumor \\
+	--f1r2-tar-gz ${meta.sampleName}.matched.m2.f1r2.tar.gz \\
+	--output ${meta.sampleName}.matched.m2.vcf \\
+	-bamout ${meta.sampleName}.matched.m2.bam \\
+	--assembly-region-out ${meta.sampleName}.matched.m2.assembly.txt \\
+	2> ${meta.sampleName}.matched.log \\
 	> ${meta.sampleName}.matched.out
 	"""
 }

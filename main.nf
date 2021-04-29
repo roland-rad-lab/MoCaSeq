@@ -53,7 +53,7 @@ workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
-	MUTECT (PREPARE_GENOME.out["fasta"], PREPARE_GENOME.out["chrom_names"], ch_branched_input_bam_branched.human)
+	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, ch_branched_input_bam_branched.human)
 }
 
 
