@@ -8,7 +8,7 @@ process mutect_matched {
 
 	input:
 	val (reference)
-	each val (interval)
+	each (interval)
 	tuple val(meta), path (bam_normal), path (bam_tumor), val (interval)
 
 	output:
