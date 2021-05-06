@@ -10,8 +10,7 @@ process mutect_matched {
 		each (interval)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.matched.m2.${interval}.vcf"), emit: vcf
-		tuple val (meta), path ("${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz"), emit: orientation_bias
+		tuple val (meta), val ("matched"), path ("${meta.sampleName}.matched.m2.${interval}.vcf"), path ("${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -39,26 +38,41 @@ process mutect_combine_vcf {
 	tag "${meta.sampleName}"
 
 	input:
-		tuple val (meta), path ("*.interval.vcf")
+		tuple val (meta), val (type), path ("*.interval.vcf"), path ("*.orientation_bias.tsv.gz")
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.matched.m2.vcf.gz"), path ("${meta.sampleName}.matched.m2.vcf.gz.tbi"), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.m2.vcf.gz"), path ("${meta.sampleName}.${type}.m2.vcf.gz.tbi"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
 rm *.interval.vcf
+rm *.orientation_bias.tsv.gz
 cp /opt/fake_files/GX4VZC.Normal.m2.1.vcf 2.interval.vcf
 cp /opt/fake_files/GX4VZC.Normal.m2.2.vcf 1.interval.vcf
-split_files_first=\$(ls *.interval.vcf | head -n 1)
+cp /opt/fake_files/GX4VZC.matched.1__186012250.1.m2.f1r2.tar.gz 2.orientation_bias.tsv.gz
+cp /opt/fake_files/GX4VZC.matched.21__21344250.1.m2.f1r2.tar.gz 1.orientation_bias.tsv.gz
+
+vcf_files_first=\$(ls *.interval.vcf | head -n 1)
 for f in *.interval.vcf;
 do
-	if [[ "\${f}" == "\${split_files_first}" ]]; then
+	if [[ "\${f}" == "\${vcf_files_first}" ]]; then
 		cat \${f}
 	else
 		cat \${f} | grep -v "^#"
 	fi
-done | bcftools sort --output-file ${meta.sampleName}.matched.m2.vcf.gz --output-type z -
-tabix -p vcf ${meta.sampleName}.matched.m2.vcf.gz
+done | bcftools sort --output-file ${meta.sampleName}.${type}.m2.vcf.gz --output-type z -
+tabix -p vcf ${meta.sampleName}.${type}.m2.vcf.gz
+
+cmd_learn_read_orientation="java -jar ${params.gatk.jar} LearnReadOrientationModel"
+for f in *.orientation_bias.tsv.gz;
+do
+	cmd_learn_read_orientation="\${cmd_learn_read_orientation} --input \${f}"
+done
+cmd_learn_read_orientation="\${cmd_learn_read_orientation} --output ${meta.sampleName}.${type}.m2.read-orientation-model.tar.gz"
+
+echo "\${cmd_learn_read_orientation}"
+\${cmd_learn_read_orientation}
+
 	"""
 }
 
