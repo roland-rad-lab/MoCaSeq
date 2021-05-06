@@ -58,11 +58,8 @@ workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
-	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, ch_branched_input_bam_branched.human)
-
-	ch_delly = MUTECT.out.result.map { it -> tuple ( it[0], it[0]["normalBAM"], it[0]["tumorBAM"] ) }
-
-	DELLY (PREPARE_GENOME.out.fasta, ch_delly)
+	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_branched_input_bam_branched.human)
+	DELLY (PREPARE_GENOME.out.fasta, ch_branched_input_bam_branched.human)
 }
 
 
