@@ -11,10 +11,10 @@ process delly_matched_call {
 
 	script:
 	"""#!/usr/bin/env bash
-#delly call \
-#	-o ${meta.sampleName}.pre.bcf \
-#	-g ${reference} \
-#	${bam_tumor} \
+#delly call \\
+#	-o ${meta.sampleName}.pre.bcf \\
+#	-g ${reference} \\
+#	${bam_tumor} \\
 #	${bam_normal}
 touch ${meta.sampleName}.pre.bcf
 	"""
@@ -36,10 +36,10 @@ Tumor	tumor
 Normal	control
 EOF
 
-#delly filter \
-#	-f somatic \
-#	-o ${meta.sampleName}.delly.bcf \
-#	-s Samples.tsv \
+#delly filter \\
+#	-f somatic \\
+#	-o ${meta.sampleName}.delly.bcf \\
+#	-s Samples.tsv \\
 #	${delly_pre_bcf}
 
 #bcftools view ${meta.sampleName}.delly.bcf > ${meta.sampleName}.delly.vcf

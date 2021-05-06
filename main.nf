@@ -58,6 +58,7 @@ workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
+	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, ch_branched_input_bam_branched.human)
 	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_branched_input_bam_branched.human)
 	DELLY (PREPARE_GENOME.out.fasta, ch_branched_input_bam_branched.human)
 }
