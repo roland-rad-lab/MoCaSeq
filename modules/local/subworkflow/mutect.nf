@@ -15,15 +15,11 @@ workflow MUTECT
 		}
 
 		mutect_matched (ch_fasta, ch_data_expanded, ch_interval)
-		println interval_n
-		println interval_n.value
 
-		ch_vcf = mutect_matched.out.vcf.map { it ->
-				[["matched", it[0]["sampleName"]].join ("__"), it]
-			}
-			.view ()
-			.groupTuple (size: 24)
-			.map { it -> it[1] }
+		ch_vcf = mutect_matched.out.vcf.map { [["matched", it[0]["sampleName"]].join ("__"), it] }
+			.groupTuple (size: interval_n.value)
+			.map { it[1] }
+			.map { [ it[0][0], it.collect { jt -> jt[1] } ] }
 
 		mutect_combine_vcf (ch_vcf)
 	emit:

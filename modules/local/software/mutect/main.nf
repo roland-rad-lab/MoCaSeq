@@ -48,9 +48,17 @@ process mutect_combine_vcf {
 	"""#!/usr/bin/env bash
 rm *.interval.vcf
 cp /opt/fake_files/GX4VZC.Normal.m2.1.vcf 2.interval.vcf
-cp /opt/fake_files/GX4VZC.Normal.m2.2.vcf 2.interval.vcf
-cat *.interval.vcf | bcftools sort --output-file ${meta.sampleName}.matched.m2.${interval}.vcf.gz --output-type z -
-tabix -p vcf ${meta.sampleName}.matched.m2.${interval}.vcf.gz
+cp /opt/fake_files/GX4VZC.Normal.m2.2.vcf 1.interval.vcf
+split_files_first=\$(ls *.interval.vcf | head -n 1)
+for f in *.interval.vcf;
+do
+	if [[ "\${f}" == "\${split_files_first}" ]]; then
+		cat \${f}
+	else
+		cat \${f} | grep -v "^#"
+	fi
+done | bcftools sort --output-file ${meta.sampleName}.matched.m2.vcf.gz --output-type z -
+tabix -p vcf ${meta.sampleName}.matched.m2.vcf.gz
 	"""
 }
 
