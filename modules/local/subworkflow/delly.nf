@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-include { delly_matched; delly_matched_filter } from "../software/delly/main"
+include { delly_matched_call; delly_matched_filter } from "../software/delly/main"
 
 workflow DELLY
 {
@@ -8,10 +8,10 @@ workflow DELLY
 		ch_fasta
 		ch_data
 	main:
-		delly_matched (ch_fasta, ch_data)
-		delly_matched_filter (delly_matched.out.result)
+		delly_matched_call (ch_fasta, ch_data)
+		delly_matched_filter (delly_matched_call.out.result)
 
 	emit:
-		results = delly_matched.out.result
+		results = delly_matched_filter.out.result
 }
 

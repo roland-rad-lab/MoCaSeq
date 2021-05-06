@@ -16,6 +16,6 @@ workflow MUTECT
 		mutect_matched (ch_fasta, ch_data_expanded, ch_interval)
 
 	emit:
-		results = mutect_matched.out.result
+		result = mutect_matched.out.result
 }
 

@@ -15,6 +15,11 @@ include {
 	MUTECT
 } from "./modules/local/subworkflow/mutect"
 
+include {
+	DELLY
+} from "./modules/local/subworkflow/delly"
+
+
 
 tsv_path = null
 

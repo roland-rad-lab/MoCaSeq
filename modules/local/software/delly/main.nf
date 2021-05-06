@@ -1,3 +1,4 @@
+
 process delly_matched_call {
 	 tag "${meta.sampleName}"
 
@@ -10,11 +11,12 @@ process delly_matched_call {
 
 	script:
 	"""#!/usr/bin/env bash
-delly call \
-	-o ${meta.sampleName}.pre.bcf \
-	-g ${reference} \
-	${bam_tumor} \
-	${bam_normal}
+#delly call \
+#	-o ${meta.sampleName}.pre.bcf \
+#	-g ${reference} \
+#	${bam_tumor} \
+#	${bam_normal}
+touch ${meta.sampleName}.pre.bcf
 	"""
 }
 
@@ -22,7 +24,6 @@ process delly_matched_filter {
 	 tag "${meta.sampleName}"
 
 	input:
-	val (reference)
 	tuple val(meta), path (delly_pre_bcf)
 
 	output:
@@ -30,13 +31,19 @@ process delly_matched_filter {
 
 	script:
 	"""#!/usr/bin/env bash
-delly filter \
-	-f somatic \
-	-o ${meta.sampleName}.delly.bcf \
-	-s Samples.tsv \
-	${delly_pre_bcf}
+cat <<"EOF" > Samples.tsv
+Tumor	tumor
+Normal	control
+EOF
 
-bcftools view ${meta.sampleName}.delly.bcf > ${meta.sampleName}.delly.vcf
+#delly filter \
+#	-f somatic \
+#	-o ${meta.sampleName}.delly.bcf \
+#	-s Samples.tsv \
+#	${delly_pre_bcf}
+
+#bcftools view ${meta.sampleName}.delly.bcf > ${meta.sampleName}.delly.vcf
+touch ${meta.sampleName}.delly.vcf
 	"""
 }
 
