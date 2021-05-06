@@ -10,7 +10,7 @@ process mutect_matched {
 	each (interval)
 
 	output:
-	tuple val (meta), path ("${meta.sampleName}.matched.m2.${interval}.vcf"), path ("${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz") emit: result
+	tuple val (meta), path ("${meta.sampleName}.matched.m2.${interval}.vcf"), path ("${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
