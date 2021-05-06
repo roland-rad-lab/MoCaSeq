@@ -8,11 +8,11 @@ process mutect_matched {
 
 	input:
 	val (reference)
+	tuple val(meta), path (bam_normal), path (bam_tumor)
 	each (interval)
-	tuple val(meta), path (bam_normal), path (bam_tumor), val (interval)
 
 	output:
-	tuple val(meta), path("${meta.sampleName}.m2.matched.vcf"), emit: results
+	tuple val(meta), path("${meta.sampleName}.m2.matched.vcf"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash

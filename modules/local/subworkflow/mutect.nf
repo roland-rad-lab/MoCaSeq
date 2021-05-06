@@ -9,13 +9,13 @@ workflow MUTECT
 		ch_interval
 		ch_data
 	main:
-		ch_data_interval = ch_data.map { it ->
+		ch_data_expanded = ch_data.map { it ->
 			tuple ( it, it["normalBAM"], it["tumorBAM"] )
 		}
 
-		mutect_matched (ch_fasta, ch_interval, ch_data_interval)
+		mutect_matched (ch_fasta, ch_data_expanded, ch_interval)
 
 	emit:
-		results = mutect_matched.out.results
+		results = mutect_matched.out.result
 }
 
