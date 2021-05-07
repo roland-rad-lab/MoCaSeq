@@ -16,6 +16,17 @@ def file_from_path (it)
 	return f
 }
 
+// Return index file if it exists
+def index_file_from_path (it)
+{
+	def f = file (it.resolveSibling (it.name.replaceFirst (~/\.bam$/, ".bam.bai")), glob: false)
+	if ( f.exists () ) return f
+	f = file (it.resolveSibling (it.name.replaceFirst (~/\.bam$/, ".bai")), glob: false)
+	if ( f.exists () ) return f
+
+	exit 1, "[MoCaSeq] error: No index file supplied for BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information. Check index for file: ${it}"
+}
+
 // Check if a row has the expected number of columns
 def row_check_column_n (row, number)
 {
@@ -44,6 +55,7 @@ def extract_data (tsv_file)
                         def r1 = row.R1.matches('NA') ? null : file_from_path (row.R1)
                         def r2 = row.R2.matches('NA') ? null : file_from_path (row.R2)
                         def bam = row.BAM.matches('NA') ? null : file_from_path (row.BAM)
+			def bai = bam == null ? null : index_file_from_path (bam)
 
                         [
                                 "sampleName": row.Sample_Name,
@@ -55,8 +67,9 @@ def extract_data (tsv_file)
                                 "type": row.Type,
                                 "r1": r1,
                                 "r2": r2,
-                                "bam": bam
-                        ]	
+                                "bam": bam,
+				"bai": bai
+                        ]
 		}.reduce ( [:] ) { accumulator, item ->
 			if ( accumulator.containsKey (item["sampleName"]) )
 			{
@@ -77,10 +90,12 @@ def extract_data (tsv_file)
 				if ( item["type"] == "Normal")
 				{
 					accumulator["normalBAM"] = item["bam"]
+					accumulator["normalBAI"] = item["bai"]
 				}
 				if ( item["type"] == "Tumor" )
 				{
 					accumulator["tumorBAM"] = item["bam"]
+					accumulator["tumorBAI"] = item["bai"]
 				}
 				accumulator
 			}

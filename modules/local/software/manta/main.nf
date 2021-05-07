@@ -36,13 +36,14 @@ data_intervals <- read.table (file=intervals_file_path,sep="\\t",stringsAsFactor
 names (data_intervals) <- c("sequence_name")
 
 data_output <- data_intervals %>%
-	join (data_seq_lengths,by="sequence_name") %>%
+	inner_join (data_seq_lengths,by="sequence_name") %>%
 	mutate (start=1) %>%
 	select (sequence_name,start,sequence_length) %>%
 	data.frame
 
-output_bed_file <- gzfile (output_bed_file_path, 'w')
+output_bed_file <-pipe (paste ("bgzip -c >",output_bed_file_path), "w")
 write.table (data_output,file=output_bed_file,sep="\\t",row.names=F,col.names=F,quote=F)
+close (output_bed_file)
 """
 
 }
@@ -53,11 +54,14 @@ process manta_matched {
 	input:
 		val (reference)
 		val (interval_bed)
-		tuple val (meta), path (bam_normal), path (bam_tumor)
+		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
+
+	output:
+		val ("foo.txt"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
-
+tabix -p bed ${interval_bed}
 python2 ${params.manta.dir}/bin/configManta.py \\
 	--normalBam ${bam_normal} \\
 	--tumorBam ${bam_tumor} \\

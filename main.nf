@@ -12,6 +12,10 @@ include {
 } from "./modules/local/subworkflow/genome"
 
 include {
+	MANTA
+} from "./modules/local/subworkflow/manta"
+
+include {
 	MUTECT
 } from "./modules/local/subworkflow/mutect"
 
