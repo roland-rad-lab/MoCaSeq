@@ -85,7 +85,7 @@ def extract_data (tsv_file)
 				if ( accumulator.size () == 0 )
 				{
 					accumulator["sampleName"] = it.key
-					accumulator["organism"] = item["organism"]
+					accumulator["organism"] = item["organism"].toLowerCase ()
 				}
 				if ( item["type"] == "Normal")
 				{
