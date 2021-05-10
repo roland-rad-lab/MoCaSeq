@@ -16,6 +16,10 @@ include {
 } from "./modules/local/subworkflow/manta"
 
 include {
+	STRELKA
+} from "./modules/local/subworkflow/strelka"
+
+include {
 	MUTECT
 } from "./modules/local/subworkflow/mutect"
 
@@ -31,7 +35,7 @@ tsv_path = null
 ch_input_sample = Channel.empty ()
 
 
-// check if we have valid --reads or --input
+// check if we have valid --input
 if (params.input == null) {
 	  exit 1, "[MoCaSeq] error: --input was not supplied! Please check '--help' or documentation under 'running the pipeline' for details"
 }
@@ -55,14 +59,18 @@ ch_branched_input = ch_input_sample.branch {
 
 //Removing R1/R2 in case of BAM input
 ch_branched_input_bam_branched = ch_branched_input.bam.branch {
-	human: it["organism"] == "Human"
+	human: it["organism"] == "human"
+	other: true
 }
+
+ch_branched_input_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow for input bam:\n${it}" }
 
 workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, ch_branched_input_bam_branched.human)
+	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, ch_branched_input_bam_branched.human, MANTA.out.indel)
 	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_branched_input_bam_branched.human)
 	DELLY (PREPARE_GENOME.out.fasta, ch_branched_input_bam_branched.human)
 }
