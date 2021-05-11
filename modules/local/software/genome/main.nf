@@ -6,7 +6,7 @@ process interval_bed {
 		path (interval_list)
 
 	output:
-		path ("intervals.bed.gz"), emit: result
+		tuple path ("intervals.bed.gz"), path ("intervals.bed.gz.tbi"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -45,6 +45,25 @@ close (output_bed_file)
 system2 ("tabix",args=c("-p", "vcf", output_bed_file_path),wait=T)
 """
 
+}
+
+process interval_bed_intersect {
+
+	input:
+		val (bed_a)
+		val (bed_b)
+		val (flags)
+
+	output:
+		tuple path ("intervals.intersection.bed.gz"), path ("intervals.intersection.bed.gz.tbi"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+
+bedtools intersect -a ${bed_a} -b ${bed_b} ${flags} | bgzip -c > intervals.intersection.bed.gz
+tabix -p bed intervals.intersection.bed.gz
+
+	"""
 }
 
 

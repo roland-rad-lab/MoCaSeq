@@ -6,7 +6,7 @@ process strelka_matched {
 
 	input:
 		val (reference)
-		val (interval_bed)
+		tuple val (interval_bed), val (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor), path (candidate_small_indels_vcf), path (candidate_small_indels_vcf_index)
 
 	output:
@@ -14,7 +14,6 @@ process strelka_matched {
 
 	script:
 	"""#!/usr/bin/env bash
-tabix -p bed ${interval_bed}
 python2 ${params.strelka.dir}/bin/configureStrelkaSomaticWorkflow.py \\
 	--normalBam ${bam_normal} \\
 	--tumorBam ${bam_tumor} \\

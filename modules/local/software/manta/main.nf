@@ -6,7 +6,7 @@ process manta_matched {
 
 	input:
 		val (reference)
-		val (interval_bed)
+		tuple val (interval_bed), val (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
@@ -15,7 +15,6 @@ process manta_matched {
 
 	script:
 	"""#!/usr/bin/env bash
-tabix -p bed ${interval_bed}
 python2 ${params.manta.dir}/bin/configManta.py \\
 	--normalBam ${bam_normal} \\
 	--tumorBam ${bam_tumor} \\
