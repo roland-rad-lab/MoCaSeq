@@ -34,7 +34,7 @@ process strelka_matched_post {
 		tuple val (meta), val (type), path (somatic_snv_vcf), path (somatic_snv_vcf_index), path (somatic_indel_vcf), path (somatic_indel_vcf_index)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName.str.snp.post-processed.vcf.gz"), path ("${meta.sampleName.str.snp.post-processed.vcf.gz.tbi"), path ("${meta.sampleName}.str.indel.post-processed.vcf"), path ("${meta.sampleName}.str.indel.post-processed.vcf.tbi"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.str.snp.post-processed.vcf.gz"), path ("${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi"), path ("${meta.sampleName}.str.indel.post-processed.vcf.gz"), path ("${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -56,11 +56,11 @@ zcat ${somatic_indel_vcf} \\
 	( ( FILTER = 'PASS' ) & ( GEN[TUMOR].DP >= 5 ) & ( GEN[NORMAL].DP >= 5 ) & ( GEN[NORMAL].TIR[0] <= 1) & \\
 	( GEN[TUMOR].TIR[0] >= 2 ) & ( GEN[TUMOR].DP * 0.05 <= GEN[TUMOR].TIR[0] ) )
 	" \\
-	| bgzip -c > ${meta.sampleName}.str.indel._post-processed.vcf.gz
+	> ${meta.sampleName}.str.indel._post-processed.vcf
 
 java -jar ${params.gatk.jar} SelectVariants \\
 	--max-indel-size 10 \\
-	--variant ${meta.sampleName}.str.indel._post-processed.vcf.gz \\
+	--variant ${meta.sampleName}.str.indel._post-processed.vcf \\
 	--output ${meta.sampleName}.str.indel.post-processed.vcf.gz
 
 	"""
