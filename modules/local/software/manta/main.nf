@@ -10,8 +10,8 @@ process manta_matched {
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-		tuple val (meta), path ("results/variants/somaticSV.vcf.gz"), path ("results/variants/somaticSV.vcf.gz.tbi"), emit: sv
-		tuple val (meta), path ("results/variants/candidateSmallIndels.vcf.gz"), path ("results/variants/candidateSmallIndels.vcf.gz.tbi"), emit: indel
+		tuple val (meta), val ("matched"), path ("results/variants/somaticSV.vcf.gz"), path ("results/variants/somaticSV.vcf.gz.tbi"), emit: sv
+		tuple val (meta), val ("matched"), path ("results/variants/candidateSmallIndels.vcf.gz"), path ("results/variants/candidateSmallIndels.vcf.gz.tbi"), emit: indel
 
 	script:
 	"""#!/usr/bin/env bash
@@ -33,7 +33,7 @@ process manta_matched_post {
 	tag "${meta.sampleName}"
 
 	input:
-		tuple val (meta), path (somatic_vcf), path (somatic_vcf_index)
+		tuple val (meta), val(type), path (somatic_vcf), path (somatic_vcf_index)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Manta.annotated.vcf"), emit: result

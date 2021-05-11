@@ -29,6 +29,8 @@ process mutect_matched {
 #	2> ${meta.sampleName}.matched.m2.${interval}.log \\
 #	> ${meta.sampleName}.matched.m2.${interval}.out
 
+sleep \$(shuf -i 1-10 -r | head -n 1)
+
 touch ${meta.sampleName}.matched.m2.${interval}.vcf
 touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz
 	"""

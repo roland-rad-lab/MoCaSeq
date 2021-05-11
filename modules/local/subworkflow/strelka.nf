@@ -16,7 +16,16 @@ workflow STRELKA {
 		ch_interval_list = ch_interval.collectFile (name: 'interval_names.tsv', newLine: true)
 		interval_bed (ch_dict, ch_interval_list)
 
-		ch_data_expanded = ch_data.map { it ->
+		ch_indel_with_key = ch_indel.map {
+			[[it[1], it[0]["sampleName"]].join ("__"), it]
+		}
+		ch_data_expanded_matched = ch_data.map {
+			[["matched", it[0]["sampleName"]].join ("__"), it]
+		}
+		.join (ch_indel_with_key)
+		.groupTuple ().view ()
+		.map { it[1] }
+		.map { it ->
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 

@@ -2,17 +2,15 @@
 params.strelka = [:]
 
 process strelka_matched {
-
 	tag "${meta.sampleName}"
 
 	input:
 		val (reference)
 		val (interval_bed)
-		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
-		path (candidate_small_indels_vcf)
+		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor), path (candidate_small_indels_vcf), path (candidate_small_indels_vcf_index)
 
 	output:
-		tuple val (meta), path("Strelka/results/variants/somatic.snvs.vcf.gz"), path ("Strelka/results/variants/somatic.indels.vcf.gz") emit: result
+		tuple val (meta), val("matched"), path("Strelka/results/variants/somatic.snvs.vcf.gz"), path ("Strelka/results/variants/somatic.indels.vcf.gz"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
