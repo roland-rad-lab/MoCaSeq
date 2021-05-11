@@ -42,6 +42,7 @@ data_output <- data_intervals %>%
 output_bed_file <-pipe (paste ("bgzip -c >",output_bed_file_path), "w")
 write.table (data_output,file=output_bed_file,sep="\\t",row.names=F,col.names=F,quote=F)
 close (output_bed_file)
+system2 ("tabix",args=c("-p", "vcf", output_bed_file_path),wait=T)
 """
 
 }

@@ -27,7 +27,9 @@ include {
 	DELLY
 } from "./modules/local/subworkflow/delly"
 
-
+include {
+	CNV_KIT
+} from "./modules/local/subworkflow/cnv-kit"
 
 tsv_path = null
 
@@ -73,6 +75,7 @@ workflow
 	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, ch_input_branched_bam_branched.human, MANTA.out.indel)
 	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_branched_bam_branched.human)
 	DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
+	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, ch_input_branched_bam_branched.human)
 }
 
 
