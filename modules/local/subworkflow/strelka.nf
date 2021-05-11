@@ -16,20 +16,18 @@ workflow STRELKA {
 		ch_interval_list = ch_interval.collectFile (name: 'interval_names.tsv', newLine: true)
 		interval_bed (ch_dict, ch_interval_list)
 
-		ch_indel_with_key = ch_indel.map {
-			[[it[1], it[0]["sampleName"]].join ("__"), it]
-		}
-		ch_data_expanded_matched = ch_data.map {
-			[["matched", it[0]["sampleName"]].join ("__"), it]
-		}
-		.join (ch_indel_with_key)
-		.groupTuple ().view ()
-		.map { it[1] }
-		.map { it ->
-			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
+		ch_indel_branched = ch_indel.branch {
+			matched: it[1] == "matched"
+			other: true
 		}
 
-		strelka_matched (ch_fasta, interval_bed.out.result, ch_data_expanded, ch_indel)
+		ch_indel_branched.other.view { "[MoCaSeq] error: Failed to find matching STRELKA workflow path for input:\n${it}" }
+
+		ch_data_expanded_matched = ch_indel_branched.matched.map { it ->
+			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"], it[2], it[3] )
+		}
+
+		strelka_matched (ch_fasta, interval_bed.out.result, ch_data_expanded_matched)
 
 	emit:
 		result = strelka_matched.out.result
