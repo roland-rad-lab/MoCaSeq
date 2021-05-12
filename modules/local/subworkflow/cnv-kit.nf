@@ -16,7 +16,7 @@ workflow CNV_KIT {
 	main:
 		ch_interval_list = ch_interval.collectFile (name: 'interval_names.tsv', newLine: true)
 		interval_bed (ch_dict, ch_interval_list)
-		interval_bed_intersect (ch_gencode_genes_bed, interval_bed.out.result, Channel.of ("-wa"))
+		interval_bed_intersect (ch_gencode_genes_bed, interval_bed.out.result.map { it[0] }, Channel.of ("-wa"))
 
 		ch_data_expanded = ch_data.map { it ->
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )

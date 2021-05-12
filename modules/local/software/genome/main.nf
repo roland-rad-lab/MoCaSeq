@@ -59,8 +59,13 @@ process interval_bed_intersect {
 
 	script:
 	"""#!/usr/bin/env bash
+source ${projectDir}/repository/file_handling.sh
+temp_file_b=$(moc_mktemp_file .)
+#trap "rm ${temp_file_b}" EXIT
 
-bedtools intersect -a ${bed_a} -b ${bed_b} ${flags} | bgzip -c > intervals.intersection.bed.gz
+extract_if_zip ${bed_b} bed_b_extracted ${temp_file_b}
+
+bedtools intersect -a ${bed_a} -b ${bed_b_extracted} ${flags} | bgzip -c > intervals.intersection.bed.gz
 tabix -p bed intervals.intersection.bed.gz
 
 	"""
