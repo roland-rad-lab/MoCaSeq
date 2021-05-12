@@ -16,8 +16,8 @@ echo 'Start reformating Tables'
 getLines () {
 	cut -f 1-2 $1 > part1
 	#grep -P -o 'CHR2=[0-9XY]{1,2};POS2=\d*' $1 | sed -r 's/CHR2=([0-9XY]*);END=([0-9]*)/\1\t\2/g' > part2
-	grep -P -o 'CHR2=[0-9XY]{1,2}' preciseInsRm.tab | sed -r 's/CHR2=([0-9XY]*)/\1/g' > part2A
-	grep -P -o 'POS2=\d*' preciseInsRm.tab | sed -r 's/POS2=([0-9]*)/\1/g' > part2B
+	grep -P -o 'CHR2=[0-9XY]{1,2}' $1 | sed -r 's/CHR2=([0-9XY]*)/\1/g' > part2A
+	grep -P -o 'POS2=\d*' $1 | sed -r 's/POS2=([0-9]*)/\1/g' > part2B
 	grep -P -o 'PE=\d*;' $1 | sed -r 's/PE=([0-9]*);/\1/g' > part3
 	grep -P -o '(IM){0,1}PRECISE' $1 > part5
 	cut -f10 $1 | tr : '\t' | cut -f9-12 > part6

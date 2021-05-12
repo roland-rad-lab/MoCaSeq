@@ -1301,6 +1301,8 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	> $name/results/Delly/$name.pre.vcf
 fi
 
+
+
 if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; then
 	echo '---- Optional for WGS: Infer chromothripsis ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1373,7 +1375,17 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 		-d $name/results/HMMCopy/$name.HMMCopy.$resolution.log2RR.txt \
 		-c $chr -n $name -f $format
 	else
-		echo 'There are too few rearrangements in chromosome '$chr'.'
+
+		# check if it did run successfully and print something to the output folder
+		checkBreakpoints=$(cut -f 1 $name/results/Delly/$name.breakpoints.filtered.tab | sed -n 2p)
+		if [[ $checkBreakspoints == "NA" ]]; then
+			echo 'Error detected in Chromothripsis analysis.'
+			echo 'Error detected in Chromothripsis analysis.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
+		else
+			echo 'There are too few rearrangements in chromosome '$chr'.'
+			echo 'There are too few rearrangements in chromosome '$chr'.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
+		fi
+
 	fi
 	done
 

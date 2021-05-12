@@ -306,7 +306,7 @@ plotGlobalRatioProfile = function(cn=cn,ChromBorders=ChromBorders,cnSeg="",sampl
   ChromBordersReduced = ChromBorders[-c(1,LastEntry)]
   if(method == "CNV")
   {
-    segments(ChromBordersReduced,-yborder,ChromBordersReduced,yborder,lty=3,col="grey40",lwd=0.9)
+      segments(ChromBordersReduced,-yborder,ChromBordersReduced,yborder,lty=3,col="grey40",lwd=0.9)
   }
   if(method =="LOH" || method=="LOH_Germline" || method=="LOH_raw")
   {
