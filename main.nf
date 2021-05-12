@@ -32,6 +32,10 @@ include {
 	CNV_KIT
 } from "./modules/local/subworkflow/cnv-kit"
 
+include {
+	HMM_COPY
+} from "./modules/local/subworkflow/hmm-copy"
+
 tsv_path = null
 
 
@@ -78,6 +82,7 @@ workflow
 	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_branched_bam_branched.human)
 	DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
 	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.dict, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_branched_bam_branched.human)
+	HMM_COPY (PREPARE_GENOME.out.chrom_names, ch_input_branched_bam_branched.human)
 }
 
 

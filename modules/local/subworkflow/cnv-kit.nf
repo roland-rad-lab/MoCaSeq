@@ -1,4 +1,4 @@
-
+#!/usr/bin/env nextflow
 
 include { interval_bed; interval_bed_intersect } from "../software/genome/main"
 include { cnv_kit_matched; cnv_kit_single as cnv_kit_single_normal; cnv_kit_single as cnv_kit_single_tumor } from "../software/cnv-kit/main"
