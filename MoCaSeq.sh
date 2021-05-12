@@ -1379,8 +1379,8 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 		# check if it did run successfully and print something to the output folder
 		checkBreakpoints=$(cut -f 1 $name/results/Delly/$name.breakpoints.filtered.tab | sed -n 2p)
 		if [[ $checkBreakspoints == "NA" ]]; then
-			echo 'Error detected in Chromothripsis analysis.'
-			echo 'Error detected in Chromothripsis analysis.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
+			echo 'No breakpoints found for chromosome '$chr'.'
+			echo 'No breakpoints found for chromosome '$chr'.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
 		else
 			echo 'There are too few rearrangements in chromosome '$chr'.'
 			echo 'There are too few rearrangements in chromosome '$chr'.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log

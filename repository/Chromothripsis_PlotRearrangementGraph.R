@@ -10,8 +10,7 @@
 
 message("\n###Rearrangement Graph###")
 options(warn=-1)
-if(!require("optparse")) install.packages("optparse")
-suppressMessages(library(optparse))
+suppressPackageStartupMessages(library(optparse))
 
 option_list = list(
   make_option(c("-i", "--input"),type="character",default=NULL,help="rearrangement list"),

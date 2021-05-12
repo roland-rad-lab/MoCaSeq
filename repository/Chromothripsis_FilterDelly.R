@@ -9,8 +9,7 @@
 ##########################################################################################
 
 options(warn=-1)
-if(!require("optparse")) install.packages("optparse")
-suppressMessages(library(optparse))
+suppressPackageStartupMessages(library(optparse))
 
 option_list = list(
   make_option(c("-n", "--name"),type="character",default=NULL,help="name"),

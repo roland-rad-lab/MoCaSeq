@@ -10,8 +10,7 @@
 
 message("\n###LOH vs CN Comparison###")
 options(warn=-1)
-if(!require("optparse")) install.packages("optparse")
-suppressMessages(library(optparse))
+suppressPackageStartupMessages(library(optparse))
 
 option_list = list(
   make_option(c("-s", "--segments"),type="character",default=NULL,help="file containing copy number segments"),
