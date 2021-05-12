@@ -9,7 +9,7 @@ process hmm_copy_wig {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val (resolution), path ("?.wig"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("HMMCopy/${meta.sampleName}.${type}.${resolution}.wig"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
