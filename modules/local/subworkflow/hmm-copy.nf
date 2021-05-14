@@ -22,7 +22,8 @@ workflow HMM_COPY {
 		hmm_copy_wig_normal (ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
 		hmm_copy_wig_tumor (ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
 
-		ch_gc_wig_resolution = ch_gc_wig.map { tuple ( it.name , it) }.view ()
+		ch_gc_wig_resolution = ch_gc_wig.map { tuple ( it.name , it) }.view { println it }
+		ch_map_wig_resolution = ch_map_wig.map { tuple (it.name, it) }.view { println it }
 }
 
 

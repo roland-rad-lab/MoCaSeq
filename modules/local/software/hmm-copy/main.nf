@@ -5,7 +5,7 @@ process hmm_copy_wig {
 
 	input:
 		val (intervals)
-		val (resolution)
+		each (resolution)
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
