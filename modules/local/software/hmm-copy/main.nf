@@ -43,11 +43,11 @@ rangedDataToWig <- function(correctOutput, file, column = "copy", sample = "R", 
   }
   dat[is.na(dat)] <- -1
 
-  cat(paste("track type=wiggle_0 name=\"", sample, "\"", sep = ""),
-    file = file, sep = "\n")
-  temp <- data.frame(chr = correctOutput$chr, dat)
-  width <- correctOutput$start[2] - correctOutput$start[1]
-  chrs <- levels(correctOutput$chr)
+  cat(paste("track type=wiggle_0 name=\\"", sample, "\\"", sep = ""),
+    file = file, sep = "\\n")
+  temp <- data.frame(chr = correctOutput\$chr, dat)
+  width <- correctOutput\$start[2] - correctOutput\$start[1]
+  chrs <- levels(correctOutput\$chr)
 
   for (i in 1:length(chrs)) {
     #chr <- chrs[i]
@@ -59,8 +59,8 @@ rangedDataToWig <- function(correctOutput, file, column = "copy", sample = "R", 
         " (", length(out), ")", sep = ""))
     }
     cat(paste("fixedStep chrom=", not_that_chr, " start=1 step=", width,
-      " span=", width, sep = ""), file = file, append = TRUE, sep = "\n")
-    cat(out, file = file, sep = "\n", append = TRUE)
+      " span=", width, sep = ""), file = file, append = TRUE, sep = "\\n")
+    cat(out, file = file, sep = "\\n", append = TRUE)
   }
 }
 # ^Had to rewrite that becuase subset(temp, chr == chr) is nonsense
@@ -74,17 +74,17 @@ gc_ranged_subset <- gc_ranged[.(intervals)]
 gc_chr_level_info <- gc_ranged_subset[,.(count=.N),by=chr]
 gc_chr_levels <- gc_chr_level_info[order(gc_chr_level_info[,"count"],decreasing=T),"chr"]
 
-rangedDataToWig (gc_ranged_subset[,chr:=factor (chr,levels=gc_chr_levels$chr,ordered=T)], "intervals.gc.wig",column="value")
+rangedDataToWig (gc_ranged_subset[,chr:=factor (chr,levels=gc_chr_levels\$chr,ordered=T)], "intervals.gc.wig",column="value")
 rm (gc_ranged_subset, gc_ranged, gc_chr_levels, gc_chr_level_info)
 
 map_ranged <- wigToRangedData ("${map_wig}")
 setkeyv(map_ranged,"chr")
 map_ranged_subset <- map_ranged[.(intervals)]
 
-map_chr_level_info <- map_ranged_subset[,.(count=.N,by=chr]
+map_chr_level_info <- map_ranged_subset[,.(count=.N),by=chr]
 map_chr_levels <- map_chr_level_info[order(map_chr_level_info[,"count"],decreasing=T),"chr"]
 
-rangedDataToWig (map_ranged_subset[,chr:=factor (chr,levels=map_chr_levels$chr,ordered=T)], "intervals.map.wig", column="value")
+rangedDataToWig (map_ranged_subset[,chr:=factor (chr,levels=map_chr_levels\$chr,ordered=T)], "intervals.map.wig", column="value")
 rm (map_ranged_subset, map_ranged, map_chr_levels, map_chr_level_info)
 
 
@@ -94,7 +94,7 @@ normal\$reads <- normal\$reads+1
 normal <- as.data.frame(correctReadcount(normal))
 normal_copy=GRanges(normal\$chr, IRanges(normal\$start, normal\$end),copy=normal\$copy)
 
-tumor <- wigsToRangedData("${tumor_wig}","intevals.gc.wig","intervals.map.wig")
+tumor <- wigsToRangedData("${tumor_wig}","intervals.gc.wig","intervals.map.wig")
 tumor\$reads <- tumor\$reads+1
 tumor <- as.data.frame(correctReadcount(tumor))
 tumor_copy=GRanges(tumor\$chr, IRanges(tumor\$start, tumor\$end),copy=tumor\$copy)
