@@ -48,7 +48,7 @@ workflow HMM_COPY {
 			.join (ch_wig_resolution)
 			.view { "ngp: ${it}" }
 
-		hmm_copy_tsv (ch_hmm_copy_wig_resolution)
+		hmm_copy_tsv (ch_interval_csv_string, ch_hmm_copy_wig_resolution)
 }
 
 
