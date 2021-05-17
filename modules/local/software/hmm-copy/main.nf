@@ -155,6 +155,8 @@ process hmm_copy_plot {
 	script:
 	"""#!/usr/bin/env Rscript
 library (dplyr)
+library (ggplot2)
+library (gridExtra)
 
 interval_file <- gzfile ("${interval_bed}", 'rt')
 data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
@@ -188,7 +190,7 @@ head (data_ratio_plot)
 head (data_segments_plot)
 
 
-pdf (file="genome.pdf",width=9,height=6)
+pdf (file="${meta.sampleName}.HMMCopy.${resolution}.genome.pdf",width=9,height=6)
 
 ggplot (data_ratio_plot) +
 	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio)) +
@@ -228,9 +230,9 @@ for ( i in seq_along (chromosomes) )
 }
 
 # Need to do this outside of pdf call to prevent blank first page
-p <- marrangeGrob (plot_list,nrow=1,ncol=1) 
+p <- marrangeGrob (plot_list,nrow=1,ncol=1)
 
-pdf (file="chromosomes.pdf",width=9)
+pdf (file="${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 

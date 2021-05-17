@@ -30,7 +30,7 @@ workflow PREPARE_GENOME
 		fasta_index_flat = ch_fasta_index_flat
 		dict             = ch_dict
 		chrom_names      = ch_chrom_names
-		interval_bed     = interval_bed.out.result
+		interval_bed     = interval_bed.out.result.first ()
 		_chrom_n         = chrom_n
 		
 }
