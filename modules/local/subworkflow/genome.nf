@@ -1,5 +1,6 @@
 #!/usr/bin/env nextflow
 
+include { interval_bed } from "../software/genome/main"
 include {
 	bash_expand_path as bash_expand_path_gc
 	bash_expand_path as bash_expand_path_map
@@ -21,11 +22,15 @@ workflow PREPARE_GENOME
 		ch_chrom_names = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? Channel.fromList (params.genomes[genome_name]["names"]["auto_sex"]) : Channel.empty ()
 		chrom_n = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? params.genomes[genome_name]["names"]["auto_sex"].size () : 0
 
+		ch_interval_list = ch_chrom_names.collectFile (name: 'interval_names.tsv', newLine: true)
+		interval_bed (ch_dict, ch_interval_list)
+
 	emit:
 		fasta            = ch_fasta
 		fasta_index_flat = ch_fasta_index_flat
 		dict             = ch_dict
 		chrom_names      = ch_chrom_names
+		interval_bed     = interval_bed.out.result
 		_chrom_n         = chrom_n
 		
 }

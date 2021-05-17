@@ -2,12 +2,13 @@
 
 params.hmm_copy = [:]
 
-include { hmm_copy_wig as hmm_copy_wig_normal; hmm_copy_wig as hmm_copy_wig_tumor; hmm_copy_tsv } from "../software/hmm-copy/main"
+include { hmm_copy_wig as hmm_copy_wig_normal; hmm_copy_wig as hmm_copy_wig_tumor; hmm_copy_tsv; hmm_copy_plot } from "../software/hmm-copy/main"
 
 workflow HMM_COPY {
 
 	take:
 		ch_interval
+		ch_interval_bed
 		ch_gc_wig
 		ch_map_wig
 		ch_data
@@ -49,6 +50,7 @@ workflow HMM_COPY {
 			.view { "ngp: ${it}" }
 
 		hmm_copy_tsv (ch_interval_csv_string, ch_hmm_copy_wig_resolution)
+		hmm_copy_plot (ch_interval_bed, hmm_copy_tsv.out.result)
 }
 
 
