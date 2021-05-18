@@ -77,13 +77,48 @@ workflow
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
-	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
-	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human, MANTA.out.indel)
-	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_branched_bam_branched.human)
-	DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
-	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_branched_bam_branched.human)
-	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_branched_bam_branched.human)
-	STRUCTURAL_VARIATION (PREPARE_GENOME.out.interval_bed, MANTA.out.result, DELLY.out.result)
+	//MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
+	//STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human, MANTA.out.indel)
+	//MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_branched_bam_branched.human)
+	//DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
+	//CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_branched_bam_branched.human)
+	//HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_branched_bam_branched.human)
+	//STRUCTURAL_VARIATION (PREPARE_GENOME.out.interval_bed, MANTA.out.result, DELLY.out.result)
+	ch_fake_manta_out = Channel.fromList ([
+		[
+			["sampleName":"P4GNJ9"],
+			"${params.stub_dir}/P4GNJ9/Manta/P4GNJ9.Manta.vcf.gz",
+			"${params.stub_dir}/P4GNJ9/Manta/P4GNJ9.Manta.vcf.gz.tbi"
+		],
+		[
+			["sampleName":"GX4VZC"],
+			"${params.stub_dir}/GX4VZC/Manta/GX4VZC.Manta.vcf.gz",
+			"${params.stub_dir}/GX4VZC/Manta/GX4VZC.Manta.vcf.gz.tbi"
+		]
+	])
+	ch_fake_delly_out = Channel.fromList ([
+		[
+			["sampleName":"P4GNJ9"],
+			"${params.stub_dir}/P4GNJ9/Delly/P4GNJ9.bcf"
+		],
+		[
+			["sampleName":"GX4VZC"],
+			"${params.stub_dir}/GX4VZC/Delly/GX4VZC.bcf"
+		]
+	])
+	ch_fake_cnv_kit_out = Channel.fromList ([
+		[
+			["sampleName":"P4GNJ9"],
+			"${params.stub_dir}/P4GNJ9/CNVKit/P4GNJ9.Normal.cns",
+			"${params.stub_dir}/P4GNJ9/CNVKit/P4GNJ9.Tumor.cns",
+		],
+		[
+			["sampleName":"GX4VZC"].
+			"${params.stub_dir}/GX4VZC/CNVKit/GX4VZC.Normal.cns",
+			"${params.stub_dir}/GX4VZC/CNVKit/GX4VZC.Tumor.cns"
+		]
+	])
+	STRUCTURAL_VARIATION (PREPARE_GENOME.out.interval_bed, ch_fake_manta_out, ch_fake_delly_out, ch_fake_cnv_kit_out)
 }
 
 
