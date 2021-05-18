@@ -8,7 +8,7 @@ process manta_matched {
 
 	input:
 		val (reference)
-		tuple val (interval_bed), val (interval_bed_index)
+		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
