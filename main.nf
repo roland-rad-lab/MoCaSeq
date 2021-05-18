@@ -36,6 +36,10 @@ include {
 	HMM_COPY
 } from "./modules/local/subworkflow/hmm-copy"
 
+include {
+	STRUCTURAL_VARIATION
+} from "./modules/local/subworkflow/structural-variation"
+
 tsv_path = null
 
 
@@ -113,7 +117,7 @@ workflow
 			"${params.stub_dir}/P4GNJ9/CNVKit/P4GNJ9.Tumor.cns",
 		],
 		[
-			["sampleName":"GX4VZC"].
+			["sampleName":"GX4VZC"],
 			"${params.stub_dir}/GX4VZC/CNVKit/GX4VZC.Normal.cns",
 			"${params.stub_dir}/GX4VZC/CNVKit/GX4VZC.Tumor.cns"
 		]
