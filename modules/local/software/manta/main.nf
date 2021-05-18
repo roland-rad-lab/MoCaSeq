@@ -4,6 +4,8 @@ params.manta = [:]
 process manta_matched {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/Manta/variants", mode: "copy", pattern: "results/variants/*.vcf.gz*", saveAs: { it.replaceFirst ("^results/variants/","") }
+
 	input:
 		val (reference)
 		tuple val (interval_bed), val (interval_bed_index)
@@ -31,11 +33,15 @@ python2 runWorkflow.py -m local -j ${params.manta.threads}
 process manta_matched_post {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/Manta", mode: "copy", pattern: "*.Manta.vcf.gz*"
+
 	input:
 		tuple val (meta), val(type), path (somatic_vcf), path (somatic_vcf_index)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Manta.annotated.vcf"), emit: result
+		// It is only possible to publish process outputs
+		tuple val (meta), path ("${meta.sampleName}.Manta.vcf.gz"), path ("${meta.sampleName}.Manta.vcf.gz.tbi"), emit: filtered_vcf
 
 	script:
 
