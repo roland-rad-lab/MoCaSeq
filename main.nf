@@ -40,6 +40,10 @@ include {
 	STRUCTURAL_VARIATION
 } from "./modules/local/subworkflow/structural-variation"
 
+include {
+	IGV_TRACK_READ
+} from "./modules/local/subworkflow/igv-track"
+
 tsv_path = null
 
 
@@ -123,6 +127,11 @@ workflow
 		]
 	])
 	STRUCTURAL_VARIATION (PREPARE_GENOME.out.interval_bed, ch_fake_manta_out, ch_fake_delly_out, ch_fake_cnv_kit_out)
+
+	if ( params.track_read )
+	{
+		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
+	}
 }
 
 

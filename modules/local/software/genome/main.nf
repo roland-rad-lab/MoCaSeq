@@ -35,7 +35,7 @@ names (data_intervals) <- c("sequence_name")
 
 data_output <- data_intervals %>%
 	inner_join (data_seq_lengths,by="sequence_name") %>%
-	mutate (start=1) %>%
+	mutate (start=0) %>%
 	select (sequence_name,start,sequence_length) %>%
 	data.frame
 
