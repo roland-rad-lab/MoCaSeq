@@ -1,5 +1,5 @@
 
-include { structural_variation_matched } from "../software/structural-variation/main"
+include { structural_variation_matched;structural_variation_matched_merge } from "../software/structural-variation/main"
 
 workflow STRUCTURAL_VARIATION
 {
@@ -31,6 +31,6 @@ workflow STRUCTURAL_VARIATION
 			}
 
 		structural_variation_matched (ch_interval_bed, ch_data)
-
+		structural_variation_matched_merge (structural_variation_matched.out.result)
 }
 

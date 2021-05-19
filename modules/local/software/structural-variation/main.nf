@@ -9,6 +9,8 @@ process structural_variation_matched {
 		tuple path (interval_bed), path(interval_bed_index)
 		tuple val (meta), path (manta_vcf), path (manta_vcf_index), path (delly_bcf), path (normal_cns), path (tumor_cns)
 
+	output:
+		tuple val (meta), path ("${meta.sampleName}.manta.tsv"), path ("${meta.sampleName}.delly.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -26,5 +28,35 @@ cat ${tumor_cns} | sed -e '1d;' | awk BEGIN'{FS=OFS="\\t";}{print "Tumor",\$1,\$
 	"""
 }
 
+process structural_variation_matched_merge {
+	tag "${meta.sampleName}"
+
+	input:
+		tuple val (meta), path (manta_tsv), path (delly_tsv)
+
+
+	script:
+	"""#!/usr/bin/env Rscript
+library (dplyr)
+library (stringr)
+
+source ("${params.script_base}/SV_library.R")
+
+manta_tsv_file_path <- "${manta_tsv}"
+delly_tsv_file_path <- "${delly_tsv}"
+
+data_manta <- read.table (file=manta_tsv_file_path,header=T,sep="\t",stringsAsFactors=F)
+head (data_manta)
+
+data_delly <- read.table (file=delly_tsv_file_path,header=T,sep="\\t",stringsAsFactors=F)
+head (data_delly)
+
+data_manta_sv <- sv_from_manta (data_manta)
+head (data_manta_sv)
+
+
+
+	"""
+}
 
 
