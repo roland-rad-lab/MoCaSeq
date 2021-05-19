@@ -54,7 +54,12 @@ head (data_delly)
 data_manta_sv <- sv_from_manta (data_manta)
 head (data_manta_sv)
 
+data_delly_sv <- sv_from_delly (data_delly)
+head (data_delly_sv)
 
+data_sv <- rbind (data_manta_sv %>% mutate(caller="manta") %>% data.frame,data_delly_sv %>% mutate(caller="delly") %>% data.frame)
+
+write.table (data_sv,file="sv.combined.tsv",sep="\\t",row.names=F,quote=F)
 
 	"""
 }
