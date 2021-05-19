@@ -36,6 +36,10 @@ include {
 	HMM_COPY
 } from "./modules/local/subworkflow/hmm-copy"
 
+include {
+	IGV_TRACK_READ
+} from "./modules/local/subworkflow/igv-track
+
 tsv_path = null
 
 
@@ -83,6 +87,11 @@ workflow
 	DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
 	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_branched_bam_branched.human)
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_branched_bam_branched.human)
+
+	if ( params.track_read )
+	{
+		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
+	}
 }
 
 
