@@ -15,7 +15,7 @@ workflow STRUCTURAL_VARIATION
 		ch_delly_keyed = ch_delly.map { tuple ( it[0]["sampleName"], "Delly", it ) }
 		ch_cnv_kit_keyed = ch_cnv_kit.map { tuple ( it[0]["sampleName"], "CNVKit", it ) }
 
-		ch_data = ch_manta_keyed.mix (ch_delly_keyed,ch_cnv_kit_keyed).groupTuple ().view { "ch_data: ${it}" }
+		ch_data = ch_manta_keyed.mix (ch_delly_keyed,ch_cnv_kit_keyed).groupTuple ()
 			.map {
 				def manta_index = it[1].indexOf ("Manta")
 				def delly_index = it[1].indexOf ("Delly")
@@ -28,8 +28,7 @@ workflow STRUCTURAL_VARIATION
 				def cnvkit_tumor = it[2][cnvkit_index][2]
 
 				tuple ( ["sampleName": it[0]], manta_vcf, manta_vcf_index, delly_bcf, cnvkit_normal, cnvkit_tumor)
-			}.view { "ch_data out: ${it}" }
-
+			}
 
 		structural_variation_matched (ch_interval_bed, ch_data)
 
