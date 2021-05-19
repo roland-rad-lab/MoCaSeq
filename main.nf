@@ -38,7 +38,7 @@ include {
 
 include {
 	IGV_TRACK_READ
-} from "./modules/local/subworkflow/igv-track
+} from "./modules/local/subworkflow/igv-track"
 
 tsv_path = null
 
