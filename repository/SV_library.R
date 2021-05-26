@@ -137,6 +137,14 @@ sv_find_event <- function (data, group)
 	return (result)
 }
 
+as_iranges <- function (data)
+{
+        mdata <- data %>% dplyr::select (-c (start,end,width)) %>% data.frame
+        result <- IRanges (start=data$start,end=data$end,width=data$width)
+        mcols (result) <- mdata
+        return (result)
+}
+
 as_tibble <- function (data)
 {
 	result <- tibble (
