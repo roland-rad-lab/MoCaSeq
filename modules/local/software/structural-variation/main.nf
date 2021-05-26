@@ -10,7 +10,7 @@ process structural_variation_matched {
 		tuple val (meta), path (manta_vcf), path (manta_vcf_index), path (delly_bcf), path (normal_cns), path (tumor_cns)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.manta.tsv"), path ("${meta.sampleName}.delly.tsv"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.manta.tsv"), path ("${meta.sampleName}.delly.tsv"), path ("${meta.sampleName}.cnvkit.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -32,7 +32,7 @@ process structural_variation_matched_merge {
 	tag "${meta.sampleName}"
 
 	input:
-		tuple val (meta), path (manta_tsv), path (delly_tsv)
+		tuple val (meta), path (manta_tsv), path (delly_tsv), path (cnv_kit_tsv)
 
 
 	script:
@@ -45,6 +45,7 @@ source ("${params.script_base}/SV_library.R")
 
 manta_tsv_file_path <- "${manta_tsv}"
 delly_tsv_file_path <- "${delly_tsv}"
+cnv_kit_tsv_file_path <- "${cnv_kit_tsv}"
 
 data_manta <- read.table (file=manta_tsv_file_path,header=T,sep="\t",stringsAsFactors=F)
 head (data_manta)
@@ -52,17 +53,19 @@ head (data_manta)
 data_delly <- read.table (file=delly_tsv_file_path,header=T,sep="\\t",stringsAsFactors=F)
 head (data_delly)
 
+data_cnv_kit <- read.table (file=cnv_kit_tsv_file_path,header=T,sep="\\t",stringsAsFactors=F)
+head (data_cnv_kit)
+
 data_manta_sv <- sv_from_manta (data_manta)
 head (data_manta_sv)
 
 data_delly_sv <- sv_from_delly (data_delly)
 head (data_delly_sv)
 
-data_sv <- rbind (data_manta_sv %>% mutate(caller="manta") %>% data.frame,data_delly_sv %>% mutate(caller="delly") %>% data.frame)
+data_cnv_kit_cn <- cn_from_cnv_kit (data_cnv_kit)
+head (data_cnv_kit_cn)
 
-print ("data_sv")
-print (head(data_sv))
-print (class(data_sv[,"pos1"]))
+data_sv <- rbind (data_manta_sv %>% mutate(caller="manta") %>% data.frame,data_delly_sv %>% mutate(caller="delly") %>% data.frame)
 
 # https://www.bioconductor.org/packages/release/bioc/html/StructuralVariantAnnotation.html
 # ^ Can read from the VCFs and do the merging, plus output to bedpe and circos plots
@@ -70,32 +73,35 @@ print (class(data_sv[,"pos1"]))
 # https://github.com/PapenfussLab/StructuralVariantAnnotation
 
 data_sv_merged <- data_sv %>%
-	#filter (sample=="Tumor",SVtype=="t2tINV",chrom1=="3",chrom2=="1") %>%
-	#filter (sample=="Normal",SVtype=="DUP",chrom1=="14",chrom2=="14") %>%
-	#bind_cols (event_id_sample_sv_chrom=group_indices (.,sample,SVtype,chrom1,chrom2)) %>%
-	#mutate (event_id_sample_sv_chrom=group_by (.,sample,SVtype,chrom1,chrom2) %>% group_indices ()) %>%
 	group_by (sample,SVtype,chrom1,chrom2) %>%
-	mutate(event_id_sample_sv_chrom=group()) %>%
+	mutate(event_id_sample_sv_chrom=cur_group_id ()) %>%
 	group_modify (sv_find_event) %>%
 	ungroup () %>%
 	dplyr::select (-c(region1,region2)) %>%
 	dplyr::rename (event_id_sample_sv_chrom_event=event_id) %>%
-	bind_cols (event_id_sample=group_indices (.,event_id_sample_sv_chrom,event_id_sample_sv_chrom_event)) %>%
-	bind_cols (event_id_sv_chrom=group_indices (.,SVtype,chrom1,chrom2)) %>%
+	group_by (event_id_sample_sv_chrom,event_id_sample_sv_chrom_event) %>%
+	mutate (event_id_sample=cur_group_id ()) %>%
+	ungroup () %>%
 	group_by (SVtype,chrom1,chrom2) %>%
+	mutate (event_id_sv_chrom=cur_group_id ()) %>%
 	group_modify (sv_find_event) %>%
 	ungroup () %>%
 	dplyr::select (-c(region1,region2)) %>%
 	dplyr::rename (event_id_sv_chrom_event=event_id) %>%
-	bind_cols (event_id=group_indices (.,event_id_sv_chrom,event_id_sv_chrom_event)) %>%
+	group_by (event_id_sv_chrom,event_id_sv_chrom_event) %>%
+	mutate (event_id=cur_group_id ()) %>%
+	ungroup () %>%
+	group_by (event_id,sample) %>%
+	mutate (not_observed=sum(gt=="0/0")==n()) %>%
+	ungroup () %>%
 	group_by (event_id) %>%
-	#group_modify(function (data,group) { print (data[,"sample"]);print ("Normal" %in% data[,"sample"]); cbind (data,somatic="Normal" %in% data[,"sample"]) }) %>%
-	mutate (somatic=match("Normal",sample,nomatch=0)) %>%
+	mutate (somatic=sum(sample=="Normal") == sum(sample=="Normal" & not_observed)) %>%
 	ungroup () %>%
 	dplyr::select (-c (event_id_sample_sv_chrom,event_id_sample_sv_chrom_event,event_id_sv_chrom,event_id_sv_chrom_event)) %>%
 	data.frame
 
 write.table (data_sv_merged,file="${meta.sampleName}.sv.events.tsv",sep="\\t",row.names=F,quote=F)
+write.table (data_cnv_kit_cn,file="${meta.sampleName}.cn.events.tsv",sep="\\t",row.names=F,quote=F)
 
 	"""
 }

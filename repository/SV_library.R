@@ -18,6 +18,7 @@ sv_from_manta <- function (data)
 		mutate (chrom1=chrom,pos1=pos,chrom2=chrom,pos2=info.end,SVtype=info.svtype,strand1="+",strand2="-") %>%
 		mutate (gt=case_when (
 				      pr.ref + sr.ref == 0 ~ "1/1",
+				      pr.alt + sr.alt == 0 ~ "0/0",
 				      TRUE ~ "0/1"
 				      )) %>%
 		dplyr::select (sample,chrom1,pos1,chrom2,pos2,SVtype,strand1,strand2,gt) %>%
@@ -28,6 +29,7 @@ sv_from_manta <- function (data)
 		mutate (chrom1=chrom,pos1=pos,chrom2=chrom,pos2=info.end,SVtype=info.svtype,strand1="-",strand2="+") %>%
 		mutate (gt=case_when (
 				      pr.ref + sr.ref == 0 ~ "1/1",
+				      pr.alt + sr.alt == 0 ~ "0/0",
 				      TRUE ~ "0/1"
 				      )) %>%
 		dplyr::select (sample,chrom1,pos1,chrom2,pos2,SVtype,strand1,strand2,gt) %>%
@@ -44,6 +46,7 @@ sv_from_manta <- function (data)
 		mutate (sample=sample1,SVtype="h2hINV",strand1="+",strand2="+") %>%
 		mutate (gt=case_when (
 				      pr.ref1 + pr.ref2 + sr.ref1 + sr.ref2 == 0 ~ "1/1",
+				      pr.alt1 + pr.alt2 + sr.alt1 + sr.alt2 == 0 ~ "0/0",
 				      TRUE ~ "0/1"
 				      )) %>%
 		dplyr::select (sample,chrom1,pos1,chrom2,pos2,SVtype,strand1,strand2,gt) %>%
@@ -55,6 +58,7 @@ sv_from_manta <- function (data)
 		mutate (sample=sample1,SVtype="t2tINV",strand1="-",strand2="-") %>%
 mutate (gt=case_when (
 				      pr.ref1 + pr.ref2 + sr.ref1 + sr.ref2 == 0 ~ "1/1",
+				      pr.alt1 + pr.alt2 + sr.alt1 + sr.alt2 == 0 ~ "0/0",
 				      TRUE ~ "0/1"
 				      )) %>%
 
@@ -128,6 +132,87 @@ sv_find_event <- function (data, group)
 		#bind_cols (event_id=group_indices (.,region1,region2)) %>%
 		group_by (region1,region2) %>%
 		mutate (event_id=cur_group_id ()) %>%
+		data.frame
+
+	return (result)
+}
+
+as_tibble <- function (data)
+{
+	result <- tibble (
+		start = start (data),
+		end = end (data),
+		width = width (data)
+	)
+	if ( "revmap" %in% names (mcols (data)) )
+	{
+		attr(result,"revmap") <- mcols (data)$revmap
+	}
+	return (result)
+}
+
+cleanup_cnv_overlaps <- function (data,group)
+{
+	#print ("cleanup_cnvs")
+	#print (head(data))
+	#print (group)
+
+	result <- data %>%
+		mutate (width=end-start+1) %>%
+		as_iranges %>%
+		IRanges::reduce () %>%
+		as_tibble %>%
+		data.frame
+
+	return (result)
+}
+
+cleanup_cnv_disjoin <- function (data, group)
+{
+	#print (data)
+	#print (nrow(data))
+	data_with_id <- data %>%
+		mutate (id=row_number ())
+
+	data_disjoin <- data_with_id %>%
+		as_iranges %>%
+		IRanges::disjoin (with.revmap=T) %>%
+		as_tibble
+
+	#print ("data_disjoin")
+	#print (data_disjoin)
+	# Annotate meta data using revmap
+	disjoin_id_map <- extractList (data_with_id %>% pull (id), data_disjoin %>% attr("revmap") )
+
+	#print ("disjoin_id_map:")
+	#print (disjoin_id_map)
+
+	data_disjoin_id_map <- do.call (rbind,lapply (seq_along (disjoin_id_map), function (x,a) { data.frame (id=x,value=a[[x]]) },a=disjoin_id_map))
+	#print (data_disjoin_id_map)
+
+	result <- data_disjoin %>%
+		mutate(id=row_number ()) %>%
+		inner_join (data_disjoin_id_map,by=c("id"="id")) %>%
+		inner_join (data_with_id,by=c("value"="id"),suffix=c("",".original")) %>%
+		filter (width>1) %>%
+		dplyr::select (start,end,cn) %>%
+		data.frame
+
+	return (result)
+}
+
+cn_from_cnv_kit <- function (data)
+{
+	result <- data %>%
+		mutate (cn=round (2^log2,digits=0)) %>%
+		dplyr::select (sample,chrom,start,end,cn) %>%
+		group_by (sample,chrom,cn) %>%
+		group_modify (cleanup_cnv_overlaps) %>%
+		ungroup () %>%
+		group_by (sample,chrom) %>%
+		group_modify (cleanup_cnv_disjoin) %>%
+		ungroup () %>%
+		arrange (sample,chrom,start) %>%
 		data.frame
 
 	return (result)
