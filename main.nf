@@ -13,6 +13,10 @@ include {
 } from "./modules/local/subworkflow/genome"
 
 include {
+	REMAP
+} from "./modules/local/subworkflow/remap"
+
+include {
 	MANTA
 } from "./modules/local/subworkflow/manta"
 
@@ -67,31 +71,41 @@ if (tsv_path) {
 
 ch_input_branched = ch_input_sample.branch {
 	bam: it["normalBAM"] != 'NA' //These are all BAMs
+	remap: it["normalR1"].endsWith ("bam")
 }
 
-//Removing R1/R2 in case of BAM input
 ch_input_branched_bam_branched = ch_input_branched.bam.branch {
 	human: it["organism"] == "human"
 	other: true
 }
 
-ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow for input bam:\n${it}" }
+ch_input_branched_remap_branched = ch_input_branched.remap.branch {
+	human: it["organism"] == "human"
+	other: true
+}
+
+ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input bam:\n${it}" }
+ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input remap bam:\n${it}" }
 
 workflow
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
-	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
-	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human, MANTA.out.indel)
-	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_branched_bam_branched.human)
-	DELLY (PREPARE_GENOME.out.fasta, ch_input_branched_bam_branched.human)
-	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_branched_bam_branched.human)
-	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_branched_bam_branched.human)
+
+	REMAP (PREPARE_GENOME.out.fasta, ch_input_branched_remap_branched.human)
+	ch_input_bam_human = REMAP.out.result.mix (ch_input_branched_bam_branched.human)
+
+	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_bam_human)
+	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_bam_human, MANTA.out.indel)
+	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_bam_human)
+	DELLY (PREPARE_GENOME.out.fasta, ch_input_bam_human)
+	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_bam_human)
+	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_bam_human)
 
 	if ( params.track_read )
 	{
-		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
+		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_bam_human)
 	}
 	if ( params.track_cn )
 	{

@@ -89,11 +89,15 @@ def extract_data (tsv_file)
 				}
 				if ( item["type"] == "Normal")
 				{
+					accumulator["normalR1"] = item["r1"]
+					accumulator["normalR2"] = item["r2"]
 					accumulator["normalBAM"] = item["bam"]
 					accumulator["normalBAI"] = item["bai"]
 				}
 				if ( item["type"] == "Tumor" )
 				{
+					accumulator["tumorR1"] = item["r1"]
+					accumulator["tumorR2"] = item["r2"]
 					accumulator["tumorBAM"] = item["bam"]
 					accumulator["tumorBAI"] = item["bai"]
 				}
