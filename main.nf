@@ -92,6 +92,11 @@ workflow
 	{
 		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_branched_bam_branched.human)
 	}
+	if ( params.track_cn )
+	{
+		IGV_TRACK_CN (CNV_KIT.out.cns_normal)
+		IGV_TRACK_CN (CNV_KIT.out.cns_tumor)
+	}
 }
 
 

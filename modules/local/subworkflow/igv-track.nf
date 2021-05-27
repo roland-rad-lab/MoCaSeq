@@ -3,6 +3,7 @@
 include {
 	igv_track_depth as igv_track_depth_normal;
 	igv_track_depth as igv_track_depth_tumor;
+	igv_track_cn
 } from "../software/igv-track/main"
 
 workflow IGV_TRACK_READ {
@@ -21,6 +22,13 @@ workflow IGV_TRACK_READ {
 		igv_track_depth_tumor (ch_interval_space_string, ch_interval_bed, ch_data_tumor)
 }
 
+workflow IGV_TRACK_CN {
 
+	take:
+		ch_cns
+
+	main:
+		igv_track_cn (ch_cns)
+}
 
 

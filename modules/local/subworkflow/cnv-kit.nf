@@ -29,5 +29,9 @@ workflow CNV_KIT {
 		cnv_kit_matched (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded)
 		cnv_kit_single_normal (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal)
 		cnv_kit_single_tumor (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_tumor)
+
+	emit:
+		cns_normal = cnv_kit_single_normal.out.cns
+		cns_tumor = cnv_kit_single_normal.out.cns
 }
 

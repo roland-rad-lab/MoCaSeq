@@ -53,11 +53,16 @@ done
 process cnv_kit_single {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
+
 	input:
 		val (reference)
 		val (reference_flat)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), val (type), path (bam), path (bai)
+
+	output:
+		tuple val (meta), val(type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
 
 	script:
 	"""#!/usr/bin/env bash

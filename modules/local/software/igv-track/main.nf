@@ -28,4 +28,29 @@ rm ${meta.sampleName}.${type}.depth.raw.all.wig
 	"""
 }
 
+process igv_track_cn {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy", pattern: "*.bedGraph"
+
+	input:
+		tuple val (meta), val (type), path (cns)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.CNVKit.bedGraph")
+
+	script:
+	"""#!/usr/bin/env Rscript
+
+data <- read.table (file="${cns}",sep="\\t",header=T,stringsAsFactors=F)
+head (data)
+
+data_bed <- data %>%
+	dplyr::select (chromosome,start,end,log2) %>%
+	data.frame
+
+write.table (data_bed,file="${meta.sampleName}.${type}.CNVKit.bedGraph",sep="\\t",quote=F,row.names=F)
+
+	"""
+}
 
