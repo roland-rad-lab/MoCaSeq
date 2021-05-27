@@ -53,7 +53,8 @@ done
 process cnv_kit_single {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
+	// .baseName ~ A nextflow groovy file extension
+	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${bam.baseName}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
 
 	input:
 		val (reference)
@@ -62,9 +63,10 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val(type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
+		tuple val (meta), val(type), path ("CNVKit/single/${bam.baseName}.cns"), emit: cns
 
 	script:
+
 	"""#!/usr/bin/env bash
 source ${params.script_base}/file_handling.sh
 temp_file_b=\$(moc_mktemp_file .)

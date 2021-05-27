@@ -42,8 +42,10 @@ process igv_track_cn {
 	script:
 	"""#!/usr/bin/env Rscript
 
+library (dplyr)
+
 data <- read.table (file="${cns}",sep="\\t",header=T,stringsAsFactors=F)
-head (data)
+#head (data)
 
 data_bed <- data %>%
 	dplyr::select (chromosome,start,end,log2) %>%

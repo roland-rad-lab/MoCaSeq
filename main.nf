@@ -37,7 +37,8 @@ include {
 } from "./modules/local/subworkflow/hmm-copy"
 
 include {
-	IGV_TRACK_READ
+	IGV_TRACK_READ;
+	IGV_TRACK_CN
 } from "./modules/local/subworkflow/igv-track"
 
 tsv_path = null
@@ -94,8 +95,7 @@ workflow
 	}
 	if ( params.track_cn )
 	{
-		IGV_TRACK_CN (CNV_KIT.out.cns_normal)
-		IGV_TRACK_CN (CNV_KIT.out.cns_tumor)
+		IGV_TRACK_CN (CNV_KIT.out.cns_normal, CNV_KIT.out.cns_tumor)
 	}
 }
 

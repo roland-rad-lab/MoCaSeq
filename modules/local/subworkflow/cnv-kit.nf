@@ -32,6 +32,6 @@ workflow CNV_KIT {
 
 	emit:
 		cns_normal = cnv_kit_single_normal.out.cns
-		cns_tumor = cnv_kit_single_normal.out.cns
+		cns_tumor = cnv_kit_single_tumor.out.cns
 }
 
