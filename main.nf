@@ -93,7 +93,7 @@ workflow
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	REMAP (PREPARE_GENOME.out.fasta, ch_input_branched_remap_branched.human)
+	REMAP (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human)
 	ch_input_bam_human = REMAP.out.result.mix (ch_input_branched_bam_branched.human)
 
 	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_bam_human)

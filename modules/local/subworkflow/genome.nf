@@ -16,9 +16,10 @@ workflow PREPARE_GENOME
 		genome_name
 
 	main:
-		ch_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta"] ? Channel.of (params.genomes[genome_name]["fasta"]) : Channel.empty ()
+		ch_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta"] ? Channel.of (params.genomes[genome_name]["fasta"]) : Channel.empty ()	
 		ch_fasta_index_flat = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index_flat"] ? Channel.of (params.genomes[genome_name]["fasta_index_flat"]) : Channel.empty ()
 		ch_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dict"] ? Channel.of (params.genomes[genome_name]["dict"]) : Channel.empty ()
+		ch_dir = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dir"] ? Channel.of (params.genomes[genome_name]["dir"]) : Channel.empty ()
 		ch_chrom_names = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? Channel.fromList (params.genomes[genome_name]["names"]["auto_sex"]) : Channel.empty ()
 		chrom_n = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? params.genomes[genome_name]["names"]["auto_sex"].size () : 0
 
@@ -29,6 +30,7 @@ workflow PREPARE_GENOME
 		fasta            = ch_fasta
 		fasta_index_flat = ch_fasta_index_flat
 		dict             = ch_dict
+		dir              = ch_dir
 		chrom_names      = ch_chrom_names
 		interval_bed     = interval_bed.out.result.first ()
 		_chrom_n         = chrom_n
@@ -43,6 +45,7 @@ workflow GENOME_ANNOTATION
 	main:
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
+		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]) : Channel.empty ()
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]) : Channel.empty ()
 
 		bash_expand_path_gc (ch_gc_wig)
@@ -51,6 +54,7 @@ workflow GENOME_ANNOTATION
 	emit:
 		gc_wig = bash_expand_path_gc.out.splitText ()
 		map_wig = bash_expand_path_map.out.splitText ()
+		common_vcf = ch_common_vcf
 		gencode_genes_bed = ch_gencode_genes_bed
 }
 
