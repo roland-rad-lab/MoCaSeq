@@ -94,44 +94,13 @@ process bwa_mem_paired {
 
 	input:
 		val (reference_dir)
-		tuple val (meta), val(type), path (fastq_r1), path (fastq_r2)
+		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2)
 
-
-	script:
-	"""#!/usr/bin/env bash
-
-bwa mem -t ${params.bwa_mem.threads} \\
-	${reference_dir} \\
-	-Y \\
-	-K ${params.bwa_mem.input_bases} \\
-	-v 1 \\
-	${fastq_r1} \\
-	${fastq_r2} \\
-	| java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
-	-jar ${params.picard.jar} CleanSam \\
-	-I /dev/stdin \\
-	-O ${meta.sampleName}.${type}.cleaned.bam \\
-	-VALIDATION_STRINGENCY LENIENT
-
-	"""
-}
-
-process bwa_mem_paired {
-	tag "${meta.sampleName}"
-
-	input:
-		val (reference_dir)
-		tuple val (meta), val(type), path (fastq_r1), path (fastq_r2)
-
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.cleaned.bam"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
-
-find /var/pipeline
-ls -l /var/pipeline/ref
-ls -l /var/pipeline/ref/GRCh38.p12
-
-echo "done"
 
 bwa mem -t ${params.bwa_mem.threads} \\
 	${reference_dir} \\
@@ -180,7 +149,7 @@ java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
 		-I ${meta.sampleName}.${type}.cleaned.sorted.marked.bam \\
 		-O ${meta.sampleName}.${type}.cleaned.sorted.readgroups.marked.bam \\
 		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \\
-		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM
+		-MAX_RECORDS_IN_RAM ${params.picard.max_records_in_ram}
 
 java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} BaseRecalibrator \\
 	-R ${reference} \\
