@@ -1,6 +1,6 @@
 
 
-include { sam_to_fastq_paired } from "../software/remap/main"
+include { sam_to_fastq_paired;fastqc_paired } from "../software/remap/main"
 
 workflow REMAP
 {
@@ -20,7 +20,9 @@ workflow REMAP
 
 		ch_data_expanded_paired = ch_data_branched_normal_paired.mix (ch_data_branched_tumor_paired)
 
-		sam_to_fastq_paired (ch_fasta, ch_data_expanded_paired)
+		sam_to_fastq_paired (ch_data_expanded_paired)
+		fastqc_paired (sam_to_fastq_paired.out.result)
+		foo = Channel.empty ()
 
 	emit:
 		result = foo

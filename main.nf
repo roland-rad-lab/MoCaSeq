@@ -70,8 +70,8 @@ if (tsv_path) {
 } else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
 
 ch_input_branched = ch_input_sample.branch {
-	bam: it["normalBAM"] != 'NA' //These are all BAMs
-	remap: it["normalR1"].endsWith ("bam")
+	bam: it["normalBAM"] != null //These are all BAMs
+	remap: it["normalR1"] != null && it["normalR1"].toString().endsWith (".bam") //Path.endsWith tries to match entire final segment
 }
 
 ch_input_branched_bam_branched = ch_input_branched.bam.branch {
@@ -85,7 +85,7 @@ ch_input_branched_remap_branched = ch_input_branched.remap.branch {
 }
 
 ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input bam:\n${it}" }
-ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input remap bam:\n${it}" }
+ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input remap:\n${it}" }
 
 workflow
 {
