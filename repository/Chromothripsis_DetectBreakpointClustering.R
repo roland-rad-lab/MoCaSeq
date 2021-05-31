@@ -42,10 +42,8 @@ if(!opt$format %in% c("tif","emf")) stop("The output format has to be either tif
 
 
 # main program
-if(!require("zoo")) install.packages("zoo")
-if(!require("devEMF")) install.packages("devEMF")
-suppressMessages(library(zoo))
-suppressMessages(library(devEMF))
+suppressPackageStartupMessages(library(zoo))
+suppressPackageStartupMessages(library(devEMF))
 
 # extract DELLY breakpoint list from rearrangement file
 delly_breaks <- data.frame(input_list$donPos,input_list$accPos,as.character(input_list$Type),stringsAsFactors=F)
@@ -65,13 +63,17 @@ breaks_cdf <- pexp(dist_hist$breaks,rate=lamda)
 null.probs <- rollapply(breaks_cdf, 2, function(x) x[2]-x[1])
 test <- chisq.test(dist_hist$counts, p=null.probs, rescale.p=TRUE, simulate.p.value=TRUE)
 
+if(is.na(test$p.value)){
+  test$p.value <- 1
+}
+
 # generate plot
 if(test$p.value < 0.001){
   pText = paste0("p < 10E",ceiling(log10(test$p.value)))
 } else{
   pText = paste0("p = ",signif(test$p.value,2))
 }
-
+  
 if(opt$format=="tif") { tiff(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".BreakpointCluster.tif"),1600,1600,res=200)
 } else emf(paste0(opt$name,"/results/Chromothripsis/Chr",opt$chrom,"/",opt$name,".chr",opt$chrom,".breakpoint_cluster.emf"),bg="white", width=9,height=9,coordDPI = 200)
   par(oma=c(4,6,0,0))

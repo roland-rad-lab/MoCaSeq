@@ -41,7 +41,6 @@ if(is.null(opt$input)){
 } else{
   tryCatch({
     rearrangementList <- read.csv(opt$input,header=T,sep="\t",stringsAsFactors=F)
-    print(rearrangementList)
   },
   error = function(e){
     stop("Error reading rearrangement list.")
@@ -70,9 +69,8 @@ MC_steps <- opt$steps # default = 100
 verboseLevel = opt$verbose # this variable controls how much information is displayed on the command line; default = 0
 
 
-if(!require("devEMF")) install.packages("devEMF")
-suppressMessages(library(devEMF))
-suppressMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(devEMF))
+suppressPackageStartupMessages(library(GenomicRanges))
 start_chrom <- data.frame(start=1,end=chromlength)
 
 # auxiliary functions

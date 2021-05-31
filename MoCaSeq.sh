@@ -1316,15 +1316,22 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	# this coverage is for control.coverage <= CoverageFilter (so lower = more stringend)
 	coverage=$(sh $repository_dir/Chromothripsis_GetCoverage.sh $name)
 
-	sh $repository_dir/Chromothripsis_FormatTable.sh $name $temp_dir
+	java -jar $snpeff_dir/SnpSift.jar extractFields \
+	$name/results/Delly/$name.pre.vcf \
+	CHROM POS CHR2 POS2 END PE SR PRECISE IMPRECISE \
+	GEN[Tumor].DR GEN[Tumor].CN GEN[Tumor].RR GEN[Tumor].RV \
+	GEN[Normal].DR GEN[Normal].CN GEN[Normal].RR GEN[Normal].RV \
+	MAPQ CT \
+	> /var/pipeline/${name}/results/Delly/${name}.breakpoints.tab
 
-	Rscript $repository_dir/Chromothripsis_AnnotateRatios.R \
+	Rscript $repository_dir/Chromothripsis_Delly_Annotate-Filter.R \
+	-n $name \
 	-i $name/results/Delly/$name.breakpoints.tab \
-	 > $name/results/Delly/$name.breakpoints_annotated.tab
-
-	Rscript $repository_dir/Chromothripsis_FilterDelly.R \
-	-n $name -c $coverage \
-	-i $name/results/Delly/$name.breakpoints_annotated.tab
+	-o T \
+	-c $coverage \
+	-v 0.2 \
+	-d 6000
+	# outputs: $name/results/Delly/$name.breakpoints.filtered.tab
 
 	for chr in $( seq $chromosomes ); do
 	if [ $(Rscript $repository_dir/Chromothripsis_RearrangementCounter.R -i $name/results/Delly/$name.breakpoints.filtered.tab -c $chr) -ge 4 ]; then
@@ -1342,7 +1349,7 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 
 		Rscript $repository_dir/Chromothripsis_SimulateCopyNumberStates.R \
 		-i $name/results/Delly/$name.breakpoints.filtered.tab \
-		-o $species_lowercase -c $chr -n $name -s 1000 -a 1000 -f $format -v 1
+		-o $species_lowercase -c $chr -n $name -s 1000 -a 1000 -f $format -v 0
 
 		echo '---- Hallmark: Interspersed loss and retention of heterozygosity for Chr'$chr' ----' | tee -a $name/results/QC/$name.report.txt
 		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -1379,10 +1386,8 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 		# check if it did run successfully and print something to the output folder
 		checkBreakpoints=$(cut -f 1 $name/results/Delly/$name.breakpoints.filtered.tab | sed -n 2p)
 		if [[ $checkBreakspoints == "NA" ]]; then
-			echo 'No breakpoints found for chromosome '$chr'.'
 			echo 'No breakpoints found for chromosome '$chr'.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
 		else
-			echo 'There are too few rearrangements in chromosome '$chr'.'
 			echo 'There are too few rearrangements in chromosome '$chr'.' | tee -a $name/results/Chromothripsis/$name.Chromothripsis.log
 		fi
 
@@ -1390,6 +1395,7 @@ if [ $sequencing_type = 'WGS' ] && [ $Delly = 'yes' ] && [ $runmode = "MS" ]; th
 	done
 
 fi
+
 
 rm -rf '?'
 
