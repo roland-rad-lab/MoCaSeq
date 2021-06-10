@@ -441,7 +441,7 @@ if [ $repeat_mapping = "yes" ]; then
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
 		--outdir=$name/results/QC & PIDS="$PIDS $!"
 	done
-	
+
 	wait $PIDS
 	PIDS=""
 
@@ -494,7 +494,7 @@ if [ $repeat_mapping = "yes" ]; then
 		$temp_dir/$name.$type.cleaned.bam &&
 
 		rm $temp_dir/$name.$type.cleaned.bam &&
-		
+
 		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
 		-I $temp_dir/$name.$type.cleaned.sorted.bam \
@@ -902,7 +902,7 @@ if [ $runmode = "MS" ]; then
 	echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode $resolution $types
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $resolution $types
 fi
 
 if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
@@ -910,7 +910,7 @@ if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 	echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
+	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000 $types
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 1000 \
 	$mapWig_file $gcWig_file $centromere_file $varregions_file
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 1000 $CGC_file $TruSight_file
