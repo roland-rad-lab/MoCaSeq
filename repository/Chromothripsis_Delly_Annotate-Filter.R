@@ -51,9 +51,13 @@ setnames(inputDT, "GEN[Tumor].RV", "tumor.RV")
 setnames(inputDT, c("CHROM", "POS", "CHR2", "POS2"), c("donChr", "donPos", "accChr", "accPos"))
 setnames(inputDT, "CT", "Type")
 
+# set types to avoid warnings
+inputDT[, accPos := as.integer(accPos)]
+inputDT[, accChr := as.integer(accChr)]
+
 # empty acceptor CHROM+POS is equal to changes on the same chromosome
-inputDT[accChr == "", accPos := END]
-inputDT[accChr == "", accChr := donChr]
+inputDT[accChr == "" | is.na(accChr), accPos := END]
+inputDT[accChr == "" | is.na(accChr), accChr := donChr]
 inputDT[, END := NULL]
 
 # ANNOTATION
