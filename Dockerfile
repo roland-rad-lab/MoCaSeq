@@ -143,6 +143,8 @@ RUN	apt-get update \
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends libgit2-dev
 
+RUN apt-get -y install libpoppler-cpp-dev
+
 RUN R -e 'install.packages("usethis")'
 RUN R -e 'install.packages("devtools")'
 RUN R -e 'devtools::install_github("mskcc/facets", build_vignettes = F)'
@@ -155,6 +157,10 @@ RUN R -e 'install.packages("bit")'
 RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)'
 RUN R -e 'devtools::install_version("devEMF", version = "4.0", repos = "http://cran.us.r-project.org")'
 RUN R -e 'install.packages("rapportools")'
+RUN R -e 'install.packages("pdftools")'
+RUN R -e 'install.packages("ggpubr")'
+RUN R -e 'install.packages("plotly")'
+RUN R -e 'install.packages("htmlwidgets")'
 
 RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRanges","optparse","zoo","ggplot2","CopywriteR","HMMcopy","DNAcopy","GenomeInfoDb","Biostrings","data.table","RColorBrewer","pheatmap","biomaRt","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Hsapiens.UCSC.hg38","BSgenome.Hsapiens.UCSC.hg19","deconstructSigs","LSD","randtests","svglite","dupRadar","TitanCNA","doMC","naturalsort","SomaticSignatures","SomaticCancerAlterations", "BubbleTree", "SNPchip"),version="3.10",ask=FALSE,update=TRUE)'
 

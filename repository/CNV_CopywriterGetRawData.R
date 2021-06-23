@@ -13,7 +13,7 @@ args <- commandArgs(TRUE)
 name = args[1]
 runmode = args[2]
 type = args[3]
-
+  
 # Keep track of working directory
 path = getwd()
 
@@ -32,13 +32,12 @@ if (runmode == "MS") {
 
 segmentData = segmentData[segmentData$ID==Selection,]
 chromosomes = unique(segmentData$chrom)
-# Exclude sex chromosomes
-chromosomes = chromosomes[chromosomes<=22]
-for(chromosome in chromosomes)
-   {
+
+for(chromosome in chromosomes){
    segmentMean = as.numeric(segmentData[segmentData$chrom==chromosome,"seg.mean"])
    write.table(segmentMean,file=paste("../",name,".SegmentsChromosome",chromosome,".txt",sep=""),quote=F,sep="\t",row.names=F,col.names=F)
-   }
+}
+
 segmentData = segmentData[,c("chrom","loc.start","loc.end","seg.mean")]
 colnames(segmentData)=c("Chrom","Start","End","Mean")
 segmentData$Start = floor(segmentData$Start)

@@ -17,7 +17,6 @@ cnv_method = args[2]
 
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(BubbleTree))
-suppressPackageStartupMessages(library(GenomicRanges))
 
 # for some stupid reason, the first entry is set to color white, this way we catch it
 emptyElem <- data.frame(seqnames=0,start=0, end=0,width=0, strand="*", seg.id=1000, num.mark=1000, lrr=0, kurtosis=0, hds=0, hds.sd=0,het.cnt=0,seg.size=0)
@@ -52,7 +51,19 @@ loh = read.delim(paste0(name,"/results/LOH/",name,".VariantsForLOH.txt"))
 snp.gr <- GenomicRanges::GRanges(loh$Chrom, IRanges(loh$Pos, loh$Pos), freq=loh[,"Tumor_Freq"])
 
 if (cnv_method=="Copywriter"){
-	cnv = read.delim(paste0(name,"/results/Copywriter/",name,".seg.dat.fn"))
+  load(paste0(name,"/results/Copywriter/CNAprofiles/segment.Rdata"))
+  segments = segment.CNA.object$output
+  Selection = unique(grep("Normal",grep("Tumor",segments$ID,value=T),value=T))
+  segments = segments[segments$ID==Selection,]
+  segments = segments[segments$chrom<=22,]
+  segments$loc.start = floor(segments$loc.start)
+  segments$loc.end = floor(segments$loc.end)
+  segments = segments[,c("chrom","loc.start","loc.end","num.mark","seg.mean")]
+  colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
+  
+  seg.dat.fn.file <- paste0(name,"/results/BubbleTree/",name,".Copywriter.seg.dat.fn")
+  write.table(segments, seg.dat.fn.file, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+	cnv = read.delim(seg.dat.fn.file)
 } else if (cnv_method=="HMMCopy") {
 	cnv = read.delim(paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt.fn"))
 }

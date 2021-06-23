@@ -57,20 +57,35 @@ CopywriteR(sample.control = sample.control,
              reference.folder = file.path(reference_files),
              bp.param = bp.param)
 
+# rename chromosomes in segment.Rdata
+segRdataFile <- paste0(name,"/results/Copywriter/CNAprofiles/segment.Rdata")
+load(segRdataFile)
+file.copy(segRdataFile,paste0(name,"/results/Copywriter/CNAprofiles/segment_raw.Rdata"), overwrite=T) # backup copy
+segmentData = segment.CNA.object$output
+
+if (species == "Human") {
+  segmentData$chrom[segmentData$chrom == 23] <- "X"
+  segmentData$chrom[segmentData$chrom == 24] <- "Y"
+} else if (species == "Mouse") {
+  segmentData$chrom[segmentData$chrom == 20] <- "X"
+  segmentData$chrom[segmentData$chrom == 21] <- "Y"
+}
+
+segment.CNA.object$output <- segmentData
+save(segment.CNA.object, file=segRdataFile)
+
+# filter counts
 log2.reads=read.table(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"), header=T, sep="\t",check.names=FALSE)
-
-file.copy(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"),paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts_backup.igv"), overwrite=T)
-
 log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=log2.reads[,5],Tumor=log2.reads[,6])
 
+file.copy(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"),paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts_raw.igv"), overwrite=T)  # backup copy
+
 # remove regions with increased variability for mice and centromere regions for humams
-if (species == "Human")
-{
+if (species == "Human"){
 	filter=read.delim(centromere_file)
 	flankLength=5000000
 }
-if (species == "Mouse")
-{
+if (species == "Mouse"){
 	filter=read.delim(varregions_file)
 	flankLength=0
 }

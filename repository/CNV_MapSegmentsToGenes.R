@@ -19,10 +19,10 @@ CGC = args[6]
 TruSight = args[7]
 runmode = args[8]
 
-suppressMessages(library(tidyr))
-suppressMessages(library(dplyr))
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(data.table))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(data.table))
 
 genesDT = readRDS(genecode_file)
 
@@ -91,8 +91,7 @@ if (method=="CNVKit") {
   }
 }
 
-if (species=="Mouse")
-{
+if (species=="Mouse"){
   segment=makeGRangesFromDataFrame(segment,keep.extra.columns=T)
   ncruc.gr=GRanges(4, IRanges(89311040, 89511040))
   olaps=findOverlaps(segment,ncruc.gr)
@@ -113,7 +112,7 @@ cnv = cnv %>%
   group_by(Gene) %>% 
   arrange(desc(abs(as.numeric(Mean))),.by_group=T) %>% 
   filter(row_number()==1) %>% 
-  arrange(as.numeric(Chrom),as.numeric(Start),as.numeric(End))
+  arrange(as.numeric(Start),as.numeric(End))
 
 if (method=="Copywriter"){
   write.table(cnv,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
