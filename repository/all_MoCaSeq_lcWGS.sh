@@ -81,6 +81,7 @@ mkdir -p $name/results/bam
 mkdir -p $name/results/Copywriter
 mkdir -p $name/results/HMMCopy
 
+
 if [ ! -d $temp_dir ]; then
   mkdir -p $temp_dir/
 fi
@@ -88,6 +89,19 @@ fi
 if [ $RAM -ge 16 ]; then
 	bwainputbases=100000000
 else bwainputbases=10000000
+fi
+
+
+if [ -z $fastq_normal_1 ] && [ ! -z $fastq_tumor_1 ]; then
+	runmode="SS"
+	types="Tumor"
+elif [ ! -z $fastq_normal_1 ] && [ -z $fastq_tumor_1 ]; then
+	runmode="SS"
+	types="Normal"
+elif [ -z $fastq_normal_1 ] && [ -z $fastq_tumor_1 ]; then
+	runmode="MS"
+	types="Tumor Normal"
+else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
 MAX_RECORDS_IN_RAM=$(expr $RAM \* 250000)
