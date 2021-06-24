@@ -18,7 +18,7 @@ genome_dir = args[5]
 centromere_file <- args[6]
 varregions_file <- args[7]
 resolution <- args[8]
-type <- args[9]
+types <- args[9]
 
 if (resolution=="NULL") { resolution=20000 } 
 
