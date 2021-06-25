@@ -57,26 +57,19 @@ CopywriteR(sample.control = sample.control,
              reference.folder = file.path(reference_files),
              bp.param = bp.param)
 
-# rename chromosomes in segment.Rdata
-segRdataFile <- paste0(name,"/results/Copywriter/CNAprofiles/segment.Rdata")
-load(segRdataFile)
-file.copy(segRdataFile,paste0(name,"/results/Copywriter/CNAprofiles/segment_raw.Rdata"), overwrite=T) # backup copy
-segmentData = segment.CNA.object$output
-
-if (species == "Human") {
-  segmentData$chrom[segmentData$chrom == 23] <- "X"
-  segmentData$chrom[segmentData$chrom == 24] <- "Y"
-} else if (species == "Mouse") {
-  segmentData$chrom[segmentData$chrom == 20] <- "X"
-  segmentData$chrom[segmentData$chrom == 21] <- "Y"
-}
-
-segment.CNA.object$output <- segmentData
-save(segment.CNA.object, file=segRdataFile)
-
 # filter counts
 log2.reads=read.table(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"), header=T, sep="\t",check.names=FALSE)
-log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=log2.reads[,5],Tumor=log2.reads[,6])
+
+
+if (runmode == "SS") {
+  if (types == "Tumor") {
+    log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=NA,Tumor=log2.reads[,5])
+  } else if (types == "Normal") {
+    log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=log2.reads[,5],Tumor=NA)
+  }
+} else {
+  log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=log2.reads[,5],Tumor=log2.reads[,6])
+}
 
 file.copy(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"),paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts_raw.igv"), overwrite=T)  # backup copy
 
@@ -106,4 +99,31 @@ colnames(log2.reads.fixed)=c("Chromosome", "Start", "End", "Feature",paste0("log
 
 write.table(log2.reads.fixed,paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"), sep="\t", quote=F, row.names=F,col.names=T)
 
-plotCNA(destination.folder = file.path(paste(name,"/results/Copywriter/",sep="")))
+# remove the hardcoded path (/var/pipeline/) in the input data (else noone can repeat this analysis outside of docker)
+load(file.path(destination.folder, "input.Rdata"))
+samplesDT <- data.table(inputStructure$sample.control)
+samplesDT[, samples := gsub("/var/pipeline/", "", samples)]
+samplesDT[, controls := gsub("/var/pipeline/", "", controls)]
+inputStructure$sample.control <- data.frame(samplesDT)
+save(inputStructure, file=file.path(destination.folder, "input.Rdata"))
+
+# Plot
+plotCNA(destination.folder = file.path(paste(name,"/results/Copywriter/",sep=""))) # will also create segRdataFile.Rdata
+
+# rename chromosomes in segment.Rdata
+segRdataFile <- paste0(name,"/results/Copywriter/CNAprofiles/segment.Rdata")
+load(segRdataFile)
+file.copy(segRdataFile,paste0(name,"/results/Copywriter/CNAprofiles/segment_raw.Rdata"), overwrite=T) # backup copy
+segmentData = segment.CNA.object$output
+
+if (species == "Human") {
+  segmentData$chrom[segmentData$chrom == 23] <- "X"
+  segmentData$chrom[segmentData$chrom == 24] <- "Y"
+} else if (species == "Mouse") {
+  segmentData$chrom[segmentData$chrom == 20] <- "X"
+  segmentData$chrom[segmentData$chrom == 21] <- "Y"
+}
+
+segment.CNA.object$output <- segmentData
+save(segment.CNA.object, file=segRdataFile)
+
