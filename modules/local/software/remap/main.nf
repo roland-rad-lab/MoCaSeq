@@ -131,6 +131,9 @@ process mark_duplicates_recalibrate {
 		val (common_vcf)
 		tuple val (meta), val (type), path (bam)
 
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.bam"), path ("${meta.sampleName}.${type}.bam.bai"), emit: result
+
 	script:
 	"""#!/usr/bin/env bash
 mkdir temp

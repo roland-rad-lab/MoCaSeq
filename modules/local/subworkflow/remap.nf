@@ -39,7 +39,11 @@ workflow REMAP
 		fastqc_paired_trimmed (ch_trim)
 		bwa_mem_paired (ch_fasta, ch_trim)
 		mark_duplicates_recalibrate (ch_fasta, ch_common_vcf, bwa_mem_paired.out.result)
-		foo = Channel.empty ()
+		foo = mark_duplicates_recalibrate.out.result.map { [it[0]["sampleName"], it] }
+			.groupTuple (size: 2)
+			.map { it[1] }
+			.view { "remap output groupTuple: ${it}" }
+
 
 	emit:
 		result = foo
