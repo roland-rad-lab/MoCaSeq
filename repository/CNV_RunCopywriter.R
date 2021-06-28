@@ -54,7 +54,7 @@ if (species == "Human") {
 bp.param = SnowParam(workers = threads, type = "SOCK")
 
 CopywriteR(sample.control = sample.control,
-             destination.folder = destination.folder),
+             destination.folder = destination.folder,
              reference.folder = file.path(reference_files),
              bp.param = bp.param)
 
