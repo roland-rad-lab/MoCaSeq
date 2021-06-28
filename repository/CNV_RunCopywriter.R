@@ -43,6 +43,7 @@ if (runmode == "SS") {
 }
 
 resolution=as.numeric(as.character(resolution))/1000
+destination.folder = file.path(paste(name,"/results/Copywriter/",sep=""))
 
 if (species == "Human") {
 	reference_files = paste(genome_dir,"/hg38_",resolution,"kb",sep="")
@@ -53,7 +54,7 @@ if (species == "Human") {
 bp.param = SnowParam(workers = threads, type = "SOCK")
 
 CopywriteR(sample.control = sample.control,
-             destination.folder = file.path(paste(name,"/results/Copywriter/",sep="")),
+             destination.folder = destination.folder),
              reference.folder = file.path(reference_files),
              bp.param = bp.param)
 
