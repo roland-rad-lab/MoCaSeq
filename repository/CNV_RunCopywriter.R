@@ -48,7 +48,7 @@ destination.folder = file.path(paste(name,"/results/Copywriter/",sep=""))
 
 # Copywriter will break if the destination folder already has the folders from a previous run (this is only an issue for rerunning Copywriter)
 if(dir.exists(paste0(destination.folder, "/CNAprofiles"))){
-  unlink(paste0(destination.folder, "/CNAprofiles"))
+  unlink(paste0(destination.folder, "/CNAprofiles/"), recursive = T)
 }
 
 if (species == "Human") {
