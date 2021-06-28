@@ -45,6 +45,11 @@ if (runmode == "SS") {
 resolution=as.numeric(as.character(resolution))/1000
 destination.folder = file.path(paste(name,"/results/Copywriter/",sep=""))
 
+# Copywriter will break if the destination folder already has the folders from a previous run (this is only an issue for rerunning Copywriter)
+dir.exists(paste0(destination.folder, "/CNAprofiles")){
+  unlink(paste0(destination.folder, "/CNAprofiles"))
+}
+
 if (species == "Human") {
 	reference_files = paste(genome_dir,"/hg38_",resolution,"kb",sep="")
 } else if (species == "Mouse") {
