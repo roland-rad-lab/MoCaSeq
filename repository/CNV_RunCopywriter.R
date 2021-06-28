@@ -66,7 +66,6 @@ CopywriteR(sample.control = sample.control,
 # filter counts
 log2.reads=read.table(paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"), header=T, sep="\t",check.names=FALSE)
 
-
 if (runmode == "SS") {
   if (types == "Tumor") {
     log2.reads.GR=GRanges(log2.reads$Chromosome, IRanges(log2.reads$Start, log2.reads$End),Feature=as.character(log2.reads$Feature), Normal=NA,Tumor=log2.reads[,5])
@@ -106,12 +105,14 @@ colnames(log2.reads.fixed)=c("Chromosome", "Start", "End", "Feature",paste0("log
 write.table(log2.reads.fixed,paste0(name,"/results/Copywriter/CNAprofiles/log2_read_counts.igv"), sep="\t", quote=F, row.names=F,col.names=T)
 
 # remove the hardcoded path (/var/pipeline/) in the input data (else noone can repeat this analysis outside of docker)
-load(file.path(destination.folder, "input.Rdata"))
+outfolder <- paste0(destination.folder, "/CNAprofiles")
+
+load(file.path(outfolder, "input.Rdata"))
 samplesDT <- data.table(inputStructure$sample.control)
 samplesDT[, samples := gsub("/var/pipeline/", "", samples)]
 samplesDT[, controls := gsub("/var/pipeline/", "", controls)]
 inputStructure$sample.control <- data.frame(samplesDT)
-save(inputStructure, file=file.path(destination.folder, "input.Rdata"))
+save(inputStructure, file=paste0(outfolder, "/input.Rdata"))
 
 # Plot
 plotCNA(destination.folder = file.path(paste(name,"/results/Copywriter/",sep=""))) # will also create segRdataFile.Rdata
