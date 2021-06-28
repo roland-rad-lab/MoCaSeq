@@ -26,6 +26,7 @@ suppressPackageStartupMessages(library(CopywriteR))
 suppressPackageStartupMessages(library(GenomeInfoDb))
 suppressPackageStartupMessages(library(naturalsort))
 suppressPackageStartupMessages(library(GenomicRanges))
+suppressPackageStartupMessages(library(data.table))
 
 tumor_bam = paste(name,"/results/bam/",name,".Tumor.bam",sep="")
 normal_bam = paste(name,"/results/bam/",name,".Normal.bam",sep="")
@@ -95,8 +96,12 @@ filter=GRanges(filter$Chromosome, IRanges(filter$Start, filter$End))
 
 hits <- findOverlaps(query = log2.reads.GR, subject = filter)
 ind <- queryHits(hits)
-message("Removed ", length(ind), " bins near centromeres.")
-log2.reads.GR=(log2.reads.GR[-ind, ])
+message("Removed ", length(ind), " bins near centromeres (human) or variable regions (mouse).")
+
+# remove those regions (ind = 0 would remove all)
+if(length(ind) != 0){
+  log2.reads.GR=(log2.reads.GR[-ind, ])
+}
 
 log2.reads.fixed=as.data.frame(log2.reads.GR)
 log2.reads.fixed=log2.reads.fixed[,c("seqnames", "start", "end", "Feature", "Normal","Tumor")]
