@@ -71,20 +71,25 @@ process trim_paired {
 	script:
 	"""#!/usr/bin/env bash
 
-java -Xmx${params.trimmomatic.ram}G -jar ${params.trimmomatic.jar} PE \\
-	-threads ${params.trimmomatic.threads} \\
-	-${phred} \\
-	${fastq_r1} \\
-	${fastq_r2} \\
-	${meta.sampleName}.${type}.R1.passed.fastq.gz \\
-	${meta.sampleName}.${type}.R1.not_passed.fastq.gz \\
-	${meta.sampleName}.${type}.R2.passed.fastq.gz \\
-	${meta.sampleName}.${type}.R2.not_passed.fastq.gz \\
-	LEADING:25 \\
-	TRAILING:25 \\
-	MINLEN:50 \\
-	SLIDINGWINDOW:10:25 \\
-	ILLUMINACLIP:${params.trimmomatic.dir}/adapters/TruSeq3-PE-2.fa:2:30:10
+# No idea what this is doing as part of the remapping pipeline
+# it seems to chuck out essentially everything
+#java -Xmx${params.trimmomatic.ram}G -jar ${params.trimmomatic.jar} PE \\
+#	-threads ${params.trimmomatic.threads} \\
+#	-${phred} \\
+#	${fastq_r1} \\
+#	${fastq_r2} \\
+#	${meta.sampleName}.${type}.R1.passed.fastq.gz \\
+#	${meta.sampleName}.${type}.R1.not_passed.fastq.gz \\
+#	${meta.sampleName}.${type}.R2.passed.fastq.gz \\
+#	${meta.sampleName}.${type}.R2.not_passed.fastq.gz \\
+#	LEADING:25 \\
+#	TRAILING:25 \\
+#	MINLEN:50 \\
+#	SLIDINGWINDOW:10:25 \\
+#	ILLUMINACLIP:${params.trimmomatic.dir}/adapters/TruSeq3-PE-2.fa:2:30:10
+
+cp ${fastq_r1} ${meta.sampleName}.${type}.R1.passed.fastq.gz
+cp ${fastq_r2} ${meta.sampleName}.${type}.R2.passed.fastq.gz
 
 	"""
 }
@@ -93,7 +98,7 @@ process bwa_mem_paired {
 	tag "${meta.sampleName}"
 
 	input:
-		val (reference_dir)
+		val (reference)
 		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2)
 
 	output:
@@ -103,7 +108,7 @@ process bwa_mem_paired {
 	"""#!/usr/bin/env bash
 
 bwa mem -t ${params.bwa_mem.threads} \\
-	${reference_dir} \\
+	${reference} \\
 	-Y \\
 	-K ${params.bwa_mem.input_bases} \\
 	-v 1 \\

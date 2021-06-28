@@ -37,7 +37,7 @@ workflow REMAP
 		trim_paired.out.result.set { ch_trim }
 
 		fastqc_paired_trimmed (ch_trim)
-		bwa_mem_paired (ch_dir, ch_trim)
+		bwa_mem_paired (ch_fasta, ch_trim)
 		mark_duplicates_recalibrate (ch_fasta, ch_common_vcf, bwa_mem_paired.out.result)
 		foo = Channel.empty ()
 
