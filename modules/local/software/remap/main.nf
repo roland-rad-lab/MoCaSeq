@@ -126,6 +126,8 @@ bwa mem -t ${params.bwa_mem.threads} \\
 process mark_duplicates_recalibrate {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/bam_remap", mode: "copy"
+
 	input:
 		val (reference)
 		val (common_vcf)
