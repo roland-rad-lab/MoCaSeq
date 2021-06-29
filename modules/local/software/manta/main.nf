@@ -28,6 +28,16 @@ python2 ${params.manta.dir}/bin/configManta.py \\
 python2 runWorkflow.py -m local -j ${params.manta.threads}
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+mkdir -p results/variants
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz.tbi results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz.tbi results/variants/
+	
+	"""
 }
 
 process manta_matched_post {
