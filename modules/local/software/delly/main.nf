@@ -1,6 +1,6 @@
 
 process delly_matched_call {
-	 tag "${meta.sampleName}"
+	tag "${meta.sampleName}"
 
 	input:
 	val (reference)
@@ -11,17 +11,19 @@ process delly_matched_call {
 
 	script:
 	"""#!/usr/bin/env bash
-#delly call \\
-#	-o ${meta.sampleName}.pre.bcf \\
-#	-g ${reference} \\
-#	${bam_tumor} \\
-#	${bam_normal}
-touch ${meta.sampleName}.pre.bcf
+delly call \\
+	-o ${meta.sampleName}.pre.bcf \\
+	-g ${reference} \\
+	${bam_tumor} \\
+	${bam_normal}
+
 	"""
 }
 
 process delly_matched_filter {
-	 tag "${meta.sampleName}"
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${meta.sampleName}/results/Delly", mode: "copy"
 
 	input:
 	tuple val(meta), path (delly_pre_bcf)
@@ -36,14 +38,14 @@ Tumor	tumor
 Normal	control
 EOF
 
-#delly filter \\
-#	-f somatic \\
-#	-o ${meta.sampleName}.delly.bcf \\
-#	-s Samples.tsv \\
-#	${delly_pre_bcf}
+delly filter \\
+	-f somatic \\
+	-o ${meta.sampleName}.delly.bcf \\
+	-s Samples.tsv \\
+	${delly_pre_bcf}
 
-#bcftools view ${meta.sampleName}.delly.bcf > ${meta.sampleName}.delly.vcf
-touch ${meta.sampleName}.delly.vcf
+bcftools view ${meta.sampleName}.delly.bcf > ${meta.sampleName}.delly.vcf
+
 	"""
 }
 
