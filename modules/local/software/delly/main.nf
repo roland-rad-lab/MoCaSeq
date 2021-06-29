@@ -4,10 +4,10 @@ process delly_matched_call {
 
 	input:
 	val (reference)
-	tuple val(meta), path (bam_normal), path (bam_tumor)
+	tuple val(meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-	tuple val(meta), path("${meta.sampleName}.pre.bcf"), emit: result
+	tuple val(meta), path("${meta.sampleName}.pre.bcf"), path ("${meta.sampleName}.pre.bcf.csi"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -26,7 +26,7 @@ process delly_matched_filter {
 	publishDir "${params.output_base}/${meta.sampleName}/results/Delly", mode: "copy"
 
 	input:
-	tuple val(meta), path (delly_pre_bcf)
+	tuple val(meta), path (delly_pre_bcf), path (delly_pre_bcf_index)
 
 	output:
 	tuple val(meta), path("${meta.sampleName}.delly.vcf"), emit: result

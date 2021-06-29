@@ -9,7 +9,7 @@ workflow DELLY
 		ch_data
 	main:
 		ch_data_expanded = ch_data.map {
-			tuple ( it, it["normalBAM"], it["tumorBAM"] )
+			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 		delly_matched_call (ch_fasta, ch_data_expanded)
 		delly_matched_filter (delly_matched_call.out.result)
