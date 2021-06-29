@@ -39,13 +39,21 @@ workflow REMAP
 		fastqc_paired_trimmed (ch_trim)
 		bwa_mem_paired (ch_fasta, ch_trim)
 		mark_duplicates_recalibrate (ch_fasta, ch_common_vcf, bwa_mem_paired.out.result)
-		foo = mark_duplicates_recalibrate.out.result.dump (tag: "mdr.o.r").map { [it[0]["sampleName"], it] }
+		sample = mark_duplicates_recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
 			.map { it[1] }
-			.dump ( tag:"remap output groupTuple")
-
+			.map { it ->
+				def bam_info = it.inject ([:]) { accumulator, item ->
+					accumulator[[item[1].toLowerCase (),"BAM"].join ("")] = item[2]
+					accumulator[[item[1].toLowerCase (),"BAI"].join ("")] = item[3]
+					accumulator
+				}
+				def result = it[0][0].clone ()
+				result.putAll (bam_info)
+				result
+			}
 
 	emit:
-		result = foo
+		result = sample
 }
 
