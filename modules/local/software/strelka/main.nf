@@ -24,6 +24,15 @@ python2 ${params.strelka.dir}/bin/configureStrelkaSomaticWorkflow.py \\
 
 python2 Strelka/runWorkflow.py -m local -j ${params.strelka.threads}
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+mkdir -p Strelka/results/variants
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/variants/somatic.snvs.vcf.gz Strelka/results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/variants/somatic.snvs.vcf.gz.tbi Strelka/results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/variants/somatic.indels.vcf.gz Strelka/results/variants/
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/variants/somatic.indels.vcf.gz.tbi Strelka/results/variants/
+	"""
 }
 
 process strelka_matched_post {
@@ -61,7 +70,14 @@ java -jar ${params.gatk.jar} SelectVariants \\
 	--max-indel-size 10 \\
 	--variant ${meta.sampleName}.str.indel._post-processed.vcf \\
 	--output ${meta.sampleName}.str.indel.post-processed.vcf.gz
+	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz .
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi .
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz .
+cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi .
 	"""
 }
 

@@ -71,6 +71,13 @@ java -Xmx${params.annotation.snpeff.ram}g \\
 	> ${meta.sampleName}.Manta.annotated.vcf
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz .
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz.tbi .
+cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.annotated.vcf .
+	"""
 }
 
 
