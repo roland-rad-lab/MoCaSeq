@@ -53,8 +53,7 @@ done
 process cnv_kit_single {
 	tag "${meta.sampleName}"
 
-	// .baseName ~ A nextflow groovy file extension
-	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${bam.baseName}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
+	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
 
 	input:
 		val (reference)
@@ -63,7 +62,7 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val(type), path ("CNVKit/single/${bam.baseName}.cns"), emit: cns
+		tuple val (meta), val(type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
 
 	script:
 
@@ -90,6 +89,16 @@ cnvkit.py batch \\
 	-m wgs \\
 	-p ${params.cnv_kit.threads}
 
+# The output file path is based on the bam name, lets fix that
+# .baseName ~ A nextflow groovy file extension
+mv CNVKit/single/${bam.baseName}.cns CNVKit/single/${meta.sampleName}.${type}.cns || true
+
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+mkdir -p CNVKit/single
+cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
 	"""
 }
 

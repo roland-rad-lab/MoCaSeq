@@ -57,7 +57,7 @@ tabix -p vcf ${meta.sampleName}.delly.vcf.gz
 	stub:
 	"""#!/usr/bin/env bash
 cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
-cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.tbi .
+cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
 	"""
 
 }
