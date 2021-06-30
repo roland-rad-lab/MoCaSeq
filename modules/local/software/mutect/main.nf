@@ -15,29 +15,32 @@ process mutect_matched {
 	script:
 	"""#!/usr/bin/env bash
 
-#java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
-#	--native-pair-hmm-threads 4 \\
-#	--reference ${reference} \\
-#	--intervals ${interval} \\
-#	--input ${bam_normal} \\
-#	--input ${bam_tumor} \\
-#	--normal-sample Normal --tumor-sample Tumor \\
-#	--f1r2-tar-gz ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz \\
-#	--output ${meta.sampleName}.matched.m2.${interval}.vcf \\
-#	-bamout ${meta.sampleName}.matched.m2.${interval}.bam \\
-#	--assembly-region-out ${meta.sampleName}.matched.m2.${interval}.assembly.txt \\
-#	2> ${meta.sampleName}.matched.m2.${interval}.log \\
-#	> ${meta.sampleName}.matched.m2.${interval}.out
+java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
+	--native-pair-hmm-threads 4 \\
+	--reference ${reference} \\
+	--intervals ${interval} \\
+	--input ${bam_normal} \\
+	--input ${bam_tumor} \\
+	--normal-sample Normal --tumor-sample Tumor \\
+	--f1r2-tar-gz ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz \\
+	--output ${meta.sampleName}.matched.m2.${interval}.vcf \\
+	2> ${meta.sampleName}.matched.m2.${interval}.log \\
+	> ${meta.sampleName}.matched.m2.${interval}.out
 
-sleep \$(shuf -i 1-10 -r | head -n 1)
-
-touch ${meta.sampleName}.matched.m2.${interval}.vcf
-touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+	"""
+
 }
 
 process mutect_combine_vcf {
 	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${meta.sampleName}/results/Mutect2", mode: "copy"
 
 	input:
 		tuple val (meta), val (type), path ("*.interval.vcf"), path ("*.orientation_bias.tsv.gz")
@@ -47,12 +50,6 @@ process mutect_combine_vcf {
 
 	script:
 	"""#!/usr/bin/env bash
-rm *.interval.vcf
-rm *.orientation_bias.tsv.gz
-cp /opt/fake_files/GX4VZC.Normal.m2.1.vcf 2.interval.vcf
-cp /opt/fake_files/GX4VZC.Normal.m2.2.vcf 1.interval.vcf
-cp /opt/fake_files/GX4VZC.matched.1__186012250.1.m2.f1r2.tar.gz 2.orientation_bias.tsv.gz
-cp /opt/fake_files/GX4VZC.matched.21__21344250.1.m2.f1r2.tar.gz 1.orientation_bias.tsv.gz
 
 vcf_files_first=\$(ls *.interval.vcf | head -n 1)
 for f in *.interval.vcf;
@@ -75,6 +72,12 @@ cmd_learn_read_orientation="\${cmd_learn_read_orientation} --output ${meta.sampl
 echo "\${cmd_learn_read_orientation}"
 \${cmd_learn_read_orientation}
 
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
 	"""
 }
 
