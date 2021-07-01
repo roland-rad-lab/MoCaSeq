@@ -1,17 +1,18 @@
 
 
-
-
-
 process cnv_kit_matched {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/matched/${meta.sampleName}.matched.cns", saveAs: { it.replaceFirst ("^CNVKit/matched/","") }
 
 	input:
 		val (reference)
 		val (reference_flat)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
+
+	output:
+		tuple val (meta), val ("matched"), path ("CNVKit/matched/${meta.sampleName}.matched.cns"), emit: cns
 
 	script:
 	"""#!/usr/bin/env bash
@@ -37,15 +38,28 @@ cnvkit.py batch \\
 	-m wgs \\
 	-p ${params.cnv_kit.threads}
 
-for stype in Normal Tumor;
+# The output file path is based on the bam name, lets fix that
+# .baseName ~ A nextflow groovy file extension
+for file in \$(find CNVKit/matched/ -type f -name "*${bam_normal.baseName}*");
 do
-	for file in \$(find CNVKit/matched/ -type f -name "*\${stype}*");
-	do
-		file_new=\$(echo \${file} | sed -e "s/\${stype}/matched.\${stype}/")
+		file_new=\$(echo \${file} | sed -e "s/${bam_normal.baseName}/${meta.sampleName}.matched.Normal/")
 		echo "Rename '\${file}' to '\${file_new}'"
 		mv \${file} \${file_new}
-	done
 done
+
+for file in \$(find CNVKit/matched/ -type f -name "*${bam_tumor.baseName}*");
+do
+		file_new=\$(echo \${file} | sed -e "s/${bam_tumor.baseName}/${meta.sampleName}.matched/")
+		echo "Rename '\${file}' to '\${file_new}'"
+		mv \${file} \${file_new}
+done
+
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+mkdir -p CNVKit/matched
+cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
 	"""
 
 }
@@ -62,7 +76,7 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val(type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
+		tuple val (meta), val (type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
 
 	script:
 
@@ -91,7 +105,12 @@ cnvkit.py batch \\
 
 # The output file path is based on the bam name, lets fix that
 # .baseName ~ A nextflow groovy file extension
-mv CNVKit/single/${bam.baseName}.cns CNVKit/single/${meta.sampleName}.${type}.cns || true
+for file in \$(find CNVKit/single/ -type f -name "*${bam.baseName}*");
+do
+		file_new=\$(echo \${file} | sed -e "s/${bam.baseName}/${meta.sampleName}.${type}/")
+		echo "Rename '\${file}' to '\${file_new}'"
+		mv \${file} \${file_new}
+done
 
 	"""
 
