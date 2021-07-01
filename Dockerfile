@@ -305,6 +305,14 @@ RUN	cd ${TEMP_DIR} \
 	&& cp ./gatk-4.1.0.0/gatk-package-4.1.0.0-local.jar ${PACKAGE_DIR}/gatk-4.1.0.0/ \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.1.0.0/gatk-package-4.1.0.0-local.jar ${PACKAGE_DIR}/gatk-4.1.0.0/gatk.jar \
 	&& rm -rf gatk-4.1.0.0.zip gatk-4.1.0.0 \
+# GATK v4.2.0.0 (https://software.broadinstitute.org/gatk/)
+	&& cd ${TEMP_DIR} \
+	&& wget -nv 'https://github.com/broadinstitute/gatk/releases/download/4.2.0.0/gatk-4.2.0.0.zip' \
+	&& unzip gatk-4.2.0.0.zip \
+	&& mkdir -p ${PACKAGE_DIR}/gatk-4.2.0.0 \
+	&& cp ./gatk-4.2.0.0/gatk-package-4.2.0.0-local.jar ${PACKAGE_DIR}/gatk-4.2.0.0/ \
+	&& ln -sf ${PACKAGE_DIR}/gatk-4.2.0.0/gatk-package-4.2.0.0-local.jar ${PACKAGE_DIR}/gatk-4.2.0.0/gatk.jar \
+	&& rm -rf gatk-4.2.0.0.zip gatk-4.2.0.0 \	
 # GATK requires Java 8 to be active
 	&& update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java \
 # HMMCopy Utils (https://github.com/shahcompbio/hmmcopy_utils/)
