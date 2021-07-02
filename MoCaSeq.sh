@@ -1203,7 +1203,7 @@ if [ $runmode = "MS" ] && [ $sequencing_type = 'WGS' ]; then
 
 	sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file 1000 $types
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 1000 \
-	$mapWig_file $gcWig_file $centromere_file $varregions_file
+	$mapWig_file $gcWig_file $centromere_file $varregions_file $runmode $types
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 1000 $CGC_file $TruSight_file
 fi
 

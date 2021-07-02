@@ -19,6 +19,12 @@ map_file <- args[6]
 gc_file <- args[7]
 centromere_file <- args[8]
 varregions_file <- args[9]
+runmode <- args[10]
+types <- args[11]
+
+if (runmode == "MS") {
+  types <- "Tumor Normal"
+}
 
 suppressPackageStartupMessages(library(HMMcopy))
 suppressPackageStartupMessages(library(DNAcopy))
@@ -31,16 +37,33 @@ suppressPackageStartupMessages(library(GenomicRanges))
 map_file=gsub("20000",resolution,map_file)
 gc_file=gsub("20000",resolution,gc_file)
 
-# read in wig files and correct for GC and mappability bias
-normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
-normal$reads <- normal$reads+1
-normal <- as.data.frame(correctReadcount(normal))
-normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
 
-tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
-tumor$reads <- tumor$reads+1
-tumor <- as.data.frame(correctReadcount(tumor))
-tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
+# read in wig files and correct for GC and mappability bias
+
+if (runmode == "SS") {
+  if (types == "Tumor") {
+    tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
+    tumor$reads <- tumor$reads+1
+    tumor <- as.data.frame(correctReadcount(tumor))
+    tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
+  } else if (types == "Normal") {
+    normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
+    normal$reads <- normal$reads+1
+    normal <- as.data.frame(correctReadcount(normal))
+    normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
+  }
+} else {
+  normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
+  normal$reads <- normal$reads+1
+  normal <- as.data.frame(correctReadcount(normal))
+  normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
+  
+  tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
+  tumor$reads <- tumor$reads+1
+  tumor <- as.data.frame(correctReadcount(tumor))
+  tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
+}
+
 
 # remove regions with increased variability for mice and centromere regions for humams
 if (species == "Human")
@@ -59,19 +82,43 @@ filtering$start <- filtering$start - flankLength
 filtering$end <- filtering$end + flankLength
 filtering=GRanges(filtering$space, IRanges(filtering$start, filtering$end))
 
-hits <- findOverlaps(query = normal_copy, subject = filtering)
-ind <- queryHits(hits)
-message("Removed ", length(ind), " bins near centromeres.")
-normal_copy=(normal_copy[-ind, ])
+if("Normal" %in% types){
+  hits <- findOverlaps(query = normal_copy, subject = filtering)
+  ind <- queryHits(hits)
+  message("Normal: Removed ", length(ind), " bins near centromeres (human) or variable regions (mouse).")
+  
+  # remove those regions (ind = 0 would remove all)
+  if(length(ind) != 0){
+    normal_copy=(normal_copy[-ind, ])
+  }
+}
 
-hits <- findOverlaps(query = tumor_copy, subject = filtering)
-ind <- queryHits(hits)
-message("Removed ", length(ind), " bins near centromeres.")
-tumor_copy=(tumor_copy[-ind, ])
+if("Tumor" %in% types){
+  hits <- findOverlaps(query = tumor_copy, subject = filtering)
+  ind <- queryHits(hits)
+  message("Tumor: Removed ", length(ind), " bins near centromeres (human) or variable regions (mouse).")
+  
+  # remove those regions (ind = 0 would remove all)
+  if(length(ind) != 0){
+    tumor_copy=(tumor_copy[-ind, ])
+  }
+}
+
 
 # computation of the copy number states from the log fold change
-somatic_copy <- tumor_copy
-somatic_copy$copy <- tumor_copy$copy - normal_copy$copy
+
+if (runmode == "SS") {
+  if (types == "Tumor") {
+    somatic_copy <- tumor_copy
+  } else if (types == "Normal") {
+    somatic_copy <- normal_copy
+  }
+}
+
+if (runmode == "MS") {
+  somatic_copy$copy <- tumor_copy$copy - normal_copy$copy
+}
+
 somatic_tab <- as.data.frame(somatic_copy)
 colnames(somatic_tab) <- c("Chrom", "Start", "End", "width", "strand", "log2Ratio")
 somatic_tab <- somatic_tab[,c("Chrom", "Start", "End","log2Ratio")]
