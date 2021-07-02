@@ -38,7 +38,7 @@ workflow HMM_COPY {
 		ch_hmm_copy_wig_normal_keyed = hmm_copy_wig_normal.out.result.map { tuple ( tuple (it[0].sampleName, it[2]), it ) }
 		ch_hmm_copy_wig_tumor_keyed = hmm_copy_wig_tumor.out.result.map { tuple ( tuple (it[0].sampleName, it[2]), it ) }
 
-		ch_hmm_copy_wig_resolution = ch_hmm_copy_wig_normal_keyed.mix (ch_hmm_copy_wig_tumor_keyed).groupTuple (size:2)
+		ch_hmm_copy_wig = ch_hmm_copy_wig_normal_keyed.mix (ch_hmm_copy_wig_tumor_keyed).groupTuple (size:2)
 			.map {
 				def m = it[1].inject ([:]) { accumulator, item ->
 					accumulator[item[1]] = [meta: item[0], resolution: item[2], wig: item[3]]
@@ -46,8 +46,11 @@ workflow HMM_COPY {
 				}
 				tuple ( m["Normal"]["resolution"], m["Normal"]["meta"], m["Normal"]["wig"], m["Tumor"]["wig"] )
 			}
-			.join (ch_wig_resolution)
-			.view { "ngp: ${it}" }
+		ch_hmm_copy_wig_resolution = ch_wig_resolution.cross (ch_hmm_copy_wig)
+			.dump (tag: 'hcw')
+			.map {
+				tuple ( it[0][0], it[0][1], it[0][2], it[1][1], it[1][2], it[1][3] )
+			}
 
 		hmm_copy_tsv (ch_interval_csv_string, ch_hmm_copy_wig_resolution)
 		hmm_copy_plot (ch_interval_bed, hmm_copy_tsv.out.result)

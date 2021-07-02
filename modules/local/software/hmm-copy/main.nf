@@ -23,9 +23,11 @@ ${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${b
 process hmm_copy_tsv {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/HMMCopy", mode: "copy"
+
 	input:
 		val (intervals)
-		tuple val (resolution), val (meta), path (normal_wig), path (tumor_wig), val (gc_wig), val (map_wig)
+		tuple val (resolution), val (gc_wig), val (map_wig), val (meta), path (normal_wig), path (tumor_wig)
 
 	output:
 		tuple val (meta), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
@@ -143,14 +145,27 @@ cnv_segments <- cnv_segments[naturalorder(cnv_segments\$Chrom),]
 write.table(cnv_segments,"${meta.sampleName}.HMMCopy.${resolution}.segments.txt",quote=F,row.names=F,col.names=T,sep="\\t")
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
+cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
+
+	"""
 }
 
 process hmm_copy_plot {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/HMMCopy", mode: "copy"
+
 	input:
 		tuple path (interval_bed), path(interval_bed_index)
 		tuple val (meta), val (resolution), path (log2_file), path (segments_file)
+
+	output:
+		tuple val (meta), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.genome.pdf"), path ("${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
