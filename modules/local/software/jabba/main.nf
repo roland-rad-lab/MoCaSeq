@@ -4,6 +4,8 @@ params.jabba = [:]
 process jabba_matched {
 	tag "${meta.sampleName}"
 
+	input:
+		tuple val (meta), path (manta_vcf)
 
 	script:
 	"""#!/usr/bin/env Rscript

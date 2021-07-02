@@ -9,7 +9,7 @@ workflow JABBA
 
 	main:
 
-		ch_manta_and_ratio = ch_ratio.dumps (tag: "ch_ratio")
+		ch_manta_and_ratio = ch_ratio.dump (tag: 'ch_ratio')
 
 		jabba_matched (ch_manta)
 }
