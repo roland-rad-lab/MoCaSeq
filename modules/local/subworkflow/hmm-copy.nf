@@ -51,6 +51,9 @@ workflow HMM_COPY {
 
 		hmm_copy_tsv (ch_interval_csv_string, ch_hmm_copy_wig_resolution)
 		hmm_copy_plot (ch_interval_bed, hmm_copy_tsv.out.result)
+
+	emit:
+		tsv = hmm_copy_tsv.out.result
 }
 
 
