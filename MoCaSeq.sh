@@ -553,19 +553,34 @@ elif [ $repeat_mapping = "yes" ]; then
 	-VALIDATION_STRINGENCY LENIENT
 	fi
 elif [ $repeat_mapping = "no" ]; then
+
+	# in case that one wants to repeat certain steps with the existing BAM files, we do not want to copy
 	if [ $runmode = 'MS' ]; then
-	cp $bam_normal $name/results/bam/$name.Normal.bam
-	samtools index -@ $threads $name/results/bam/$name.Normal.bam
-	cp $bam_tumor $name/results/bam/$name.Tumor.bam
-	samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+
+		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
+			cp $bam_normal $name/results/bam/$name.Normal.bam
+			samtools index -@ $threads $name/results/bam/$name.Normal.bam
+		fi
+
+		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
+			cp $bam_tumor $name/results/bam/$name.Tumor.bam
+			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+		fi
 
 	elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
-	cp $bam_tumor $name/results/bam/$name.Tumor.bam
-	samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+
+		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
+			cp $bam_tumor $name/results/bam/$name.Tumor.bam
+			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+		fi
 
 	elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
-	cp $bam_normal $name/results/bam/$name.Normal.bam
-	samtools index -@ $threads $name/results/bam/$name.Normal.bam
+
+		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
+			cp $bam_normal $name/results/bam/$name.Normal.bam
+			samtools index -@ $threads $name/results/bam/$name.Normal.bam
+		fi
+
 	fi
 fi
 
