@@ -9,14 +9,18 @@ process hmm_copy_wig {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val (resolution), path ("HMMCopy/${meta.sampleName}.${type}.${resolution}.wig"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.${resolution}.wig"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
 
-mkdir HMMCopy
-${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${bam} > HMMCopy/${meta.sampleName}.${type}.${resolution}.wig
+${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${bam} > ${meta.sampleName}.${type}.${resolution}.wig
 
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
 	"""
 }
 
