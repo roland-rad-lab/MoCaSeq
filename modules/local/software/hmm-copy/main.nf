@@ -255,7 +255,12 @@ pdf (file="${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 
+	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+touch ${meta.sampleName}.HMMCopy.${resolution}.genome.pdf
+touch ${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf
 	"""
 }
 
