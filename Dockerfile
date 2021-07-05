@@ -196,6 +196,15 @@ RUN apt-get install -y --no-install-recommends python-tk \
 	&& python3.7 -m pip install 'fsspec>=0.3.3' \
 	&& python3.7 -m pip install openpyxl
 
+# SAMBLASTER
+RUN cd ${TEMP_DIR} \
+	&& git clone git://github.com/GregoryFaust/samblaster.git \
+	&& cd samblaster \
+	&& git checkout 'v.0.1.26' \
+	&& make \
+	&& cd .. \
+	&& mv samblaster ${PACKAGE_DIR}/samblaster-0.1.26/
+
 RUN cd ${TEMP_DIR} \
 	&& curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
 	&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge" \
@@ -320,7 +329,7 @@ RUN	cd ${TEMP_DIR} \
 	&& mkdir -p ${PACKAGE_DIR}/gatk-4.2.0.0 \
 	&& cp ./gatk-4.2.0.0/gatk-package-4.2.0.0-local.jar ${PACKAGE_DIR}/gatk-4.2.0.0/ \
 	&& ln -sf ${PACKAGE_DIR}/gatk-4.2.0.0/gatk-package-4.2.0.0-local.jar ${PACKAGE_DIR}/gatk-4.2.0.0/gatk.jar \
-	&& rm -rf gatk-4.2.0.0.zip gatk-4.2.0.0 \	
+	&& rm -rf gatk-4.2.0.0.zip gatk-4.2.0.0 \
 # GATK requires Java 8 to be active
 	&& update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 
@@ -440,8 +449,8 @@ RUN cd ${TEMP_DIR} \
 	&& wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc2/cmake-3.21.0-rc2.tar.gz \
 	&& tar -zxvf cmake-3.21.0-rc2.tar.gz \
 	&& cd cmake-3.21.0-rc2 \
-	&& ./bootstrap \ 
-	&& make \ 
+	&& ./bootstrap \
+	&& make \
 	&& make install \
 	&& hash -r
 
