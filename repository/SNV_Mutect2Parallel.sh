@@ -152,13 +152,6 @@ do
 	rm ${name}/results/Mutect2/${name}.${type}.${chromosome}.m2.bai
 done
 
-# remove the ".matched" for matched samples (to be consistent with the old format)
-if [ $runmode = "MS" ]; then
-	for file in ${name}/results/Mutect2/${name}.matched.m2.*; do
-			mv "$file" "${file/matched./}"
-	done
-fi
-
 # Should be safe to assume it's sorted
 #samtools sort \
 #-@ 4 \

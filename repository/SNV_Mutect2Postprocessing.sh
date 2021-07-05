@@ -196,6 +196,11 @@ java -Xmx16g -jar $discvrseq_dir"/"$discvrseq_file".jar" VariantQC \
 -O $name/results/Mutect2/"$name".Mutect2.vcf.html \
  -L 1 -L 2 -L 3 -L 4 -L 5 -L 6 -L 7 -L 8 -L 9 -L 10 -L 11 -L 12 -L 13 -L 14 -L 15 -L 16 -L 17 -L 18 -L 19 -L X -L Y
 
-#ls $name/results/Mutect2/
+# remove the ".matched" for matched samples in m2 files (to be consistent with the old format)
+if [ $runmode = "MS" ]; then
+	for file in ${name}/results/Mutect2/${name}.matched.m2.*; do
+			mv "$file" "${file/matched./}"
+	done
+fi
 
 sh $repository_dir/SNV_CleanUp.sh $name MS $type $species
