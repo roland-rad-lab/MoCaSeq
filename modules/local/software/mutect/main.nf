@@ -1,6 +1,41 @@
 
 params.gatk = [:]
 
+process mutect_single {
+	tag "${meta.sampleName}"
+
+	input:
+		val (reference)
+		tuple val (meta), val (type), path (bam)
+		each (interval)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.m2.${interval}.vcf"), path ("${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+
+java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
+	--native-pair-hmm-threads 4 \\
+	--reference ${reference} \\
+	--intervals ${interval} \\
+	--input ${bam} \\
+	--f1r2-tar-gz ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz \\
+	--output ${meta.sampleName}.${type}.m2.${interval}.vcf \\
+	2> ${meta.sampleName}.${type}.m2.${interval}.log \\
+	> ${meta.sampleName}.${type}.m2.${interval}.out
+
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
+cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+	"""
+
+}
+
+
 process mutect_matched {
 	 tag "${meta.sampleName}"
 
