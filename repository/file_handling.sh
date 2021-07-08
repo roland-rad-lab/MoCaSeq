@@ -2,8 +2,12 @@
 
 function moc_mktemp_file {
     local base=${1:-/tmp}
-    if [[ $(uname) = Darwin ]]; then mktemp $base/moc.XXXXXXXXXX
-    else TMPDIR="$base" mktemp -t moc.XXXXXXXXXX
+    local suff=""
+    if [[ ! -z "${2}" ]]; then
+        suff=".${2}"
+    fi
+    if [[ $(uname) = Darwin ]]; then mktemp $base/moc.XXXXXXXXXX${suff}
+    else TMPDIR="$base" mktemp -t moc.XXXXXXXXXX${suff}
     fi
 }
 

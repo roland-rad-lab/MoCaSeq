@@ -52,8 +52,6 @@ workflow MUTECT
 		mutect_combine_vcf_single_normal (ch_vcf_single_normal)
 		mutect_combine_vcf_single_tumor (ch_vcf_single_tumor)
 	emit:
-		result = mutect_combine_vcf.out.result
-		single_normal = mutect_combine_vcf_single_normal.out.result
-		single_tumor = mutect_combine_vcf_single_tumor.out.result
+		result = mutect_combine_vcf.out.result.mix (mutect_combine_vcf_single_normal.out.result,mutect_combine_vcf_single_tumor.out.result)
 }
 
