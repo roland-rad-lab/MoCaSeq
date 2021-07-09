@@ -7,10 +7,13 @@ workflow LOH {
 	take:
 		ch_fasta
 		ch_fasta_index
+		ch_interval
 		ch_interval_bed
 		ch_data
 
 	main:
+		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+
 		ch_data_branched = ch_data.branch {
 			single: it[1] == "Normal" || it[1] == "Tumor"
 			matched: it[1] == "matched"
@@ -32,7 +35,10 @@ workflow LOH {
 			}
 			.dump (tag: 'LOH after map')
 
-		loh_matched (ch_fasta, ch_fasta_index, ch_interval_bed, ch_data_single_sample)
-		loh_matched_assign_alleles (loh_matched.out.result)
+		loh_matched (ch_interval_bed, ch_data_single_sample)
+		loh_matched_assign_alleles (ch_fasta, ch_fasta_index, ch_interval_csv_string, loh_matched.out.result)
+
+	emit:
+		result = loh_matched_assign_alleles.out.result
 }
 
