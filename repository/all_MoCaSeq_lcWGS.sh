@@ -91,6 +91,26 @@ if [ $RAM -ge 16 ]; then
 else bwainputbases=10000000
 fi
 
+# CHECK IF ALL NEEDED FILE EXIST
+if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
+echo "ERROR, File not found: $fastq_normal_1"
+exit 1
+fi
+
+if [ "$fastq_normal_2" != "" ] && [ ! -f "$fastq_normal_2" ]; then
+echo "ERROR, File not found: $fastq_normal_2"
+exit 1
+fi
+
+if [ "$fastq_tumor_1" != "" ] && [ ! -f "$fastq_tumor_1" ]; then
+echo "ERROR, File not found: $fastq_tumor_1"
+exit 1
+fi
+
+if [ "$fastq_tumor_2" != "" ] && [ ! -f "$fastq_tumor_2" ]; then
+echo "ERROR, File not found: $fastq_tumor_2"
+exit 1
+fi
 
 if [ -z $fastq_normal_1 ] && [ ! -z $fastq_tumor_1 ]; then
 	runmode="SS"
@@ -115,10 +135,6 @@ echo Running in $ends-mode | tee -a $name/results/QC/$name.report.txt
 if [ $runmode = "MS" ] && [ ! -z $fastq_normal_1 ]; then
 	echo Using $fastq_normal_1 and $fastq_normal_2 for normal fastqs | tee -a $name/results/QC/$name.report.txt
 	echo Using $fastq_tumor_1 and $fastq_tumor_2 for tumor fastqs | tee -a $name/results/QC/$name.report.txt
-elif [ $runmode = "SS" ] && [ $repeat_mapping = "no" ]; then
-	echo Assigning $fastq_tumor_1 and $fastq_tumor_2 as $types | tee -a $name/results/QC/$name.report.txt
-elif [ $runmode = "SS" ] && [ $repeat_mapping = "no" ]; then
-	echo Assigning $fastq_normal_1 and $fastq_normal_2 as $types | tee -a $name/results/QC/$name.report.txt
 fi
 
 echo Assuming that reads are from $species | tee -a $name/results/QC/$name.report.txt
