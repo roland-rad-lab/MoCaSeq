@@ -46,12 +46,13 @@ process loh_matched_assign_alleles {
 		tuple val (meta), path (loh_variants_tsv)
 
 	output:
-		val (meta), path ("${meta.sampleName}.VariantsForLOH.tsv"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.VariantsForLOH.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env python3.7
 import gzip
 import itertools
+import collections
 
 import pysam
 
