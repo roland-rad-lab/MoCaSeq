@@ -16,7 +16,8 @@ workflow PREPARE_GENOME
 		genome_name
 
 	main:
-		ch_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta"] ? Channel.of (params.genomes[genome_name]["fasta"]).first () : Channel.empty ()	
+		ch_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta"] ? Channel.of (params.genomes[genome_name]["fasta"]).first () : Channel.empty ()
+		ch_fasta_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index"] ? Channel.of (params.genomes[genome_name]["fasta_index"]).first () : Channel.empty ()
 		ch_fasta_index_flat = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index_flat"] ? Channel.of (params.genomes[genome_name]["fasta_index_flat"]).first () : Channel.empty ()
 		ch_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dict"] ? Channel.of (params.genomes[genome_name]["dict"]).first () : Channel.empty ()
 		ch_dir = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dir"] ? Channel.of (params.genomes[genome_name]["dir"]).first () : Channel.empty ()
@@ -28,6 +29,7 @@ workflow PREPARE_GENOME
 
 	emit:
 		fasta            = ch_fasta
+		fasta_index      = ch_fasta_index
 		fasta_index_flat = ch_fasta_index_flat
 		dict             = ch_dict
 		dir              = ch_dir

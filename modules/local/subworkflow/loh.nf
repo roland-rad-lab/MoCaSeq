@@ -5,6 +5,8 @@ include { loh_matched; loh_matched_assign_alleles; } from "../software/loh/main"
 workflow LOH {
 
 	take:
+		ch_fasta
+		ch_fasta_index
 		ch_interval_bed
 		ch_data
 
@@ -30,7 +32,7 @@ workflow LOH {
 			}
 			.dump (tag: 'LOH after map')
 
-		loh_matched (ch_interval_bed, ch_data_single_sample)
+		loh_matched (ch_fasta, ch_fasta_index, ch_interval_bed, ch_data_single_sample)
 		loh_matched_assign_alleles (loh_matched.out.result)
 }
 
