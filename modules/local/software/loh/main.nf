@@ -52,7 +52,7 @@ process loh_matched_assign_alleles {
 		tuple val (meta), path (loh_variants_tsv)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.VariantsForLOH.tsv"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.VariantsForLOH.txt"), emit: result
 
 	script:
 	"""#!/usr/bin/env python3.7
@@ -97,7 +97,7 @@ def variant_key (data):
 def position_key (data):
 	return (tuple ([chrom_order[data[1]], int (data[2])]))
 
-with open ("${meta.sampleName}.VariantsForLOH.tsv", "w") as output_file:
+with open ("${meta.sampleName}.VariantsForLOH.txt", "w") as output_file:
 	output = []
 	output_file.write ("\\t".join (output_header))
 	output_file.write ("\\n")
@@ -195,7 +195,7 @@ with open ("${meta.sampleName}.VariantsForLOH.tsv", "w") as output_file:
 	stub:
 	"""#!/usr/bin/env bash
 
-cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.tsv .
+cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
 
 	"""
 

@@ -21,9 +21,8 @@ workflow BUBBLE_TREE {
 					accumulator[item[0]] = item[1]
 					accumulator
 				}
-				[it[2][0]] + m["loh"] + m["ratio"]
+				[it[2][0]] + m["loh"] + [m["ratio"][1]]
 		}
-
 
 		bubble_tree_matched (ch_loh_and_ratio)
 }

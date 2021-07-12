@@ -26,11 +26,11 @@ PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
   # define the data, chromosome and output name for both modes
   if(mode=="adjusted"){
     dat <- pred@rbd.adj
-    plotdata <- dat[dat$seqnames == as.character(chrom),]
+    plotdata <- dat[dat\$seqnames == as.character(chrom),]
     pdfname <- paste0(name,"/results/BubbleTree/",name,"_Chromosomes/adjusted/",name,".Bubbletree.adjusted.chr",chrom,".pdf")
   } else if(mode == "unadjusted"){
     dat <- pred@rbd
-    plotdata <- dat[dat$seqnames == as.character(chrom),]
+    plotdata <- dat[dat\$seqnames == as.character(chrom),]
     pdfname <- paste0(name,"/results/BubbleTree/",name,"_Chromosomes/unadjusted/",name,".Bubbletree.unadjusted.chr",chrom,".pdf")
   } else {
     stop("ERROR: only adjusted and unadjusted valid for mode")
@@ -46,17 +46,31 @@ PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
   ggsave(filename = pdfname, plot = btree, width = 16, height = 9, device = "pdf")
 }
 
+add_num_probes <- function (data)
+{
+	if ( "Num_Probes" %in% names (data))
+	{
+		return (data)
+	}
+	else
+	{
+		return (data %>% dplyr::mutate (Num_Probes=(End-Start)/1000) )
+	}
+}
+
 data_loh <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 data_cnv <- read.table (file="${segments_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 
 gr_loh <- data_loh %>%
 	dplyr::mutate (start=Pos-1) %>%
-	dplyr::rename (seqnames=Chrom,start=Start,end=Pos,freq=Tumor_Freq) %>%
-	GenomicRanges ()
+	dplyr::rename (seqnames=Chrom,end=Pos,freq=Tumor_Freq) %>%
+	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
 
 gr_cnv <- data_cnv %>%
-	dplyr::rename (seqnames=Chromosome,start=Start,end=End,num.mark=Num_Probes, seg.mean=Segment_Mean) %>%
-	GenomicRanges ()
+	dplyr::do(add_num_probes (.)) %>%
+	dplyr::rename_with(~ gsub("^Mean\$", "Segment_Mean", .x)) %>%
+	dplyr::rename (seqnames=Chromosome,start=Start,end=End,num.mark=Num_Probes,seg.mean=Segment_Mean) %>%
+	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
 
 print (gr_loh)
 print (gr_cnv)
@@ -70,7 +84,7 @@ r <- new("RBD", unimodal.kurtosis=-0.1)
 
 rbd <- makeRBD(r, gr_loh,gr_cnv)
 btreepredictor <- new("BTreePredictor", rbd=rbd, max.ploidy=6, prev.grid=seq(0.2,3, by=0.01))
-btreepredictor@config$min.segSize <- ifelse(max(btreepredictor@rbd$seg.size,na.rm=TRUE) < 0.4, 0.1, 0.4)
+btreepredictor@config\$min.segSize <- ifelse(max(btreepredictor@rbd\$seg.size,na.rm=TRUE) < 0.4, 0.1, 0.4)
 pred <- btpredict(btreepredictor)
 
 info <- info(pred)
