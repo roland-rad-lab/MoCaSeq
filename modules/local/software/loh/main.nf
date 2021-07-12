@@ -32,6 +32,12 @@ bcftools merge \\
 	--format '[%SAMPLE\\t%CHROM\\t%POS\\t%REF\\t%ALT\\t%AF\\t%AD{0}\\t%AD{1}\\n]' \\
 	| gzip > ${meta.sampleName}.VariantsForLOHGermline.tsv.gz
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+touch ${meta.sampleName}.VariantsForLOHGermline.tsv.gz
+	"""
+
 }
 
 process loh_matched_assign_alleles {
@@ -183,6 +189,13 @@ with open ("${meta.sampleName}.VariantsForLOH.tsv", "w") as output_file:
 	for odata in sorted (output, key=position_key):
 		output_file.write ("\\t".join (odata))
 		output_file.write ("\\n")
+
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.tsv .
 
 	"""
 

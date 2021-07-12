@@ -6,8 +6,8 @@ include { bubble_tree_matched } from "../software/bubble-tree/main"
 workflow BUBBLE_TREE {
 
 	take:
-		ch_loh
 		ch_ratio
+		ch_loh
 
 	main:
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }

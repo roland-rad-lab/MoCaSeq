@@ -45,6 +45,10 @@ include {
 } from "./modules/local/subworkflow/loh"
 
 include {
+	BUBBLE_TREE
+} from "./modules/local/subworkflow/bubble-tree"
+
+include {
 	IGV_TRACK_READ;
 	IGV_TRACK_CN
 } from "./modules/local/subworkflow/igv-track"
@@ -107,6 +111,7 @@ workflow
 	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_bam_human)
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_bam_human)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
+	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 
 	if ( params.track_read )
 	{

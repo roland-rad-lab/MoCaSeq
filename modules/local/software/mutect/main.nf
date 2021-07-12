@@ -29,8 +29,11 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+touch ${meta.sampleName}.${type}.m2.${interval}.vcf .
+touch ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+
 	"""
 
 }
@@ -66,8 +69,11 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+touch ${meta.sampleName}.matched.m2.${interval}.vcf .
+touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+
 	"""
 
 }
