@@ -69,7 +69,7 @@ gr_loh <- data_loh %>%
 gr_cnv <- data_cnv %>%
 	dplyr::do(add_num_probes (.)) %>%
 	dplyr::rename_with(~ gsub("^Mean\$", "Segment_Mean", .x)) %>%
-	dplyr::rename (seqnames=Chromosome,start=Start,end=End,num.mark=Num_Probes,seg.mean=Segment_Mean) %>%
+	dplyr::rename (seqnames=Chrom,start=Start,end=End,num.mark=Num_Probes,seg.mean=Segment_Mean) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
 
 print (gr_loh)

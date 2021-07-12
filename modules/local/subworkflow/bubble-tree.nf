@@ -25,6 +25,9 @@ workflow BUBBLE_TREE {
 		}
 
 		bubble_tree_matched (ch_loh_and_ratio)
+
+	emit:
+		result = bubble_tree_matched.out.result
 }
 
 
