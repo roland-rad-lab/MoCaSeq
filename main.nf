@@ -48,6 +48,7 @@ include {
 	BUBBLE_TREE
 } from "./modules/local/subworkflow/bubble-tree"
 
+include {
 	JABBA
 } from "./modules/local/subworkflow/jabba"
 
@@ -115,7 +116,7 @@ workflow
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_bam_human)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
-	JABBA (MANTA.out.result, HMM_COPY.out.tsv)
+	JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 
 	if ( params.track_read )
 	{

@@ -7,7 +7,7 @@ process jabba_matched {
 	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy", saveAs: { it.replaceFirst ("^JaBbA/","") }
 
 	input:
-		tuple val (meta), path (manta_vcf), path (coverage_tsv), path (segments_tsv)
+		tuple val (meta), path (manta_vcf), path (coverage_tsv), path (segments_tsv), val (pp)
 
 	output:
 		tuple val (meta), path ("JaBbA/jabba.rds"), emit: result

@@ -22,7 +22,7 @@ library(BubbleTree)
 
 # function to plot all chromosomes individually
 PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
-  
+
   # define the data, chromosome and output name for both modes
   if(mode=="adjusted"){
     dat <- pred@rbd.adj
@@ -41,7 +41,7 @@ PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
 
   # draw the plot
   btree <- drawBTree(btreeplotter, plotdata)
-  
+
   # save the plot
   ggsave(filename = pdfname, plot = btree, width = 16, height = 9, device = "pdf")
 }
