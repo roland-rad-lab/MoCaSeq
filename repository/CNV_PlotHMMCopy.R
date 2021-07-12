@@ -116,6 +116,7 @@ if (runmode == "SS") {
 }
 
 if (runmode == "MS") {
+  somatic_copy <- tumor_copy
   somatic_copy$copy <- tumor_copy$copy - normal_copy$copy
 }
 

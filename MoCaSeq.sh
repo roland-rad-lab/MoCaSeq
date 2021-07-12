@@ -171,6 +171,11 @@ elif [ $species = 'Human' ]; then
 else echo "Invalid species input (${species}). Choose Mouse or Human"; exit 1
 fi
 
+# TODO: add parameter check (in general, for all values)
+if [ $filtering = 'no' ]; then
+	filtering="none"
+fi
+
 species_lowercase=${species,,} # set the species to lowercase to match some scripts input format (e.g. Chromothripsis)
 
 if [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ ! -z $fastq_tumor_1 ] && [ ! -z $fastq_tumor_2 ] && [ -z $bam_normal ] && [ -z $bam_tumor ]; then
