@@ -15,7 +15,6 @@ workflow JABBA
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[3]]], it[0]] }
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()
-				println "bubble_tree_output: ${bubble_tree_output}"
 				def m_bubble_tree_output = bubble_tree_output =~ /\s*(\w+):\s+?([0-9\.,\s]+);?/
 				def result = m_bubble_tree_output.iterator ().toList ().inject ([:]) { accumulator, item ->
 					accumulator[item[1]] = item[2]

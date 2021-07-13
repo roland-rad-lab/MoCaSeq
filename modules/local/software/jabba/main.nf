@@ -37,8 +37,8 @@ segments = data_segments %>%
 	data.frame
 
 head (segments)
-purity = "${purity}"
-ploidy = "${ploidy}"
+purity = c(${purity})
+ploidy = c(${ploidy})
 cfield = "log2Ratio"
 
 # Needed to edit JaBbA package
