@@ -7,7 +7,7 @@ process jabba_matched {
 	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy", saveAs: { it.replaceFirst ("^JaBbA/","") }
 
 	input:
-		tuple val (meta), path (manta_vcf), path (coverage_tsv), path (segments_tsv), val (pp)
+		tuple val (meta), path (manta_vcf), path (coverage_tsv), path (segments_tsv), val (purity), val (ploidy)
 
 	output:
 		tuple val (meta), path ("JaBbA/jabba.rds"), emit: result
@@ -37,8 +37,8 @@ segments = data_segments %>%
 	data.frame
 
 head (segments)
-purity = "0.9,1"
-ploidy = "2,2"
+purity = "${purity}"
+ploidy = "${ploidy}"
 cfield = "log2Ratio"
 
 # Needed to edit JaBbA package

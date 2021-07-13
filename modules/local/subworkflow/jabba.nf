@@ -13,7 +13,16 @@ workflow JABBA
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
 		ch_ratio_key = ch_ratio.filter { it[1] == "1000" }
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[3]]], it[0]] }
-		ch_bubble_key = ch_bubble.map { [it[0]["sampleName"], ["bubble", [it[1]], it[0]] }
+		ch_bubble_key = ch_bubble.map {
+				def bubble_tree_output = it[1].getText ()
+				println "bubble_tree_output: ${bubble_tree_output}"
+				def m_bubble_tree_output = bubble_tree_output =~ /\s*(\w+):\s+?([0-9\.,\s]+);?/
+				def result = m_bubble_tree_output.iterator ().toList ().inject ([:]) { accumulator, item ->
+					accumulator[item[1]] = item[2]
+					accumulator
+				}
+				[it[0]["sampleName"], ["bubble", [result["Purity"], result["Ploidy"]]], it[0]]
+			}
 
 		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_ratio_key,ch_bubble_key)
 			.groupTuple (size: 3)
@@ -23,10 +32,10 @@ workflow JABBA
 					accumulator
 				}
 				[it[2][0]] + m["manta"] + m["ratio"] + m["bubble"]
-		}
-		.dump (tag: 'manta_ratio_and_bubble')
+			}
+			.dump (tag: 'manta_ratio_and_bubble')
 
-		jabba_matched (ch_manta_and_ratio)
+		jabba_matched (ch_manta_and_ratio_and_bubble)
 		jabba_plot (jabba_matched.out.result)
 }
 

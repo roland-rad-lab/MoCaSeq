@@ -25,7 +25,6 @@ workflow LOH {
 		ch_data_single_sample = ch_data_branched.single.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
 			.map { it[1] }
-			.dump (tag: 'LOH after groupTuple')
 			.map {
 				def m = it.inject ([:]) { accumulator, item ->
 					accumulator[item[1]] = [item[2],item[3]]
@@ -33,7 +32,6 @@ workflow LOH {
 				}
 				[it[0][0]] + m["Normal"] + m["Tumor"]
 			}
-			.dump (tag: 'LOH after map')
 
 		loh_matched (ch_interval_bed, ch_data_single_sample)
 		loh_matched_assign_alleles (ch_fasta, ch_fasta_index, ch_interval_csv_string, loh_matched.out.result)
