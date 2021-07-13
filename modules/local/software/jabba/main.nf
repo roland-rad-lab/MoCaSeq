@@ -36,10 +36,14 @@ segments = data_segments %>%
 	dplyr::mutate (strand="*") %>%
 	data.frame
 
+head (coverage)
 head (segments)
-purity = c(${purity})
-ploidy = c(${ploidy})
+
+purity = sub ("^([0-9.]+).*\$","\\\\1","${purity}")
+ploidy = "${ploidy}"
 cfield = "log2Ratio"
+
+cat (paste("Using purity: \\"",purity,"\\" and ploidy: \\"",ploidy,"\\"\\n",sep=""))
 
 # Needed to edit JaBbA package
 # In JaBbA/R/JaBbA.R:segstats
@@ -69,8 +73,8 @@ jab = JaBbA(
 	seg = segments,
 	max.na = 0.1,
 	blacklist.coverage = NULL,
-	nseg = "",
-	hets = "",
+	nseg = NULL,
+	hets = NULL,
 	purity = scan(text = purity, what = numeric(), sep = ",", quiet = T),
 	ploidy = scan(text = ploidy, what = numeric(), sep = ",", quiet = T),
 	pp.method = "sequenza",
