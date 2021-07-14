@@ -109,8 +109,14 @@ cp ${params.stub_dir}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
 process jabba_plot {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy"
+
 	input:
 		tuple val (meta), path (jabba_rds)
+
+	output:
+		tuple val (meta), path ("${meta.sampleName}.events.counts.tsv"), emit: event_counts
+		path ("*.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -138,6 +144,7 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 			invdup={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^INVDUP[0-9]+\$",simple)]\$shadow %>% streduce (1e5));title (paste(event_type," in ${meta.sampleName}")) },
 			tic={ e <- graph_events[tic>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(5e5));title (paste(event_type," in ${meta.sampleName}")) },
 			tra={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^TRA[0-9]+\$",simple)]\$shadow %>% streduce (1e5));title (paste(event_type," in ${meta.sampleName}")) },
+			chromoplexy={ e <- graph_events[chromoplexy>0];plot (e\$gt,e\$edges[which(chromoplexy>0)]\$shadow %>% streduce(5e6));title (paste(event_type," in E6F6UP"))  },
 			{
 				stop (paste ("Event type '",event_type,"' is not implemented yet in sample ${meta.sampleName}",sep=""))
 			}
