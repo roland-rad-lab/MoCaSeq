@@ -119,6 +119,9 @@ ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btre
 	"""#!/usr/bin/env bash
 #cp ${params.stub_dir}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
 touch ${meta.sampleName}.Bubbletree.txt
+touch ${meta.sampleName}.Bubbletree.adjusted.pdf
+touch ${meta.sampleName}.Bubbletree.adjustmentshift.pdf
+touch ${meta.sampleName}.Bubbletree.unadjusted.pdf
 	"""
 
 }
