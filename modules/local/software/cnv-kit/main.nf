@@ -59,7 +59,8 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/matched
-cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+#cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+touch CNVKit/matched/${meta.sampleName}.matched.cns
 	"""
 
 }
@@ -117,7 +118,8 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/single
-cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+#cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+touch CNVKit/single/${meta.sampleName}.${type}.cns
 	"""
 }
 

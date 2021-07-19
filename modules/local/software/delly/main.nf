@@ -21,8 +21,10 @@ delly call \\
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf .
-cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf.csi .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf.csi .
+touch ${meta.sampleName}.pre.bcf
+touch ${meta.sampleName}.pre.bcf.csi
 	"""
 }
 
@@ -56,8 +58,10 @@ tabix -p vcf ${meta.sampleName}.delly.vcf.gz
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
-cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
+touch ${meta.sampleName}.delly.vcf.gz
+touch ${meta.sampleName}.delly.vcf.gz.tbi
 	"""
 
 }

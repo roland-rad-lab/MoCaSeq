@@ -195,8 +195,8 @@ with open ("${meta.sampleName}.VariantsForLOH.txt", "w") as output_file:
 	stub:
 	"""#!/usr/bin/env bash
 
-cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
-
+#cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
+touch ${meta.sampleName}.VariantsForLOH.txt
 	"""
 
 }

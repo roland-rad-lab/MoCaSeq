@@ -8,6 +8,10 @@ include {
 } from "./modules/input"
 
 include {
+	parse_stub_json
+} from "./modules/stub"
+
+include {
 	PREPARE_GENOME;
 	GENOME_ANNOTATION
 } from "./modules/local/subworkflow/genome"
@@ -80,6 +84,11 @@ if (tsv_path) {
 	ch_input_sample = extract_data (tsv_path)
 
 } else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
+
+// Optionally load json map to control the behaviour of stubs (cp vs touch)
+if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_has_extension (params.stub_json, "json") ) ) {
+	params.stub_json_map = parse_stub_json (params.stub_json)
+}
 
 ch_input_branched = ch_input_sample.branch {
 	bam: it["normalBAM"] != null //These are all BAMs

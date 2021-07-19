@@ -117,8 +117,10 @@ echo "\${cmd_learn_read_orientation}"
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
-cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
+#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+touch ${meta.sampleName}.${type}.m2.vcf.gz
+touch ${meta.sampleName}.${type}.m2.vcf.gz.tbi
 	"""
 }
 

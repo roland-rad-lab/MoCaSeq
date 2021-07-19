@@ -20,7 +20,8 @@ ${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${b
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
+#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
+touch ${meta.sampleName}.${type}.${resolution}.wig
 	"""
 }
 
@@ -153,9 +154,10 @@ write.table(cnv_segments,"${meta.sampleName}.HMMCopy.${resolution}.segments.txt"
 	stub:
 	"""#!/usr/bin/env bash
 
-cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
-cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
-
+#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
+#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
+touch ${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt
+touch ${meta.sampleName}.HMMCopy.${resolution}.segments.txt
 	"""
 }
 
