@@ -16,6 +16,7 @@ workflow PREPARE_GENOME
 		genome_name
 
 	main:
+		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta"] ? Channel.of (params.genomes[genome_name]["fasta"]).first () : Channel.empty ()
 		ch_fasta_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index"] ? Channel.of (params.genomes[genome_name]["fasta_index"]).first () : Channel.empty ()
 		ch_fasta_index_flat = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index_flat"] ? Channel.of (params.genomes[genome_name]["fasta_index_flat"]).first () : Channel.empty ()
@@ -45,6 +46,7 @@ workflow GENOME_ANNOTATION
 		genome_name
 
 	main:
+		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()

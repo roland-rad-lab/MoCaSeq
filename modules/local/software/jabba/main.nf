@@ -158,6 +158,12 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 
 	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+touch ${meta.sampleName}.events.counts.tsv
+touch ${meta.sampleName}.event.foo.pdf
+	"""
+
 }
 
 

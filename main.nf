@@ -96,40 +96,42 @@ ch_input_branched = ch_input_sample.branch {
 }
 
 ch_input_branched_bam_branched = ch_input_branched.bam.branch {
-	human: it["organism"] == "human"
+	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wex: it["organism"] == "mouse" && it["seqType"] == "wex"
 	other: true
 }
 
 ch_input_branched_remap_branched = ch_input_branched.remap.branch {
-	human: it["organism"] == "human"
+	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wex: it["organism"] == "mouse" && it["seqType"] == "wex"
 	other: true
 }
 
-ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input bam:\n${it}" }
-ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism) for input remap:\n${it}" }
+ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input bam:\n${it}" }
+ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input remap:\n${it}" }
 
-workflow
+workflow HUMAN_WGS
 {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	REMAP (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human)
-	ch_input_bam_human = REMAP.out.result.mix (ch_input_branched_bam_branched.human)
+	REMAP (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
+	ch_bam = REMAP.out.result.mix (ch_input_branched_bam_branched.human_wgs)
 
-	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_bam_human)
-	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_input_bam_human, MANTA.out.indel)
-	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_input_bam_human)
-	DELLY (PREPARE_GENOME.out.fasta, ch_input_bam_human)
-	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_input_bam_human)
-	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_input_bam_human)
+	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
+	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
+	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
+	DELLY (PREPARE_GENOME.out.fasta, ch_bam)
+	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
+	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 	JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 
 	if ( params.track_read )
 	{
-		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_input_bam_human)
+		IGV_TRACK_READ (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_bam)
 	}
 	if ( params.track_cn )
 	{
@@ -137,4 +139,21 @@ workflow
 	}
 }
 
+workflow MOUSE_WEX
+{
+	main:
+	PREPARE_GENOME (params.genome_build.mouse)
+	GENOME_ANNOTATION (params.genome_build.mouse)
+
+	REMAP (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wex)
+	ch_bam = REMAP.out.result.mix (ch_input_branched_bam_branched.mouse_wex)
+
+	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
+	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
+}
+
+workflow {
+	HUMAN_WGS ()
+	MOUSE_WEX ()
+}
 

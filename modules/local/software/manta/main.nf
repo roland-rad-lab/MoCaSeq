@@ -16,6 +16,8 @@ process manta_matched {
 		tuple val (meta), val ("matched"), path ("results/variants/candidateSmallIndels.vcf.gz"), path ("results/variants/candidateSmallIndels.vcf.gz.tbi"), emit: indel
 
 	script:
+
+	if ( "${meta.seqType}" == "wgs" )
 	"""#!/usr/bin/env bash
 python2 ${params.manta.dir}/bin/configManta.py \\
 	--normalBam ${bam_normal} \\
@@ -28,6 +30,22 @@ python2 ${params.manta.dir}/bin/configManta.py \\
 python2 runWorkflow.py -m local -j ${params.manta.threads}
 
 	"""
+	else if ( "${meta.seqType}" == "wex" )
+	"""#!/usr/bin/env bash
+python2 ${params.manta.dir}/bin/configManta.py \\
+	--normalBam ${bam_normal} \\
+	--tumorBam ${bam_tumor} \\
+	--referenceFasta ${reference} \\
+	--runDir . \\
+	--callRegions ${interval_bed} \\
+	--generateEvidenceBam \\
+	--exome
+
+python2 runWorkflow.py -m local -j ${params.manta.threads}
+
+	"""
+	else
+		error "Invalid seqType: '${meta.seqType}' for sample: '${meta.sampleName}'"
 
 	stub:
 	"""#!/usr/bin/env bash

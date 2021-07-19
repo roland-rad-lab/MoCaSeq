@@ -50,7 +50,7 @@ def extract_data (tsv_file)
 			if ( row.Type.isEmpty () ) exit 1, "[MoCaSeq] error: the Type column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 			if ( row.BAM.isEmpty() ) exit 1, "[MoCaSeq] error: the BAM column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 
-                        if ( !(row.Type == "Normal" || row.Type == "Tumor") ) exit 1, "MoCaSeq] error: Type was not [Normal|Tumor]. Check row\n ${row}"
+                        if ( !(row.Type == "Normal" || row.Type == "Tumor") ) exit 1, "[MoCaSeq] error: Type was not [Normal|Tumor]. Check row\n ${row}"
 
                         def r1 = row.R1.matches('NA') ? null : file_from_path (row.R1)
                         def r2 = row.R2.matches('NA') ? null : file_from_path (row.R2)
@@ -85,6 +85,7 @@ def extract_data (tsv_file)
 				if ( accumulator.size () == 0 )
 				{
 					accumulator["sampleName"] = it.key
+					accumulator["seqType"] = item["seqType"].toLowerCase ()
 					accumulator["organism"] = item["organism"].toLowerCase ()
 				}
 				if ( item["type"] == "Normal")
