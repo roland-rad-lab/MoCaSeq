@@ -65,6 +65,10 @@ include {
 	IGV_TRACK_CN
 } from "./modules/local/subworkflow/igv-track"
 
+include {
+	FRAG_COUNTER
+} from "./modules/local/subworkflow/frag-counter"
+
 tsv_path = null
 
 
@@ -162,8 +166,35 @@ workflow MOUSE_WEX
 	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 }
 
+workflow HUMAN_PON {
+	main:
+	PREPARE_GENOME (params.genome_build.human)
+	GENOME_ANNOTATION (params.genome_build.human)
+
+	ch_bam = ch_input_branched_bam_branched.human_wgs
+
+	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+}
+
+workflow MOUSE_PON {
+	main:
+	PREPARE_GENOME (params.genome_build.mouse)
+	GENOME_ANNOTATION (params.genome_build.mouse)
+
+	ch_bam = ch_input_branched_bam_branched.mouse_wex
+
+	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+}
+
 workflow {
 	HUMAN_WGS ()
 	MOUSE_WEX ()
 }
+
+// Run using -entry PON
+workflow PON {
+	HUMAN_PON ()
+	MOUSE_PON ()
+}
+
 
