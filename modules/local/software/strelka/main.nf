@@ -13,6 +13,7 @@ process strelka_matched {
 		tuple val (meta), val("matched"), path("Strelka/results/variants/somatic.snvs.vcf.gz"), path ("Strelka/results/variants/somatic.snvs.vcf.gz.tbi"), path ("Strelka/results/variants/somatic.indels.vcf.gz"), path ("Strelka/results/variants/somatic.indels.vcf.gz.tbi"), emit: result
 
 	script:
+	if ( "${meta.seqType}" == "wgs" )
 	"""#!/usr/bin/env bash
 python2 ${params.strelka.dir}/bin/configureStrelkaSomaticWorkflow.py \\
 	--normalBam ${bam_normal} \\
@@ -24,6 +25,21 @@ python2 ${params.strelka.dir}/bin/configureStrelkaSomaticWorkflow.py \\
 
 python2 Strelka/runWorkflow.py -m local -j ${params.strelka.threads}
 	"""
+	else if ( "${meta.seqType}" == "wex" )
+	"""#!/usr/bin/env bash
+python2 ${params.strelka.dir}/bin/configureStrelkaSomaticWorkflow.py \\
+	--normalBam ${bam_normal} \\
+	--tumorBam ${bam_tumor} \\
+	--ref ${reference} \\
+	--runDir Strelka \\
+	--indelCandidates ${candidate_small_indels_vcf} \\
+	--callRegions ${interval_bed} \\
+	--exome
+
+python2 Strelka/runWorkflow.py -m local -j ${params.strelka.threads}
+	"""
+	else
+		error "Invalid seqType: '${meta.seqType}' for sample: '${meta.sampleName}'"
 
 	stub:
 	"""#!/usr/bin/env bash

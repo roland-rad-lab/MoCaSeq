@@ -51,6 +51,7 @@ workflow GENOME_ANNOTATION
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]).first () : Channel.empty ()
+		ch_micro_satellite = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["micro_satellite"] ? Channel.of (params.genome_annotations[genome_name]["micro_satellite"]).first () : Channel.empty ()
 
 		bash_expand_path_gc (ch_gc_wig)
 		bash_expand_path_map (ch_map_wig)
@@ -60,6 +61,7 @@ workflow GENOME_ANNOTATION
 		map_wig = bash_expand_path_map.out.splitText ()
 		common_vcf = ch_common_vcf
 		gencode_genes_bed = ch_gencode_genes_bed
+		micro_satellite = ch_micro_satellite
 }
 
 

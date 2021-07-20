@@ -49,6 +49,10 @@ include {
 } from "./modules/local/subworkflow/loh"
 
 include {
+	MSI_SENSOR
+} from "./modules/local/subworkflow/msi-sensor"
+
+include {
 	BUBBLE_TREE
 } from "./modules/local/subworkflow/bubble-tree"
 
@@ -126,6 +130,7 @@ workflow HUMAN_WGS
 	CNV_KIT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
+	MSI_SENSOR (GENOME_ANNOTATION.out.micro_satellite, ch_bam)
 	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 	JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 
@@ -150,6 +155,11 @@ workflow MOUSE_WEX
 
 	MANTA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
 	STRELKA (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
+	MUTECT (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
+	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
+	MSI_SENSOR (GENOME_ANNOTATION.out.micro_satellite, ch_bam)
+	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 }
 
 workflow {
