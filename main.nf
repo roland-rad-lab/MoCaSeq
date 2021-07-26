@@ -69,6 +69,11 @@ include {
 	FRAG_COUNTER
 } from "./modules/local/subworkflow/frag-counter"
 
+include {
+	DRY_CLEAN;
+	DRY_CLEAN_PON
+} from "./modules/local/subworkflow/dry-clean"
+
 tsv_path = null
 
 
@@ -136,7 +141,18 @@ workflow HUMAN_WGS
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (GENOME_ANNOTATION.out.micro_satellite, ch_bam)
 	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
-	JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+
+	if ( params.pon_dir == null )
+	{
+		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+	}
+	else
+	{
+		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }.dump (tag: 'ch_bam_tumor')
+		FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
+		DRY_CLEAN (params.pon_dir, FRAG_COUNTER.out.result)
+		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+	}
 
 	if ( params.track_read )
 	{
@@ -172,8 +188,9 @@ workflow HUMAN_PON {
 	GENOME_ANNOTATION (params.genome_build.human)
 
 	ch_bam = ch_input_branched_bam_branched.human_wgs
-
-	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+	ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }.dump (tag: 'ch_bam_normal')
+	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
+	DRY_CLEAN_PON (GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
 }
 
 workflow MOUSE_PON {

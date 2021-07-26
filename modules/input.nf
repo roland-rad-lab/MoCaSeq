@@ -22,9 +22,8 @@ def index_file_from_path (it)
 	def f = file (it.resolveSibling (it.name.replaceFirst (~/\.bam$/, ".bam.bai")), glob: false)
 	if ( f.exists () ) return f
 	f = file (it.resolveSibling (it.name.replaceFirst (~/\.bam$/, ".bai")), glob: false)
-	if ( f.exists () ) return f
-
-	exit 1, "[MoCaSeq] error: No index file supplied for BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information. Check index for file: ${it}"
+	if ( !f.exists () ) exit 1, "[MoCaSeq] error: No index file supplied for BAM input file. If using input method TSV set to NA if no file required. See '--help' flag and documentation under 'running the pipeline' for more information. Check index for file: ${it}"
+	return f
 }
 
 // Check if a row has the expected number of columns

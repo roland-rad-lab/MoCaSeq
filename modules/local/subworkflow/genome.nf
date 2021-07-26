@@ -47,6 +47,7 @@ workflow GENOME_ANNOTATION
 
 	main:
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
+		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()
@@ -57,6 +58,7 @@ workflow GENOME_ANNOTATION
 		bash_expand_path_map (ch_map_wig)
 
 	emit:
+		par_interval_bed = ch_par_interval_bed
 		gc_wig = bash_expand_path_gc.out.splitText ()
 		map_wig = bash_expand_path_map.out.splitText ()
 		common_vcf = ch_common_vcf
