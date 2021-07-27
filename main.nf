@@ -98,6 +98,13 @@ if (tsv_path) {
 
 } else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
 
+// Species is required if running PON from pon_tsv
+if ( params.pon_tsv != null )
+{
+	if ( params.pon_organism == null ) exit 1, "[MoCaSeq] error: Organism is required when using pon_tsv"
+	if ( ! (params.pon_organism == "human" || params.pon_organism == "mouse" ) ) exit 1, "[MoCaSeq] error: Organism '${params.pon_organism}' should be human or mouse"
+}
+
 // Optionally load json map to control the behaviour of stubs (cp vs touch)
 if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_has_extension (params.stub_json, "json") ) ) {
 	params.stub_json_map = parse_stub_json (params.stub_json)
@@ -187,11 +194,23 @@ workflow HUMAN_PON {
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	ch_bam = ch_input_branched_bam_branched.human_wgs
-	ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }.dump (tag: 'ch_bam_normal human')
+	ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
-	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
-	DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
+	if ( params.pon_tsv == null )
+	{
+		FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
+
+		ch_normal_coverage_lines = FRAG_COUNTER.out.result.tap { ch_normal_coverage_copy }.map { [it[0]["sampleName"], it[2]].join ("\t") }
+		ch_normal_coverage_tsv = Channel.of ( ["sample", "normal_cov"].join ("\t")  )
+			.concat (ch_normal_coverage_lines)
+			.collectFile (name: "normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/PON")
+
+		DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_copy.count ().filter { it > 0 && params.pon_dry }, ch_normal_coverage_tsv)
+	}
+	else
+	{
+		DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.of (1).filter { params.pon_organism == "human" }, Channel.fromPath (params.pon_tsv))
+	}
 }
 
 workflow MOUSE_PON {
@@ -199,14 +218,23 @@ workflow MOUSE_PON {
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
-	ch_bam = ch_input_branched_bam_branched.mouse_wex
+	ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
-	if ( params.pon_tsv = null )
+	if ( params.pon_tsv == null )
 	{
-		ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
-		
-	DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
+
+		ch_normal_coverage_lines = FRAG_COUNTER.out.result.tap { ch_normal_coverage_copy }.map { [it[0]["sampleName"], it[2]].join ("\t") }
+		ch_normal_coverage_tsv = Channel.of ( ["sample", "normal_cov"].join ("\t")  )
+			.concat (ch_normal_coverage_lines)
+			.collectFile (name: "normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/PON")
+
+		DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_copy.count ().filter { it > 0 && params.pon_dry }, ch_normal_coverage_tsv)
+	}
+	else
+	{
+		DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.of (1).filter { params.pon_organism == "mouse" }, Channel.fromPath (params.pon_tsv))
+	}
 }
 
 workflow {
