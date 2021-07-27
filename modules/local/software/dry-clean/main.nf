@@ -1,13 +1,16 @@
+
 process dry_clean_detergent {
 
-	publishDir "${params.output_base}/PON", mode: "copy"
+	publishDir "${params.output_base}/PON", mode: "copy", saveAs: { it.replaceFirst ("^PON/","") }
 
 	input:
+		val (intervals)
 		val (par_region_bed)
+		val (sample_count)
 		path (normal_coverage_tsv)
 
 	output:
-		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.rds"), emit: result
+		tuple path ("normal_table.rds"), path ("PON/germline.markers.rds"), path ("PON/detergent.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -17,11 +20,13 @@ library (IRanges)
 library (GenomicRanges)
 library (dryclean)
 
+intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
+
 data_normal_coverage <- read.table (file="${normal_coverage_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 head (data_normal_coverage)
-if ( nrow (data_normal_coverage) < 2 ) { stop ("You must supply more than one sample to calculate PON.") }
-dt_normal_coverage <- as.data.table (data_normal_coverage)
-saveRDS (dt_normal_coverage,file="normal_table.rds")
+if ( nrow (data_normal_coverage) < 2 ) { stop ("You must supply more than one sample to calculate PON. Your sample_count was '${sample_count}'") }
+
+saveRDS (as.data.table (data_normal_coverage),file="normal_table.rds")
 
 data_par <- read.table (file="${par_region_bed}",sep="\\t",header=F,stringsAsFactors=F)
 names (data_par) <- c("seqnames", "start", "end")
@@ -31,18 +36,25 @@ saveRDS (GenomicRanges::makeGRangesFromDataFrame (data_par),file="par.rds")
 system("mkdir PON")
 
 
-detergent <- prepare_detergent (normal.table.path="normal_table.rds",save.pon=T,path.to.save="PON",num.cores=1,use.all=T,PAR.file="par.rds")
+detergent <- prepare_detergent (normal.table.path="normal_table.rds",save.pon=T,path.to.save="PON",num.cores=1,use.all=T,PAR.file="par.rds",all.chr=intervals)
+decomp_paths <- character (nrow (data_normal_coverage))
 
 for ( i in seq_along (data_normal_coverage[,"sample"]) )
 {
 	sample_name <- data_normal_coverage[i,"sample"]
 	sample_cov_path <- data_normal_coverage[i,"normal_cov"]
 
-	decomp <- start_wash_cycle (cov=readRDS (sample_cov_path),detergent.pon.path="PON/detergent.rds",whole_genome=T,chr=NA,germline.filter=F)
+	decomp <- start_wash_cycle (cov=readRDS (sample_cov_path),detergent.pon.path="PON/detergent.rds",whole_genome=T,chr=NA,germline.filter=F,is.human=F)
 	head (decomp)
+
+	sample_decomp_path <- paste ("PON/",sample_name,".decomp.rds",sep="")
+	decomp_paths[i] <- sample_decomp_path
+	saveRDS (decomp,file=sample_decomp_path)
 }
 
-grm = identify_germline (normal.table.path="normal_table.rds",path.to.save="PON",signal.thresh=0.5,pct.thresh=0.98)
+saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)),file="normal_table.rds")
+
+identify_germline (normal.table.path="normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98)
 
 	"""
 }
@@ -51,17 +63,19 @@ process dry_clean {
 	tag "${meta.sampleName}"
 
 	input:
-		tuple path (normal_table_rds), path (germline_rds)
+		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
 		tuple val (meta), path (tumor_coverage_rds)
+
+	output:
+		val (meta), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env
 
 coverage_data = readRDS(tumor_coverage_rds)
-cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="PON",whole_genome=T,chr=NA,germline.filter=T,germline.file="germline.markers.rds")
+cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}")
 
-
-write.table (data.frame (cov_out@unlistData),sep="\\t",quote=F,row.names=F)
+write.table (as.data.frame (cov_out),file="${meta.sampleName}.Tumor.coverage.tsv",sep="\\t",quote=F,row.names=F)
 
 	"""
 }

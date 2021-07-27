@@ -25,14 +25,18 @@ workflow DRY_CLEAN {
 workflow DRY_CLEAN_PON {
 
 	take:
+		ch_interval
 		ch_par_interval_bed
 		ch_normal_coverage
 
 	main:
+		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+
+		ch_normal_coverage_lines = ch_normal_coverage.tap { ch_normal_coverage_copy }.map { [it[0]["sampleName"], it[2]].join ("\t") }
 		ch_normal_coverage_tsv = Channel.of ( ["sample", "normal_cov"].join ("\t")  )
-			.concat (ch_normal_coverage.dump (tag: 'ch_normal_coverage').map { [it[0]["sampleName"], it[2]].join ("\t") })
+			.concat (ch_normal_coverage_lines)
 			.collectFile (name: "normal_coverage_file_paths.tsv", newLine: true, sort: false)
 
-	dry_clean_detergent (ch_par_interval_bed, ch_normal_coverage_tsv)
+	dry_clean_detergent (ch_interval_csv_string, ch_par_interval_bed, ch_normal_coverage_copy.count ().filter { it > 0 }, ch_normal_coverage_tsv)
 }
 

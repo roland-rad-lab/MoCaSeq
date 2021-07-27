@@ -188,9 +188,10 @@ workflow HUMAN_PON {
 	GENOME_ANNOTATION (params.genome_build.human)
 
 	ch_bam = ch_input_branched_bam_branched.human_wgs
-	ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }.dump (tag: 'ch_bam_normal')
+	ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }.dump (tag: 'ch_bam_normal human')
+
 	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
-	DRY_CLEAN_PON (GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
+	DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
 }
 
 workflow MOUSE_PON {
@@ -200,7 +201,12 @@ workflow MOUSE_PON {
 
 	ch_bam = ch_input_branched_bam_branched.mouse_wex
 
-	FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+	if ( params.pon_tsv = null )
+	{
+		ch_bam_normal = ch_bam.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+		FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
+		
+	DRY_CLEAN_PON (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, FRAG_COUNTER.out.result)
 }
 
 workflow {
