@@ -147,17 +147,18 @@ workflow HUMAN_WGS
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (GENOME_ANNOTATION.out.micro_satellite, ch_bam)
-	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 
 	if ( params.pon_dir == null )
 	{
+		BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 	}
 	else
 	{
 		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }.dump (tag: 'ch_bam_tumor')
 		FRAG_COUNTER (PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
-		DRY_CLEAN (params.pon_dir, FRAG_COUNTER.out.result)
+		DRY_CLEAN (PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
+		BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 	}
 

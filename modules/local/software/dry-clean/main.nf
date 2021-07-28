@@ -63,17 +63,24 @@ process dry_clean {
 	tag "${meta.sampleName}"
 
 	input:
+		val (intervals)
 		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
-		tuple val (meta), path (tumor_coverage_rds)
+		tuple val (meta), val (type), path (tumor_coverage_rds)
 
 	output:
-		val (meta), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
 
 	script:
-	"""#!/usr/bin/env
+	"""#!/usr/bin/env Rscript
+library (data.table)
+library (IRanges)
+library (GenomicRanges)
+library (dryclean)
+
+intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
 coverage_data = readRDS(tumor_coverage_rds)
-cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}")
+cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",all.chr=intervals)
 
 write.table (as.data.frame (cov_out),file="${meta.sampleName}.Tumor.coverage.tsv",sep="\\t",quote=F,row.names=F)
 
