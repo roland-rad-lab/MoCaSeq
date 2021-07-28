@@ -101,7 +101,7 @@ if (tsv_path) {
 // Species is required if running PON from pon_tsv
 if ( params.pon_tsv != null )
 {
-	if ( params.pon_organism == null ) exit 1, "[MoCaSeq] error: Organism is required when using pon_tsv"
+	if ( params.pon_organism == null ) exit 1, "[MoCaSeq] error: Organism is required when using pon_tsv. Please supply a value using --pon_organism."
 	if ( ! (params.pon_organism == "human" || params.pon_organism == "mouse" ) ) exit 1, "[MoCaSeq] error: Organism '${params.pon_organism}' should be human or mouse"
 }
 

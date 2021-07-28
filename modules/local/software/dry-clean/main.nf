@@ -44,7 +44,7 @@ for ( i in seq_along (data_normal_coverage[,"sample"]) )
 	sample_name <- data_normal_coverage[i,"sample"]
 	sample_cov_path <- data_normal_coverage[i,"normal_cov"]
 
-	decomp <- start_wash_cycle (cov=readRDS (sample_cov_path),detergent.pon.path="PON/detergent.rds",whole_genome=T,chr=NA,germline.filter=F,is.human=F)
+	decomp <- start_wash_cycle (cov=readRDS (sample_cov_path),detergent.pon.path="PON/detergent.rds",whole_genome=T,chr=NA,germline.filter=F,is.human=F,all.chr=intervals)
 	head (decomp)
 
 	sample_decomp_path <- paste ("PON/",sample_name,".decomp.rds",sep="")
@@ -54,7 +54,7 @@ for ( i in seq_along (data_normal_coverage[,"sample"]) )
 
 saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)),file="normal_table.rds")
 
-identify_germline (normal.table.path="normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98)
+identify_germline (normal.table.path="normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98,all.chr=intervals)
 
 	"""
 }
