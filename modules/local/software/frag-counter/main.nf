@@ -3,11 +3,12 @@ process frag_counter_wig_to_rds {
 	publishDir "${params.output_base}/PON", mode: "copy"
 
 	input:
+		val (genome_name)
 		val (intervals)
 		tuple val (resolution), val (gc_wig), val (map_wig)
 
 	output:
-		tuple val (resolution), path ("gc${resolution}.rds"), path ("map${resolution}.rds"), emit: result
+		tuple val (resolution), path ("${genome_name}.gc.${resolution}.rds"), path ("${genome_name}.map.${resolution}.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -26,7 +27,7 @@ gc_chr_levels <- gc_chr_level_info[order(gc_chr_level_info[,"count"],decreasing=
 gc_ranged_subset[,c("chr", "end") := list (factor (chr,levels=gc_chr_levels\$chr,ordered=T), end -1 )]
 data.table::setnames (gc_ranged_subset, "value", "score")
 
-saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (gc_ranged_subset),keep.extra.columns=T),file="gc${resolution}.rds")
+saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (gc_ranged_subset),keep.extra.columns=T),file="${genome_name}.gc.${resolution}.rds")
 rm (gc_ranged_subset, gc_ranged, gc_chr_levels, gc_chr_level_info)
 
 map_ranged <- wigToRangedData ("${map_wig}")
@@ -38,7 +39,7 @@ map_chr_levels <- map_chr_level_info[order(map_chr_level_info[,"count"],decreasi
 map_ranged_subset[,c("chr", "end") := list (factor (chr,levels=map_chr_levels\$chr,ordered=T), end -1)]
 data.table::setnames (map_ranged_subset, "value", "score")
 
-saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (map_ranged_subset),keep.extra.columns=T),file="map${resolution}.rds")
+saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (map_ranged_subset),keep.extra.columns=T),file="${genome_name}.map.${resolution}.rds")
 	"""
 
 	stub:
@@ -56,7 +57,7 @@ process frag_counter {
 	publishDir "${params.output_base}/${meta.sampleName}/results/fragCounter", mode: "copy"
 
 	input:
-		tuple val (resolution), path (gc_rds), path (map_rds)
+		tuple val (resolution), path ("gc${resolution}.rds"), path ("map${resolution}.rds")
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
@@ -68,13 +69,6 @@ process frag_counter {
 suppressPackageStartupMessages(library(fragCounter))
 suppressPackageStartupMessages(library(skidb))
 suppressPackageStartupMessages(library(data.table))
-
-# sc13 debug
-dgc = readRDS("gc1000.rds")
-print (dgc)
-dmap = readRDS("map1000.rds")
-print (dmap)
-# sc13 end debug
 
 out = fragCounter(bam="${bam}", window=${resolution}, gc.rds.dir=".", map.rds.dir=".")
 saveRDS (out,file="${meta.sampleName}.${type}.coverage.${resolution}.rds")

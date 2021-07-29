@@ -7,6 +7,7 @@ include { frag_counter_wig_to_rds;frag_counter } from "../software/frag-counter/
 workflow FRAG_COUNTER {
 
 	take:
+		genome_name
 		ch_interval
 		ch_gc_wig
 		ch_map_wig
@@ -33,7 +34,7 @@ workflow FRAG_COUNTER {
 			.dump (tag: 'frag_counter ch_wig_resolution')
 
 
-		frag_counter_wig_to_rds (ch_interval_csv_string, ch_wig_resolution)
+		frag_counter_wig_to_rds (genome_name, ch_interval_csv_string, ch_wig_resolution)
 		frag_counter (frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
 
 	emit:

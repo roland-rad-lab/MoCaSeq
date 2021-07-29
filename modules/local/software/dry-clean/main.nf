@@ -1,9 +1,10 @@
 
 process dry_clean_detergent {
 
-	publishDir "${params.output_base}/PON", mode: "copy", saveAs: { it.replaceFirst ("^PON/","") }
+	publishDir "${params.output_base}/PON", mode: "copy", saveAs: { it.replaceFirst ("^PON/","${genome_build}.") }
 
 	input:
+		val (genome_build)
 		val (intervals)
 		val (par_region_bed)
 		val (sample_count)
