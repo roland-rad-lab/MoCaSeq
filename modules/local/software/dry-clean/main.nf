@@ -7,11 +7,11 @@ process dry_clean_detergent {
 		val (genome_build)
 		val (intervals)
 		val (par_region_bed)
-		val (sample_count)
+		path ("*")
 		path (normal_coverage_tsv)
 
 	output:
-		tuple path ("normal_table.rds"), path ("PON/germline.markers.rds"), path ("PON/detergent.rds"), emit: result
+		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.rds"), path ("PON/detergent.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -25,7 +25,7 @@ intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
 data_normal_coverage <- read.table (file="${normal_coverage_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 head (data_normal_coverage)
-if ( nrow (data_normal_coverage) < 2 ) { stop ("You must supply more than one sample to calculate PON. Your sample_count was '${sample_count}'") }
+if ( nrow (data_normal_coverage) < 2 ) { stop ("You must supply more than one sample to calculate PON.") }
 
 saveRDS (as.data.table (data_normal_coverage),file="normal_table.rds")
 
@@ -53,9 +53,9 @@ for ( i in seq_along (data_normal_coverage[,"sample"]) )
 	saveRDS (decomp,file=sample_decomp_path)
 }
 
-saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)),file="normal_table.rds")
+saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)),file="PON/normal_table.rds")
 
-identify_germline (normal.table.path="normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98,all.chr=intervals)
+identify_germline (normal.table.path="PON/normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98,all.chr=intervals)
 
 	"""
 }

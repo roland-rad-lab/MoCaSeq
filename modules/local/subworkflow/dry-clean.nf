@@ -36,17 +36,19 @@ workflow DRY_CLEAN_PON {
 	main:
 	ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
 
-	ch_normal_coverage_tsv_filtered = ch_normal_coverage_tsv.splitText (keepHeader: true)
+	ch_normal_coverage_tsv_filtered = ch_normal_coverage_tsv.splitCsv (header: true, sep: "\t")
 		.filter {
-			def lines = it.tokenize ("\n")
-			if ( lines.size () < 2 ) exit 1, "[MoCaSeq] error: Invalid lines in normal_coverage_tsv '${it}'"
-			def m = [lines[0],lines[1]].transpose().collectEntries()
-			if ( !m.containsKey ("genome_build") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_coverage_tsv, no 'genome_build' column '${it}'"
-			return m["genome_build"] == genome_build
+			if ( !it.containsKey ("genome_build") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_coverage_tsv, no 'genome_build' column '${it}'"
+			return it["genome_build"] == genome_build
+		}.tap { ch_paths }
+		.map { jt ->
+			def f = file (jt["normal_cov"],glob: false)
+			jt["normal_cov"] = f.name
+			def header = ["sample", "genome_build", "normal_cov"]
+			[ header.join ("\t"), header.collect { jt[it] }.join ("\t"), ""].join ("\n")
 		}
-		.tap { ch_have_work }
 		.collectFile (keepHeader: true, skip: 1)
 
-	dry_clean_detergent (genome_build, ch_interval_csv_string, ch_par_interval_bed, ch_have_work.count ().filter { it > 0 }, ch_normal_coverage_tsv)
+	dry_clean_detergent (genome_build, ch_interval_csv_string, ch_par_interval_bed, ch_paths.map { file (it["normal_cov"], glob: false) }.collect (), ch_normal_coverage_tsv_filtered)
 }
 
