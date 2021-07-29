@@ -44,10 +44,10 @@ saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (map_ranged_subs
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/PON/gc${resolution}.rds .
-#cp ${params.stub_dir}/PON/map${resolution}.rds .
-touch gc${resolution}.rds
-touch map${resolution}.rds
+#cp ${params.stub_dir}/PON/${genome_name}.gc.${resolution}.rds .
+#cp ${params.stub_dir}/PON/${genome_name}.map.${resolution}.rds .
+touch ${genome_name}.gc.${resolution}.rds
+touch ${genome_name}.map.${resolution}.rds
 	"""
 }
 

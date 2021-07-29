@@ -43,9 +43,10 @@ workflow DRY_CLEAN_PON {
 		}.tap { ch_paths }
 		.map { jt ->
 			def f = file (jt["normal_cov"],glob: false)
-			jt["normal_cov"] = f.name
+			// DO NOT MODIFY jt
 			def header = ["sample", "genome_build", "normal_cov"]
-			[ header.join ("\t"), header.collect { jt[it] }.join ("\t"), ""].join ("\n")
+			def ldata = [jt["sample"], jt["genome_build"], f.name]
+			[ header.join ("\t"), ldata.join ("\t"), ""].join ("\n")
 		}
 		.collectFile (keepHeader: true, skip: 1)
 
