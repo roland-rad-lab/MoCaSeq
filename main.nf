@@ -37,7 +37,8 @@ include {
 } from "./modules/local/subworkflow/delly"
 
 include {
-	CNV_KIT
+	CNV_KIT;
+	CNV_KIT_SEGMENT
 } from "./modules/local/subworkflow/cnv-kit"
 
 include {
@@ -75,18 +76,20 @@ include {
 } from "./modules/local/subworkflow/dry-clean"
 
 tsv_path = null
+pon_tsv_path = null
 
 
 ch_input_sample = Channel.empty ()
 
 
 // check if we have valid --input
-if (params.input == null) {
-	  exit 1, "[MoCaSeq] error: --input was not supplied! Please check '--help' or documentation under 'running the pipeline' for details"
+if (params.input == null && params.pon_tsv == null) {
+	  exit 1, "[MoCaSeq] error: --input or --pon_tsv was not supplied! Please check '--help' or documentation under 'running the pipeline' for details"
 }
 
 // Read in files properly from TSV file
 if (params.input && (file_has_extension (params.input, "tsv"))) tsv_path = params.input
+if (params.pon_tsv && (file_has_extension (params.pon_tsv, "tsv"))) pon_tsv_path = params.pon_tsv
 
 
 if (tsv_path) {
@@ -96,7 +99,13 @@ if (tsv_path) {
 	if (!tsv_file.exists ()) exit 1, "[MoCaSeq] error: input TSV file could not be found. Does the file exist and is it in the right place? You gave the path: ${params.input}"
 	ch_input_sample = extract_data (tsv_path)
 
-} else exit 1, "[MoCaSeq] error: --input file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
+}
+else if (pon_tsv_path)
+{
+	tsv_file = file (pon_tsv_path)
+	if (tsv_file instanceof List) exit 1, "[MoCaSeq] error: can only accept one TSV file per run."
+	if (!tsv_file.exists ()) exit 1, "[MoCaSeq] error: pon_tsv TSV file could not be found. Does the file exist and is it in the right place? You gave the path: ${params.pon_tsv}"
+} else exit 1, "[MoCaSeq] error: --input or --pon_tsv file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
 
 // Optionally load json map to control the behaviour of stubs (cp vs touch)
 if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_has_extension (params.stub_json, "json") ) ) {
@@ -151,8 +160,9 @@ workflow HUMAN_WGS
 		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }.dump (tag: 'ch_bam_tumor')
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
-		BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
-		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.tsv)
+		BUBBLE_TREE (CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
+		JABBA (MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
 	}
 
 	if ( params.track_read )
@@ -188,10 +198,10 @@ workflow HUMAN_PON {
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
-
-	if ( params.pon_tsv == null )
+	if ( pon_tsv_path == null )
 	{
+		ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
 
 		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2]].join ("\t") }
@@ -206,7 +216,7 @@ workflow HUMAN_PON {
 	}
 	else
 	{
-		DRY_CLEAN_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (params.pon_tsv))
+		DRY_CLEAN_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
 	}
 }
 
@@ -215,10 +225,10 @@ workflow MOUSE_PON {
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
-	ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
-
-	if ( params.pon_tsv == null )
+	if ( pon_tsv_path == null )
 	{
+		ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+
 		FRAG_COUNTER (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
 
 		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2]].join ("\t") }
@@ -233,7 +243,7 @@ workflow MOUSE_PON {
 	}
 	else
 	{
-		DRY_CLEAN_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (params.pon_tsv))
+		DRY_CLEAN_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
 	}
 }
 

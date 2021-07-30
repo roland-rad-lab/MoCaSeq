@@ -11,10 +11,11 @@ workflow BUBBLE_TREE {
 
 	main:
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }
-		ch_ratio_key = ch_ratio.filter { it[1] == "20000" }
-			.map { [it[0]["sampleName"], ["ratio", [it[2], it[3]]], it[0]] }
+		ch_ratio_key = ch_ratio.filter { it[2] == "20000" }
+			.map { [it[0]["sampleName"], ["ratio", [it[3], it[4]]], it[0]] }
 
 		ch_loh_and_ratio = ch_loh_key.mix (ch_ratio_key)
+			.dump (tag: 'bubble tree before groupTuple')
 			.groupTuple (size: 2)
 			.map {
 				def m = it[1].inject ([:]) { accumulator, item ->
@@ -22,7 +23,7 @@ workflow BUBBLE_TREE {
 					accumulator
 				}
 				[it[2][0]] + m["loh"] + [m["ratio"][1]]
-		}
+		}.dump (tag: 'bubble tree after groupTuple')
 
 		bubble_tree_matched (ch_loh_and_ratio)
 

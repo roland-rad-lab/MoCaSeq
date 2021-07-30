@@ -61,7 +61,7 @@ process frag_counter {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.coverage.${resolution}.rds"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.${resolution}.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript

@@ -80,7 +80,6 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
 
 	script:
-
 	"""#!/usr/bin/env bash
 source ${params.script_base}/file_handling.sh
 temp_file_b=\$(moc_mktemp_file .)
@@ -122,4 +121,29 @@ mkdir -p CNVKit/single
 touch CNVKit/single/${meta.sampleName}.${type}.cns
 	"""
 }
+
+
+process cnv_kit_segment {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy"
+
+	input:
+		val (coverage_source)
+		tuple val (meta), val (type), val(resolution), path (coverage_tsv)
+
+	output:
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_tsv), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+
+Rscript -e 'library (dplyr);data <- read.table ("${coverage_tsv}",sep="\\t",header=T,stringsAsFactors=F);write.table (data %>% dplyr::rename (chromosome=seqnames,log2=foreground.log,weight=log.reads,depth=input.read.counts) %>% mutate(gene="") %>% data.frame,file="coverage.cnr",sep="\\t",quote=F,row.names=F)'
+
+cnvkit.py segment --help
+cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns coverage.cnr
+
+	"""
+}
+
 

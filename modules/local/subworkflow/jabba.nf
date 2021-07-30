@@ -11,8 +11,8 @@ workflow JABBA
 	main:
 
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
-		ch_ratio_key = ch_ratio.filter { it[1] == "1000" }
-			.map { [it[0]["sampleName"], ["ratio", [it[2], it[3]]], it[0]] }
+		ch_ratio_key = ch_ratio.filter { it[2] == "1000" }
+			.map { [it[0]["sampleName"], ["ratio", [it[3], it[4]]], it[0]] }
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()
 				def m_bubble_tree_output = bubble_tree_output =~ /\s*(\w+):\s+?([0-9\.,\s]+);?/
@@ -24,6 +24,7 @@ workflow JABBA
 			}
 
 		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_ratio_key,ch_bubble_key)
+			.dump (tag: 'jabba before groupTuple')
 			.groupTuple (size: 3)
 			.map {
 				def m = it[1].inject ([:]) { accumulator, item ->

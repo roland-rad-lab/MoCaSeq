@@ -35,7 +35,7 @@ process hmm_copy_tsv {
 		tuple val (resolution), val (gc_wig), val (map_wig), val (meta), path (normal_wig), path (tumor_wig)
 
 	output:
-		tuple val (meta), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
+		tuple val (meta), val ("matched"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
 
 	script:
 

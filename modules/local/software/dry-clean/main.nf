@@ -66,10 +66,10 @@ process dry_clean {
 	input:
 		val (intervals)
 		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
-		tuple val (meta), val (type), path (tumor_coverage_rds)
+		tuple val (meta), val (type), val(resolution), path (tumor_coverage_rds)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript

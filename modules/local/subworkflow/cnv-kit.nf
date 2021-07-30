@@ -1,9 +1,10 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single as cnv_kit_single_normal; cnv_kit_single as cnv_kit_single_tumor } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single as cnv_kit_single_normal; cnv_kit_single as cnv_kit_single_tumor; cnv_kit_segment } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
+
 	take:
 		ch_fasta
 		ch_fasta_index_flat
@@ -33,5 +34,30 @@ workflow CNV_KIT {
 	emit:
 		cns_normal = cnv_kit_single_normal.out.cns
 		cns_tumor = cnv_kit_single_tumor.out.cns
+}
+
+workflow CNV_KIT_SEGMENT {
+
+	take:
+		coverage_source
+		ch_coverage
+
+	main:
+		cnv_kit_segment (coverage_source, ch_coverage.tap { ch_coverage_copy })
+
+		ch_coverage_and_segment = ch_coverage_copy.mix (cnv_kit_segment.out.cns).map { [it[0]["sampleName"], it] }
+			.groupTuple (size: 2)
+			.map { it[1] }
+			.map {
+				println "cnv_kit_segment: ${it}"
+				def m = it.inject ([:]) { accumulator, item ->
+					accumulator[item[1]] = [item[2],item[3]]
+					accumulator
+				}
+				[it[0][0]] + m["Normal"] + m["Tumor"]
+			}
+
+	emit:
+		tsv = ch_coverage_and_segment
 }
 
