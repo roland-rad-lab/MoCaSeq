@@ -168,7 +168,7 @@ process hmm_copy_plot {
 
 	input:
 		tuple path (interval_bed), path(interval_bed_index)
-		tuple val (meta), val (resolution), path (log2_file), path (segments_file)
+		tuple val (meta), val (type), val (source), val (resolution), path (log2_file), path (segments_file)
 
 	output:
 		tuple val (meta), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.genome.pdf"), path ("${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf")

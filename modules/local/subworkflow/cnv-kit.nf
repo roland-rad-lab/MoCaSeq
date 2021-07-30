@@ -45,19 +45,7 @@ workflow CNV_KIT_SEGMENT {
 	main:
 		cnv_kit_segment (coverage_source, ch_coverage.tap { ch_coverage_copy })
 
-		ch_coverage_and_segment = ch_coverage_copy.mix (cnv_kit_segment.out.result).map { [it[0]["sampleName"], it] }
-			.groupTuple (size: 2)
-			.map { it[1] }
-			.map {
-				println "cnv_kit_segment: ${it}"
-				def m = it.inject ([:]) { accumulator, item ->
-					accumulator[item[1]] = [item[2],item[3]]
-					accumulator
-				}
-				[it[0][0]] + m["Normal"] + m["Tumor"]
-			}
-
 	emit:
-		tsv = ch_coverage_and_segment
+		tsv = cnv_kit_segment.out.result
 }
 

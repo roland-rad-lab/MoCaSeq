@@ -157,7 +157,7 @@ workflow HUMAN_WGS
 	}
 	else
 	{
-		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }.dump (tag: 'ch_bam_tumor')
+		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
 		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.tsv)

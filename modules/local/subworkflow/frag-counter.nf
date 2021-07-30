@@ -31,8 +31,6 @@ workflow FRAG_COUNTER {
 
 		ch_wig_resolution = ch_gc_wig_resolution.join (ch_map_wig_resolution)
 			.join (ch_resolution.flatten ().map { [it] })
-			.dump (tag: 'frag_counter ch_wig_resolution')
-
 
 		frag_counter_wig_to_rds (genome_name, ch_interval_csv_string, ch_wig_resolution)
 		frag_counter (frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)

@@ -142,7 +142,7 @@ Rscript -e 'library (dplyr);data <- read.table ("${coverage_tsv}",sep="\\t",head
 
 cnvkit.py segment --help
 cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns coverage.cnr
-
+rm coverage.cnr
 	"""
 }
 

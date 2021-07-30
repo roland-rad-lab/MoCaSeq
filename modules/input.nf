@@ -38,7 +38,6 @@ def extract_data (tsv_file)
 {
 	Channel.fromPath (tsv_file)
 		.splitCsv (header: true, sep: '\t')
-		.dump (tag:'tsv_extract')
 		.map { row ->
 			def expected_keys = ['Sample_Name', 'Library_ID', 'Lane', 'Colour_Chemistry', 'SeqType', 'Organism', 'Type', 'R1', 'R2', 'BAM']
 			if ( !row.keySet ().containsAll (expected_keys) ) exit 1, "[MoCaSeq] error: Invalid TSV input - malformed column names. Please check input TSV. Column names should be: ${expected_keys.join(", ")}"
