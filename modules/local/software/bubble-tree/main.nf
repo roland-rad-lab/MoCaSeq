@@ -6,7 +6,7 @@ process bubble_tree_matched {
 	publishDir "${params.output_base}/${meta.sampleName}/results/BubbleTree", mode: "copy"
 
 	input:
-		tuple val (meta), path (loh_tsv), path (segments_tsv)
+		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Bubbletree.txt"), emit: result
@@ -19,6 +19,7 @@ library(ggplot2)
 library (dplyr)
 library(BubbleTree)
 
+cat ("Running BubbleTree using copy number data from ${cn_source}\\n")
 
 # function to plot all chromosomes individually
 PlotChromBT <- function(data=pred, chrom, mode="adjusted"){

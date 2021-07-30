@@ -7,7 +7,7 @@ process jabba_matched {
 	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy", saveAs: { it.replaceFirst ("^JaBbA/","") }
 
 	input:
-		tuple val (meta), path (manta_vcf), path (coverage_tsv), path (segments_tsv), val (purity), val (ploidy)
+		tuple val (meta), path (manta_vcf), val (cn_source), path (coverage_tsv), path (segments_tsv), val (purity), val (ploidy)
 
 	output:
 		tuple val (meta), path ("JaBbA/jabba.rds"), emit: result
@@ -18,6 +18,8 @@ options(error=function()traceback(2))
 
 library(dplyr)
 library(JaBbA)
+
+cat ("Running JaBbA with copy number data from ${cn_source}\\n")
 
 system("rm -r JaBbA")
 system("mkdir -p JaBbA")
