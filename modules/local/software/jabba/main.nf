@@ -28,13 +28,38 @@ data_coverage <- read.table (file="${coverage_tsv}",sep="\\t",header=T,stringsAs
 data_segments <- read.table (file="${segments_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 
 junctions = "../${manta_vcf}"
-coverage = data_coverage %>%
-	mutate (log2Ratio=if_else(is.na (log2Ratio) | is.nan (log2Ratio),1,log2Ratio)) %>%
-	dplyr::rename (seqnames=Chrom,start=Start,end=End) %>%
-	dplyr::mutate (strand="*") %>%
+coverage = switch ("${cn_source}",
+		"hmm-copy"={
+			data_coverage %>%
+			mutate (log2Ratio=if_else(is.na (log2Ratio) | is.nan (log2Ratio),1,log2Ratio)) %>%
+			dplyr::rename (seqnames=Chrom,start=Start,end=End,ratio=log2Ratio) %>%
+			dplyr::mutate (strand="*")
+		},
+		"dryclean-cnv-kit"={
+			data_coverage %>%
+			dplyr::rename (ratio=foreground.log)
+		},
+		{
+			data_coverage
+		}
+	) %>%
+	dplyr::select (seqnames,start,end,strand,ratio) %>%
 	data.frame
-segments = data_segments %>%
-	dplyr::rename (seqnames=Chrom,start=Start,end=End) %>%
+
+segments = switch ("${cn_source}",
+		"hmm-copy"={
+			data_segments %>%
+			dplyr::rename (seqnames=Chrom,start=Start,end=End)
+		},
+		"dryclean-cnv-kit"={
+			data_segments %>%
+			dplyr::rename (seqnames=chromosome)
+		},
+		{
+			data_segments
+		}
+	) %>%
+	dplyr::select (seqnames,start,end) %>%
 	dplyr::mutate (strand="*") %>%
 	data.frame
 
@@ -43,7 +68,6 @@ head (segments)
 
 purity = sub ("^([0-9.]+).*\$","\\\\1","${purity}")
 ploidy = "${ploidy}"
-cfield = "log2Ratio"
 
 cat (paste("Using purity: \\"",purity,"\\" and ploidy: \\"",ploidy,"\\"\\n",sep=""))
 
@@ -61,7 +85,7 @@ jab = JaBbA(
 	whitelist.junctions = NULL,
 	geno = F,
 	indel = "exclude",
-	cfield = cfield,
+	cfield = NULL,
 	tfield = "tier",
 	reiterate = 0,
 	rescue.window = 1e3,

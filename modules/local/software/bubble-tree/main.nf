@@ -67,10 +67,21 @@ gr_loh <- data_loh %>%
 	dplyr::rename (seqnames=Chrom,end=Pos,freq=Tumor_Freq) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
 
-gr_cnv <- data_cnv %>%
-	dplyr::do(add_num_probes (.)) %>%
-	dplyr::rename_with(~ gsub("^Mean\$", "Segment_Mean", .x)) %>%
-	dplyr::rename (seqnames=Chrom,start=Start,end=End,num.mark=Num_Probes,seg.mean=Segment_Mean) %>%
+gr_cnv <- switch ("${cn_source}",
+		"hmm-copy"={
+			data_cnv %>%
+			dplyr::mutate (num.mark=(End-Start)/1000) %>%
+			dplyr::rename (seqnames=Chrom,start=Start,end=End,seg.mean=Mean)
+		},
+		"dryclean-cnv-kit"={
+			data_cnv %>%
+			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
+		},
+		{
+			data_cnv
+		}
+	) %>%
+	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
 
 print (gr_loh)
