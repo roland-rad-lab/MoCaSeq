@@ -63,6 +63,8 @@ identify_germline (normal.table.path="PON/normal_table.rds",path.to.save="PON",s
 process dry_clean {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${meta.sampleName}/results/dryclean", mode: "copy"
+
 	input:
 		val (intervals)
 		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
