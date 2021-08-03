@@ -63,7 +63,8 @@ include {
 
 include {
 	IGV_TRACK_READ;
-	IGV_TRACK_CN
+	IGV_TRACK_CN;
+	IGV_TRACK_CN as IGV_TRACK_CN_dryclean
 } from "./modules/local/subworkflow/igv-track"
 
 include {
@@ -159,13 +160,13 @@ workflow HUMAN_WGS
 	{
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
-		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.tsv)
+		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.cnr)
 		BUBBLE_TREE (CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CN ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
+			IGV_TRACK_CN_dryclean ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
 		}
 	}
 

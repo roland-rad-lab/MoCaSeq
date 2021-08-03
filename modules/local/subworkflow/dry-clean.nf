@@ -23,6 +23,7 @@ workflow DRY_CLEAN {
 
 	emit:
 		tsv = dry_clean.out.result
+		cnr = dry_clean.out.cnr
 }
 
 workflow DRY_CLEAN_PON {

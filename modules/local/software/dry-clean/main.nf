@@ -72,6 +72,7 @@ process dry_clean {
 
 	output:
 		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.tsv"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.cnr"), emit: cnr
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -79,24 +80,42 @@ library (data.table)
 library (IRanges)
 library (GenomicRanges)
 library (dryclean)
+library (gUtils)
+
+rescale_nn <- function (data)
+{
+	data_min = min (data,na.rm=T)
+	data_max = max (data,na.rm=T)
+	target_min=(data_max-data_min)/10000
+	target_max=1
+
+	return ( target_min + (data - data_min) * ((target_max - target_min)/(data_max-data_min)) )
+}
 
 intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
 coverage_data = readRDS("${coverage_rds}")
-switch ("${type",
+cov_out <- switch ("${type}",
 	"Tumor"={
-		cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)
-		write.table (as.data.frame (cov_out),file="${meta.sampleName}.${type}.coverage.tsv",sep="\\t",quote=F,row.names=F)
+		start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)	
 	},
 	"Normal"={
-		cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=F,is.human=F,all.chr=intervals)
-		write.table (as.data.frame (cov_out),file="${meta.sampleName}.${type}.coverage.tsv",sep="\\t",quote=F,row.names=F)
+		start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=F,is.human=F,all.chr=intervals)
 	},
 	{
 		stop ("Unsupported type: '${type}'")
-		quit(status=1)
 	}
 )
+
+write.table (as.data.frame (cov_out),file="${meta.sampleName}.${type}.coverage.tsv",sep="\\t",quote=F,row.names=F)
+cov_out_dt <- gUtils::gr2dt (cov_out)
+cov_out_dt[,weight := abs(background.log) - median (background.log,na.rm=T)]
+cov_out_dt[,weight := max(weight,na.rm=T) - weight]
+cov_out_dt[,weight := rescale_nn (weight)]
+cov_out_dt[is.na (log.reads),weight := cov_out_dt[,min(weight,na.rm=T)]]
+cov_out_dt[,gene := ""]
+setnames (cov_out_dt,c("seqnames","foreground.log","input.read.counts"),c("chromosome","log2","depth"))
+write.table (cov_out_dt[,.(chromosome,start,end,gene,depth,log2,weight)],file="${meta.sampleName}.${type}.coverage.cnr",sep="\t",quote=F,row.names=F)
 
 	"""
 }

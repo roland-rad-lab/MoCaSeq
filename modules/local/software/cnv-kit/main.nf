@@ -130,7 +130,7 @@ process cnv_kit_segment {
 
 	input:
 		val (coverage_source)
-		tuple val (meta), val (type), val(resolution), path (coverage_tsv)
+		tuple val (meta), val (type), val(resolution), path (coverage_cnr)
 
 	output:
 		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_tsv), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: result
@@ -139,10 +139,7 @@ process cnv_kit_segment {
 	script:
 	"""#!/usr/bin/env bash
 
-Rscript -e 'library (dplyr);rescale_nn <- function (data) { data_range=range (data,na.rm=T);target_min=(data_range[2]-data_range[1])/10000;target_max=1; return ( target_min + (data - min(data)) * ((target_max - target_min)/(max(data)-min(data))) ) };data <- read.table ("${coverage_tsv}",sep="\\t",header=T,stringsAsFactors=F);write.table (data %>% dplyr::rename (chromosome=seqnames,log2=foreground.log,weight=log.reads,depth=input.read.counts) %>% mutate(gene="") %>% mutate (across(weight,rescale_nn)) %>% data.frame,file="coverage.cnr",sep="\\t",quote=F,row.names=F)'
-
 cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns coverage.cnr
-rm coverage.cnr
 	"""
 }
 
