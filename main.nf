@@ -157,12 +157,16 @@ workflow HUMAN_WGS
 	}
 	else
 	{
-		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
-		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
+		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
 		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.tsv)
 		BUBBLE_TREE (CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
+
+		if ( params.track_cn )
+		{
+			IGV_TRACK_CN ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
+		}
 	}
 
 	if ( params.track_read )
@@ -171,7 +175,7 @@ workflow HUMAN_WGS
 	}
 	if ( params.track_cn )
 	{
-		IGV_TRACK_CN (CNV_KIT.out.cns_normal, CNV_KIT.out.cns_tumor)
+		IGV_TRACK_CN ("CNVKit", CNV_KIT.out.cns)
 	}
 }
 

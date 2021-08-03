@@ -11,7 +11,7 @@ workflow JABBA
 	main:
 
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
-		ch_ratio_key = ch_ratio.filter { it[3] == "1000" }
+		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" && it[3] == "1000" }
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[4], it[5]]], it[0]] }
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()

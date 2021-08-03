@@ -34,6 +34,7 @@ process igv_track_cn {
 	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy", pattern: "*.bedGraph"
 
 	input:
+		val (coverage_source)
 		tuple val (meta), val (type), path (cns)
 
 	output:
@@ -51,7 +52,7 @@ data_bed <- data %>%
 	dplyr::select (chromosome,start,end,log2) %>%
 	data.frame
 
-write.table (data_bed,file="${meta.sampleName}.${type}.CNVKit.bedGraph",sep="\\t",quote=F,row.names=F)
+write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGraph",sep="\\t",quote=F,row.names=F)
 
 	"""
 }

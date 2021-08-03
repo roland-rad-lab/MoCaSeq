@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single as cnv_kit_single_normal; cnv_kit_single as cnv_kit_single_tumor; cnv_kit_segment } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
 
@@ -28,12 +28,10 @@ workflow CNV_KIT {
 		}
 
 		cnv_kit_matched (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded)
-		cnv_kit_single_normal (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal)
-		cnv_kit_single_tumor (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_tumor)
+		cnv_kit_single (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))
 
 	emit:
-		cns_normal = cnv_kit_single_normal.out.cns
-		cns_tumor = cnv_kit_single_tumor.out.cns
+		cns = cnv_kit_single.out.cns
 }
 
 workflow CNV_KIT_SEGMENT {
@@ -43,9 +41,10 @@ workflow CNV_KIT_SEGMENT {
 		ch_coverage
 
 	main:
-		cnv_kit_segment (coverage_source, ch_coverage.tap { ch_coverage_copy })
+		cnv_kit_segment (coverage_source, ch_coverage)
 
 	emit:
 		tsv = cnv_kit_segment.out.result
+		cns = cnv_kit_segment.out.cns
 }
 

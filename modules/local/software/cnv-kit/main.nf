@@ -134,6 +134,7 @@ process cnv_kit_segment {
 
 	output:
 		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_tsv), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
 
 	script:
 	"""#!/usr/bin/env bash

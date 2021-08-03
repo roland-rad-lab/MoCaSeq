@@ -68,10 +68,10 @@ process dry_clean {
 	input:
 		val (intervals)
 		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
-		tuple val (meta), val (type), val(resolution), path (tumor_coverage_rds)
+		tuple val (meta), val (type), val(resolution), path (coverage_rds)
 
 	output:
-		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.Tumor.coverage.tsv"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -82,10 +82,21 @@ library (dryclean)
 
 intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
-coverage_data = readRDS("${tumor_coverage_rds}")
-cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)
-
-write.table (as.data.frame (cov_out),file="${meta.sampleName}.Tumor.coverage.tsv",sep="\\t",quote=F,row.names=F)
+coverage_data = readRDS("${coverage_rds}")
+switch ("${type",
+	"Tumor"={
+		cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)
+		write.table (as.data.frame (cov_out),file="${meta.sampleName}.${type}.coverage.tsv",sep="\\t",quote=F,row.names=F)
+	},
+	"Normal"={
+		cov_out = start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=F,is.human=F,all.chr=intervals)
+		write.table (as.data.frame (cov_out),file="${meta.sampleName}.${type}.coverage.tsv",sep="\\t",quote=F,row.names=F)
+	},
+	{
+		stop ("Unsupported type: '${type}'")
+		quit(status=1)
+	}
+)
 
 	"""
 }
