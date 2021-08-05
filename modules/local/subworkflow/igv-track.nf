@@ -26,6 +26,7 @@ workflow IGV_TRACK_READ {
 workflow IGV_TRACK_RDS {
 
 	take:
+		ch_interval_bed
 		coverage_source
 		ch_rds
 

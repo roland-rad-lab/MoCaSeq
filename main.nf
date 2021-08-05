@@ -167,7 +167,7 @@ workflow HUMAN_WGS
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_RDS ("fragCounter", FRAG_COUNTER.out.result)
+			IGV_TRACK_RDS (PREPARE_GENOME.out.interval_bed, "fragCounter", FRAG_COUNTER.out.result)
 			IGV_TRACK_CNS_dryclean ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
 		}
 	}

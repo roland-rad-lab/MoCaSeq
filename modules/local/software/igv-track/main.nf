@@ -63,23 +63,34 @@ process igv_track_rds {
 	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy"
 
 	input:
+		tuple path (interval_bed), path (interval_bed_index)
 		val (coverage_source)
 		tuple val (meta), val (type), val (resolution), path (coverage_rds)
 
 	output:
-		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph")
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.${resolution}.bigWig")
 
 	script:
 	"""#!/usr/bin/env Rscript
 library (dplyr)
 
+interval_file <- gzfile ("${interval_bed}", 'rt')
+data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
+names (data_interval) <- c("Chrom", "Start", "End")
+head (data_interval)
+
+write.table (data_interval %>% dplyr::mutate (Size=End-Start) %>% dplyr::select (Chrom,Size) %>% data.frame,file="intervals.sizes",sep="\\t",row.names=F,col.names=F,quote=F)
+
 data <- as.data.frame (readRDS ("${coverage_rds}")) %>%
 	dplyr::filter (!is.na(reads.corrected)) %>%
 	dplyr::select (seqnames,start,end,reads.corrected) %>%
+	dplyr::arrange (seqnames,start) %>%
 	data.frame
 
 write.table (data,file="${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph",row.names=F,col.names=F,sep="\\t",quote=F)
+system ("bedGraphToBigWig ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph intervals.sizes ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bigWig")
 
 	"""
 }
+
 
