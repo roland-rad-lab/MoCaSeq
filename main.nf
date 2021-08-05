@@ -63,8 +63,9 @@ include {
 
 include {
 	IGV_TRACK_READ;
-	IGV_TRACK_CN;
-	IGV_TRACK_CN as IGV_TRACK_CN_dryclean
+	IGV_TRACK_CNS;
+	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
+	IGV_TRACK_RDS
 } from "./modules/local/subworkflow/igv-track"
 
 include {
@@ -166,7 +167,8 @@ workflow HUMAN_WGS
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CN_dryclean ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
+			IGV_TRACK_RDS ("fragCounter", FRAG_COUNTER.out.result)
+			IGV_TRACK_CNS_dryclean ("dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
 		}
 	}
 
@@ -176,7 +178,7 @@ workflow HUMAN_WGS
 	}
 	if ( params.track_cn )
 	{
-		IGV_TRACK_CN ("CNVKit", CNV_KIT.out.cns)
+		IGV_TRACK_CNS ("CNVKit", CNV_KIT.out.cns)
 	}
 }
 
