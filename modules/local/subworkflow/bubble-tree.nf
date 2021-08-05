@@ -6,10 +6,13 @@ include { bubble_tree_matched } from "../software/bubble-tree/main"
 workflow BUBBLE_TREE {
 
 	take:
+		ch_interval_auto
 		ch_ratio
 		ch_loh
 
 	main:
+		ch_interval_csv_string = ch_interval_auto.toList ().map { it.join (",") }
+
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }
 		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" && it[3] == "1000" }
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[5]]], it[0]] }
@@ -25,7 +28,7 @@ workflow BUBBLE_TREE {
 				[it[2][0]] + m["loh"] + m["ratio"]
 		}.dump (tag: 'bubble tree after groupTuple')
 
-		bubble_tree_matched (ch_loh_and_ratio)
+		bubble_tree_matched (ch_interval_csv_string, ch_loh_and_ratio)
 
 	emit:
 		result = bubble_tree_matched.out.result

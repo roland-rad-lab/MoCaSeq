@@ -154,7 +154,7 @@ workflow HUMAN_WGS
 
 	if ( params.pon_dir == null )
 	{
-		BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
+		BUBBLE_TREE (PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 	}
 	else
@@ -162,7 +162,7 @@ workflow HUMAN_WGS
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
 		CNV_KIT_SEGMENT ("dryclean", DRY_CLEAN.out.cnr)
-		BUBBLE_TREE (CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
+		BUBBLE_TREE (PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
 		JABBA (MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
@@ -197,7 +197,7 @@ workflow MOUSE_WEX
 	HMM_COPY (PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (GENOME_ANNOTATION.out.micro_satellite, ch_bam)
-	BUBBLE_TREE (HMM_COPY.out.tsv, LOH.out.result)
+	BUBBLE_TREE (PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.tsv, LOH.out.result)
 }
 
 workflow HUMAN_PON {

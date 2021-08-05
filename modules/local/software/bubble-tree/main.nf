@@ -6,6 +6,7 @@ process bubble_tree_matched {
 	publishDir "${params.output_base}/${meta.sampleName}/results/BubbleTree", mode: "copy"
 
 	input:
+		val (intervals)
 		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
 
 	output:
@@ -18,8 +19,6 @@ process bubble_tree_matched {
 library(ggplot2)
 library (dplyr)
 library(BubbleTree)
-
-cat ("Running BubbleTree using copy number data from ${cn_source}\\n")
 
 # function to plot all chromosomes individually
 PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
@@ -59,13 +58,18 @@ add_num_probes <- function (data)
 	}
 }
 
+cat ("Running BubbleTree using copy number data from ${cn_source}\\n")
+intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
+
+
 data_loh <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 data_cnv <- read.table (file="${segments_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 
 gr_loh <- data_loh %>%
 	dplyr::mutate (start=Pos-1) %>%
 	dplyr::rename (seqnames=Chrom,end=Pos,freq=Tumor_Freq) %>%
-	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
+	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
+	GenomeInfoDb::keepSeqlevels (intervals)
 
 gr_cnv <- switch ("${cn_source}",
 		"hmm-copy"={
@@ -82,7 +86,8 @@ gr_cnv <- switch ("${cn_source}",
 		}
 	) %>%
 	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
-	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T)
+	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
+	GenomeInfoDb::keepSeqlevels (intervals)
 
 print (gr_loh)
 print (gr_cnv)

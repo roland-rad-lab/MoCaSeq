@@ -23,6 +23,7 @@ workflow PREPARE_GENOME
 		ch_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dict"] ? Channel.of (params.genomes[genome_name]["dict"]).first () : Channel.empty ()
 		ch_dir = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dir"] ? Channel.of (params.genomes[genome_name]["dir"]).first () : Channel.empty ()
 		ch_chrom_names = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? Channel.fromList (params.genomes[genome_name]["names"]["auto_sex"]) : Channel.empty ()
+		ch_chrom_names_auto = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto"] ? Channel.fromList (params.genomes[genome_name]["names"]["auto"]) : Channel.empty ()
 		chrom_n = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? params.genomes[genome_name]["names"]["auto_sex"].size () : 0
 
 		ch_interval_list = ch_chrom_names.collectFile (name: 'interval_names.tsv', newLine: true)
@@ -35,6 +36,7 @@ workflow PREPARE_GENOME
 		dict             = ch_dict
 		dir              = ch_dir
 		chrom_names      = ch_chrom_names
+		chrom_names_auto = ch_chrom_names_auto
 		interval_bed     = interval_bed.out.result.first ()
 		_chrom_n         = chrom_n
 		
