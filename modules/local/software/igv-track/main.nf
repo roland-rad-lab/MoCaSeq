@@ -84,12 +84,13 @@ write.table (data_interval %>% dplyr::mutate (Size=End-Start) %>% dplyr::select 
 data <- as.data.frame (readRDS ("${coverage_rds}")) %>%
 	dplyr::filter (!is.na(reads.corrected)) %>%
 	dplyr::select (seqnames,start,end,reads.corrected) %>%
+	dplyr::mutate (seqnames=as.character(seqnames)) %>%
 	dplyr::arrange (seqnames,start) %>%
 	data.frame
 
 write.table (data,file="${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph",row.names=F,col.names=F,sep="\\t",quote=F)
 system ("bedGraphToBigWig ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph intervals.sizes ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bigWig")
-
+system ("rm ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph")
 	"""
 }
 

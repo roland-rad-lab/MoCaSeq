@@ -31,7 +31,7 @@ workflow IGV_TRACK_RDS {
 		ch_rds
 
 	main:
-		igv_track_rds (coverage_source, ch_rds)
+		igv_track_rds (ch_interval_bed, coverage_source, ch_rds)
 }
 
 workflow IGV_TRACK_CNS {
