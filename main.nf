@@ -77,6 +77,11 @@ include {
 	DRY_CLEAN_PON
 } from "./modules/local/subworkflow/dry-clean"
 
+include {
+	COHORT_QC as COHORT_QC_human
+	COHORT_QC as COHORT_QC_mouse
+} from "./modules/local/subworkflow/qc"
+
 tsv_path = null
 pon_tsv_path = null
 
@@ -265,4 +270,10 @@ workflow PON {
 	MOUSE_PON ()
 }
 
+
+// Run using -entry QC
+workflow QC {
+	COHORT_QC_human (params.genome_build.human, Channel.fromPath (params.output_base), Channel.fromPath (params.qc_dir))
+	COHORT_QC_mouse (params.genome_build.mouse, Channel.fromPath (params.output_base), Channel.fromPath (params.qc_dir))
+}
 
