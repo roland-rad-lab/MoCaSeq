@@ -42,7 +42,7 @@ workflow FRAG_COUNTER {
 		ch_data_expanded = ch_data_expanded_normal.mix (ch_data_expanded_tumor)
 
 		frag_counter_wig_to_rds (genome_name, ch_interval_csv_string, ch_wig_resolution)
-		frag_counter (frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
+		frag_counter (genome_name, frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
 
 	emit:
 		result = frag_counter.out.result
