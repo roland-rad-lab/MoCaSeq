@@ -78,26 +78,24 @@ include {
 } from "./modules/local/subworkflow/dry-clean"
 
 include {
-	COHORT_QC as COHORT_QC_human
+	COHORT_QC as COHORT_QC_human;
 	COHORT_QC as COHORT_QC_mouse
 } from "./modules/local/subworkflow/qc"
 
 tsv_path = null
 pon_tsv_path = null
 
-
 ch_input_sample = Channel.empty ()
 
 
 // check if we have valid --input
-if (params.input == null && params.pon_tsv == null) {
-	  exit 1, "[MoCaSeq] error: --input or --pon_tsv was not supplied! Please check '--help' or documentation under 'running the pipeline' for details"
+if (params.input == null && params.pon_tsv == null && params.qc_dir == null) {
+	  exit 1, "[MoCaSeq] error: --input or --pon_tsv or --qc_dir were not supplied! Please check '--help' or documentation under 'running the pipeline' for details"
 }
 
 // Read in files properly from TSV file
 if (params.input && (file_has_extension (params.input, "tsv"))) tsv_path = params.input
 if (params.pon_tsv && (file_has_extension (params.pon_tsv, "tsv"))) pon_tsv_path = params.pon_tsv
-
 
 if (tsv_path) {
 
@@ -112,7 +110,14 @@ else if (pon_tsv_path)
 	tsv_file = file (pon_tsv_path)
 	if (tsv_file instanceof List) exit 1, "[MoCaSeq] error: can only accept one TSV file per run."
 	if (!tsv_file.exists ()) exit 1, "[MoCaSeq] error: pon_tsv TSV file could not be found. Does the file exist and is it in the right place? You gave the path: ${params.pon_tsv}"
-} else exit 1, "[MoCaSeq] error: --input or --pon_tsv file(s) not correctly not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
+}
+else if (params.qc_dir)
+{
+	qc_dir_file = file (params.qc_dir)
+	if (qc_dir_file instanceof List) exit 1, "[MoCaSeq] error: can only accept one QC dir per run."
+	if ( ! ( qc_dir_file.exists () && qc_dir_file.isDirectory () ) ) exit 1, "[MoCaSeq] error: qc_dir directory could not be found or was not a directory. You gave the path: ${params.qc_dir}"
+}
+else exit 1, "[MoCaSeq] error: --input or --pon_tsv file(s) or --qc_dir not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
 
 // Optionally load json map to control the behaviour of stubs (cp vs touch)
 if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_has_extension (params.stub_json, "json") ) ) {
@@ -273,7 +278,7 @@ workflow PON {
 
 // Run using -entry QC
 workflow QC {
-	COHORT_QC_human (params.genome_build.human, Channel.fromPath (params.output_base), Channel.fromPath (params.qc_dir))
-	COHORT_QC_mouse (params.genome_build.mouse, Channel.fromPath (params.output_base), Channel.fromPath (params.qc_dir))
+	COHORT_QC_human (params.genome_build.human, Channel.fromPath (params.qc_dir))
+	COHORT_QC_mouse (params.genome_build.mouse, Channel.fromPath (params.qc_dir))
 }
 
