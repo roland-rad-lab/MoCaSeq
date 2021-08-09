@@ -1,7 +1,7 @@
 
 process dry_clean_detergent {
 
-	publishDir "${params.output_base}/PON", mode: "copy", saveAs: { it.replaceFirst ("^PON/","${genome_build}.") }
+	publishDir "${params.output_base}/${genome_build}/PON", mode: "copy", saveAs: { it.replaceFirst ("^PON/","${genome_build}.") }
 
 	input:
 		val (genome_build)
@@ -11,7 +11,7 @@ process dry_clean_detergent {
 		path (normal_coverage_tsv)
 
 	output:
-		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.filtered.rds"), path ("PON/detergent.rds"), emit: result
+		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.rds"), path ("PON/germline.markers.filtered.rds"), path ("PON/detergent.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -72,9 +72,10 @@ saveRDS(grm,file="PON/germline.markers.filtered.rds")
 process dry_clean {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/dryclean", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/dryclean", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (intervals)
 		tuple path (normal_table_rds), path (germline_rds), path (detergent_rds)
 		tuple val (meta), val (type), val(resolution), path (coverage_rds)
