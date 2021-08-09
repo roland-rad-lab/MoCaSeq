@@ -3,11 +3,12 @@ process delly_matched_call {
 	tag "${meta.sampleName}"
 
 	input:
-	val (reference)
-	tuple val(meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
+		val (genome_build)
+		val (reference)
+		tuple val(meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-	tuple val(meta), path("${meta.sampleName}.pre.bcf"), path ("${meta.sampleName}.pre.bcf.csi"), emit: result
+		tuple val(meta), path("${meta.sampleName}.pre.bcf"), path ("${meta.sampleName}.pre.bcf.csi"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -21,8 +22,8 @@ delly call \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf.csi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf.csi .
 touch ${meta.sampleName}.pre.bcf
 touch ${meta.sampleName}.pre.bcf.csi
 	"""
@@ -31,13 +32,14 @@ touch ${meta.sampleName}.pre.bcf.csi
 process delly_matched_filter {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Delly", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Delly", mode: "copy"
 
 	input:
-	tuple val(meta), path (delly_pre_bcf), path (delly_pre_bcf_index)
+		val (genome_build)
+		tuple val(meta), path (delly_pre_bcf), path (delly_pre_bcf_index)
 
 	output:
-	tuple val(meta), path("${meta.sampleName}.delly.vcf.gz"), path ("${meta.sampleName}.delly.vcf.gz.tbi"), emit: result
+		tuple val(meta), path("${meta.sampleName}.delly.vcf.gz"), path ("${meta.sampleName}.delly.vcf.gz.tbi"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -58,8 +60,8 @@ tabix -p vcf ${meta.sampleName}.delly.vcf.gz
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
 touch ${meta.sampleName}.delly.vcf.gz
 touch ${meta.sampleName}.delly.vcf.gz.tbi
 	"""

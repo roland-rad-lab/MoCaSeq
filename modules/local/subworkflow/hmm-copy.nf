@@ -7,6 +7,7 @@ include { hmm_copy_wig as hmm_copy_wig_normal; hmm_copy_wig as hmm_copy_wig_tumo
 workflow HMM_COPY {
 
 	take:
+		genome_build
 		ch_interval
 		ch_interval_bed
 		ch_gc_wig
@@ -20,8 +21,8 @@ workflow HMM_COPY {
 		ch_data_expanded_normal = ch_data.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		ch_data_expanded_tumor = ch_data.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
-		hmm_copy_wig_normal (ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
-		hmm_copy_wig_tumor (ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
+		hmm_copy_wig_normal (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
+		hmm_copy_wig_tumor (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
 
 		ch_gc_wig_resolution = ch_gc_wig.map { new File (it.trim ()) }.map {
 			def m = (it.name =~ /\.([\w\-]+)\.wig$/)
@@ -52,8 +53,8 @@ workflow HMM_COPY {
 				tuple ( it[0][0], it[0][1], it[0][2], it[1][1], it[1][2], it[1][3] )
 			}
 
-		hmm_copy_tsv (ch_interval_csv_string, ch_hmm_copy_wig_resolution)
-		hmm_copy_plot (ch_interval_bed, hmm_copy_tsv.out.result)
+		hmm_copy_tsv (genome_build, ch_interval_csv_string, ch_hmm_copy_wig_resolution)
+		hmm_copy_plot (genome_build, ch_interval_bed, hmm_copy_tsv.out.result)
 
 	emit:
 		tsv = hmm_copy_tsv.out.result

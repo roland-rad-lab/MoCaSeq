@@ -12,6 +12,7 @@ include {
 workflow REMAP
 {
 	take:
+		genome_build
 		ch_fasta
 		ch_dir
 		ch_common_vcf
@@ -31,7 +32,7 @@ workflow REMAP
 		ch_data_multi_branched.other.view { "[MoCaSeq] error: Failed to find matching REMAP workflow path for input:\n${it}" }
 
 		sam_to_fastq_paired (ch_data_multi_branched.paired.map { tuple (it[0], it[1], it[2] ) })
-		fastqc_paired_extracted (sam_to_fastq_paired.out.result)
+		fastqc_paired_extracted (genome_build, sam_to_fastq_paired.out.result)
 		trim_paired (fastqc_paired_extracted.out.result)
 
 		trim_paired.out.result.set { ch_trim }

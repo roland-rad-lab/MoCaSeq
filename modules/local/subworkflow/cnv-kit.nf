@@ -6,6 +6,7 @@ include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment } from "../software/c
 workflow CNV_KIT {
 
 	take:
+		genome_build
 		ch_fasta
 		ch_fasta_index_flat
 		ch_interval_bed
@@ -27,8 +28,8 @@ workflow CNV_KIT {
 			tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"])
 		}
 
-		cnv_kit_matched (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded)
-		cnv_kit_single (ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))
+		cnv_kit_matched (genome_build, ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded)
+		cnv_kit_single (genome_build, ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))
 
 	emit:
 		cns = cnv_kit_single.out.cns
@@ -37,11 +38,12 @@ workflow CNV_KIT {
 workflow CNV_KIT_SEGMENT {
 
 	take:
+		genome_build
 		coverage_source
 		ch_coverage
 
 	main:
-		cnv_kit_segment (coverage_source, ch_coverage)
+		cnv_kit_segment (genome_build, coverage_source, ch_coverage)
 
 	emit:
 		tsv = cnv_kit_segment.out.result

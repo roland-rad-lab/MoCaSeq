@@ -6,6 +6,7 @@ include { msi_matched } from "../software/msi-sensor/main"
 workflow MSI_SENSOR {
 
 	take:
+		genome_build
 		ch_micro_satellite
 		ch_data
 
@@ -14,7 +15,7 @@ workflow MSI_SENSOR {
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 
-		msi_matched (ch_micro_satellite, ch_data_expanded)
+		msi_matched (genome_build, ch_micro_satellite, ch_data_expanded)
 
 	emit:
 		result = msi_matched.out.result

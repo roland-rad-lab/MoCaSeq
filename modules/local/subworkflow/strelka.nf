@@ -5,6 +5,7 @@ include { strelka_matched; strelka_matched_post } from "../software/strelka/main
 workflow STRELKA {
 
 	take:
+		genome_build
 		ch_fasta
 		ch_interval_bed
 		ch_data
@@ -22,8 +23,8 @@ workflow STRELKA {
 			tuple ( it[0], it[0]["normalBAM"], it[0]["normalBAI"], it[0]["tumorBAM"], it[0]["tumorBAI"], it[2], it[3] )
 		}
 
-		strelka_matched (ch_fasta, ch_interval_bed, ch_data_expanded_matched)
-		strelka_matched_post (strelka_matched.out.result)
+		strelka_matched (genome_build, ch_fasta, ch_interval_bed, ch_data_expanded_matched)
+		strelka_matched_post (genome_build,strelka_matched.out.result)
 
 	emit:
 		result = strelka_matched.out.result

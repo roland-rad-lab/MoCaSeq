@@ -10,6 +10,7 @@ include {
 workflow IGV_TRACK_READ {
 
 	take:
+		genome_build
 		ch_interval
 		ch_interval_bed
 		ch_data
@@ -19,19 +20,20 @@ workflow IGV_TRACK_READ {
 		ch_data_normal = ch_data.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		ch_data_tumor = ch_data.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
-		igv_track_depth_normal (ch_interval_space_string, ch_interval_bed, ch_data_normal)
-		igv_track_depth_tumor (ch_interval_space_string, ch_interval_bed, ch_data_tumor)
+		igv_track_depth_normal (genome_build, ch_interval_space_string, ch_interval_bed, ch_data_normal)
+		igv_track_depth_tumor (genome_build, ch_interval_space_string, ch_interval_bed, ch_data_tumor)
 }
 
 workflow IGV_TRACK_RDS {
 
 	take:
+		genome_build
 		ch_interval_bed
 		coverage_source
 		ch_rds
 
 	main:
-		igv_track_rds (ch_interval_bed, coverage_source, ch_rds)
+		igv_track_rds (genome_build, ch_interval_bed, coverage_source, ch_rds)
 }
 
 workflow IGV_TRACK_CNS {
@@ -41,7 +43,7 @@ workflow IGV_TRACK_CNS {
 		ch_cns
 
 	main:
-		igv_track_cns (coverage_source, ch_cns)
+		igv_track_cns (genome_build, coverage_source, ch_cns)
 }
 
 

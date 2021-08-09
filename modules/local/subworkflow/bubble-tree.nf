@@ -6,6 +6,7 @@ include { bubble_tree_matched } from "../software/bubble-tree/main"
 workflow BUBBLE_TREE {
 
 	take:
+		genome_build
 		ch_interval_auto
 		ch_ratio
 		ch_loh
@@ -28,7 +29,7 @@ workflow BUBBLE_TREE {
 				[it[2][0]] + m["loh"] + m["ratio"]
 		}.dump (tag: 'bubble tree after groupTuple')
 
-		bubble_tree_matched (ch_interval_csv_string, ch_loh_and_ratio)
+		bubble_tree_matched (genome_build, ch_interval_csv_string, ch_loh_and_ratio)
 
 	emit:
 		result = bubble_tree_matched.out.result

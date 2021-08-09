@@ -5,6 +5,7 @@ process mutect_single {
 	tag "${meta.sampleName}"
 
 	input:
+		val (genome_build)
 		val (reference)
 		tuple val (meta), val (type), path (bam)
 		each (interval)
@@ -29,8 +30,8 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
 touch ${meta.sampleName}.${type}.m2.${interval}.vcf .
 touch ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
 
@@ -43,6 +44,7 @@ process mutect_matched {
 	 tag "${meta.sampleName}"
 
 	input:
+		val (genome_build)
 		val (reference)
 		tuple val (meta), path (bam_normal), path (bam_tumor)
 		each (interval)
@@ -69,8 +71,8 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
 touch ${meta.sampleName}.matched.m2.${interval}.vcf .
 touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
 
@@ -81,9 +83,10 @@ touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
 process mutect_combine_vcf {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Mutect2", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
 
 	input:
+		val (genome_build)
 		tuple val (meta), val (type), path ("*.interval.vcf"), path ("*.orientation_bias.tsv.gz")
 
 	output:
@@ -117,8 +120,8 @@ echo "\${cmd_learn_read_orientation}"
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
 touch ${meta.sampleName}.${type}.m2.vcf.gz
 touch ${meta.sampleName}.${type}.m2.vcf.gz.tbi
 	"""

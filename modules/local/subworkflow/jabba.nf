@@ -4,6 +4,7 @@ include { jabba_matched;jabba_plot } from "../software/jabba/main"
 workflow JABBA
 {
 	take:
+		genome_build
 		ch_manta
 		ch_ratio
 		ch_bubble
@@ -35,8 +36,8 @@ workflow JABBA
 			}
 			.dump (tag: 'manta_ratio_and_bubble')
 
-		jabba_matched (ch_manta_and_ratio_and_bubble)
-		jabba_plot (jabba_matched.out.result)
+		jabba_matched (genome_build, ch_manta_and_ratio_and_bubble)
+		jabba_plot (genome_build, jabba_matched.out.result)
 }
 
 

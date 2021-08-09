@@ -7,7 +7,7 @@ include { frag_counter_wig_to_rds;frag_counter } from "../software/frag-counter/
 workflow FRAG_COUNTER {
 
 	take:
-		genome_name
+		genome_build
 		ch_interval
 		ch_gc_wig
 		ch_map_wig
@@ -41,8 +41,8 @@ workflow FRAG_COUNTER {
 
 		ch_data_expanded = ch_data_expanded_normal.mix (ch_data_expanded_tumor)
 
-		frag_counter_wig_to_rds (genome_name, ch_interval_csv_string, ch_wig_resolution)
-		frag_counter (genome_name, frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
+		frag_counter_wig_to_rds (genome_build, ch_interval_csv_string, ch_wig_resolution)
+		frag_counter (genome_build, frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
 
 	emit:
 		result = frag_counter.out.result

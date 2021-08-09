@@ -3,6 +3,7 @@ process loh_matched {
 	tag "${meta.sampleName}"
 
 	input:
+		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (normal_vcf), path (normal_vcf_index), path (tumor_vcf), path (tumor_vcf_index)
 
@@ -43,9 +44,10 @@ touch ${meta.sampleName}.VariantsForLOHGermline.tsv.gz
 process loh_matched_assign_alleles {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/LOH", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/LOH", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (reference)
 		val (reference_index)
 		val (intervals)
@@ -195,7 +197,7 @@ with open ("${meta.sampleName}.VariantsForLOH.txt", "w") as output_file:
 	stub:
 	"""#!/usr/bin/env bash
 
-#cp ${params.stub_dir}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
 touch ${meta.sampleName}.VariantsForLOH.txt
 	"""
 

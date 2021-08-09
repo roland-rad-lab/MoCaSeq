@@ -28,9 +28,10 @@ md5sum ${meta.sampleName}.${type}.R2.fastq.gz > ${meta.sampleName}.${type}.R2.fa
 process fastqc_paired {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","") }
 
 	input:
+		val (genome_build)
 		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2)
 
 	output:
@@ -126,9 +127,10 @@ bwa mem -t ${params.bwa_mem.threads} \\
 process mark_duplicates_recalibrate {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/bam_remap", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (reference)
 		val (common_vcf)
 		tuple val (meta), val (type), path (bam)

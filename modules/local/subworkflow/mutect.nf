@@ -12,6 +12,7 @@ include {
 workflow MUTECT
 {
 	take:
+		genome_build
 		ch_fasta
 		ch_interval
 		interval_n
@@ -29,9 +30,9 @@ workflow MUTECT
 			tuple (it, "Tumor", it["tumorBAM"] )
 		}
 
-		mutect_matched (ch_fasta, ch_data_expanded, ch_interval)
-		mutect_single_normal (ch_fasta, ch_data_expanded_single_normal, ch_interval)
-		mutect_single_tumor (ch_fasta, ch_data_expanded_single_tumor, ch_interval)
+		mutect_matched (genome_build, ch_fasta, ch_data_expanded, ch_interval)
+		mutect_single_normal (genome_build, ch_fasta, ch_data_expanded_single_normal, ch_interval)
+		mutect_single_tumor (genome_build, ch_fasta, ch_data_expanded_single_tumor, ch_interval)
 
 		ch_vcf = mutect_matched.out.result.map { [[it[1], it[0]["sampleName"]].join ("__"), it] }
 			.groupTuple (size: interval_n.value)
@@ -48,9 +49,9 @@ workflow MUTECT
 			.map { it[1] }
 			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] } ] }
 
-		mutect_combine_vcf (ch_vcf)
-		mutect_combine_vcf_single_normal (ch_vcf_single_normal)
-		mutect_combine_vcf_single_tumor (ch_vcf_single_tumor)
+		mutect_combine_vcf (genome_build, ch_vcf)
+		mutect_combine_vcf_single_normal (genome_build, ch_vcf_single_normal)
+		mutect_combine_vcf_single_tumor (genome_build, ch_vcf_single_tumor)
 	emit:
 		result = mutect_combine_vcf.out.result.mix (mutect_combine_vcf_single_normal.out.result,mutect_combine_vcf_single_tumor.out.result)
 }

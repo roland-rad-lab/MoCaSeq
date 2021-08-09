@@ -4,7 +4,10 @@ params.strelka = [:]
 process strelka_matched {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Strelka", mode: "copy"
+
 	input:
+		val (genome_build)
 		val (reference)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor), path (candidate_small_indels_vcf), path (candidate_small_indels_vcf_index)
@@ -44,10 +47,10 @@ python2 Strelka/runWorkflow.py -m local -j ${params.strelka.threads}
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p Strelka/results/variants
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz Strelka/results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz.tbi Strelka/results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz Strelka/results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz.tbi Strelka/results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz Strelka/results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz.tbi Strelka/results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz Strelka/results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz.tbi Strelka/results/variants/
 
 touch Strelka/results/variants/somatic.snvs.vcf.gz
 touch Strelka/results/variants/somatic.snvs.vcf.gz.tbi
@@ -58,6 +61,8 @@ touch Strelka/results/variants/somatic.indels.vcf.gz.tbi
 
 process strelka_matched_post {
 	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta", mode: "copy"
 
 	input:
 		tuple val (meta), val (type), path (somatic_snv_vcf), path (somatic_snv_vcf_index), path (somatic_indel_vcf), path (somatic_indel_vcf_index)

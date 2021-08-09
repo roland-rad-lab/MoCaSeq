@@ -2,9 +2,10 @@
 process igv_track_depth {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Tracks", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (intervals)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), val (type), path (bam), path (bai)
@@ -31,9 +32,10 @@ rm ${meta.sampleName}.${type}.depth.raw.all.wig
 process igv_track_cns {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Tracks", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (coverage_source)
 		tuple val (meta), val (type), path (cns)
 
@@ -60,9 +62,10 @@ write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGra
 process igv_track_rds {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Tracks", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Tracks", mode: "copy"
 
 	input:
+		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
 		val (coverage_source)
 		tuple val (meta), val (type), val (resolution), path (coverage_rds)

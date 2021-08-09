@@ -3,9 +3,10 @@
 process bubble_tree_matched {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/BubbleTree", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/BubbleTree", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (intervals)
 		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
 
@@ -134,7 +135,7 @@ ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btre
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
 touch ${meta.sampleName}.Bubbletree.txt
 touch ${meta.sampleName}.Bubbletree.adjusted.pdf
 touch ${meta.sampleName}.Bubbletree.adjustmentshift.pdf

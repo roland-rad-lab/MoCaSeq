@@ -5,6 +5,7 @@ include { manta_matched; manta_matched_post } from "../software/manta/main"
 workflow MANTA
 {
 	take:
+		genome_build
 		ch_fasta
 		ch_interval_bed
 		ch_data

@@ -4,9 +4,10 @@ params.jabba = [:]
 process jabba_matched {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy", saveAs: { it.replaceFirst ("^JaBbA/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/JaBbA", mode: "copy", saveAs: { it.replaceFirst ("^JaBbA/","") }
 
 	input:
+		val (genome_build)
 		tuple val (meta), path (manta_vcf), val (cn_source), path (coverage_tsv), path (segments_tsv), val (purity), val (ploidy)
 
 	output:
@@ -128,7 +129,7 @@ jab = JaBbA(
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p JaBbA
-#cp ${params.stub_dir}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
 touch JaBbA/jabba.rds
 	"""
 }
@@ -136,9 +137,10 @@ touch JaBbA/jabba.rds
 process jabba_plot {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/JaBbA", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/JaBbA", mode: "copy"
 
 	input:
+		val (genome_build)
 		tuple val (meta), path (jabba_rds)
 
 	output:

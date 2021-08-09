@@ -4,6 +4,7 @@ process hmm_copy_wig {
 
 
 	input:
+		val (genome_build)
 		val (intervals)
 		each (resolution)
 		tuple val (meta), val (type), path (bam), path (bai)
@@ -20,7 +21,7 @@ ${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${b
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
 touch ${meta.sampleName}.${type}.${resolution}.wig
 	"""
 }
@@ -28,9 +29,10 @@ touch ${meta.sampleName}.${type}.${resolution}.wig
 process hmm_copy_tsv {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/HMMCopy", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/HMMCopy", mode: "copy"
 
 	input:
+		val (genome_build)
 		val (intervals)
 		tuple val (resolution), val (gc_wig), val (map_wig), val (meta), path (normal_wig), path (tumor_wig)
 
@@ -154,8 +156,8 @@ write.table(cnv_segments,"${meta.sampleName}.HMMCopy.${resolution}.segments.txt"
 	stub:
 	"""#!/usr/bin/env bash
 
-#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
-#cp ${params.stub_dir}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
 touch ${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt
 touch ${meta.sampleName}.HMMCopy.${resolution}.segments.txt
 	"""
@@ -164,9 +166,10 @@ touch ${meta.sampleName}.HMMCopy.${resolution}.segments.txt
 process hmm_copy_plot {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/HMMCopy", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/HMMCopy", mode: "copy"
 
 	input:
+		val (genome_build)
 		tuple path (interval_bed), path(interval_bed_index)
 		tuple val (meta), val (type), val (source), val (resolution), path (log2_file), path (segments_file)
 

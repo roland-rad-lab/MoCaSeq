@@ -3,9 +3,10 @@
 process cnv_kit_matched {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/matched/${meta.sampleName}.matched.cns", saveAs: { it.replaceFirst ("^CNVKit/matched/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/matched/${meta.sampleName}.matched.cns", saveAs: { it.replaceFirst ("^CNVKit/matched/","") }
 
 	input:
+		val (genome_build)
 		val (reference)
 		val (reference_flat)
 		tuple path (interval_bed), path (interval_bed_index)
@@ -59,7 +60,7 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/matched
-#cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
 touch CNVKit/matched/${meta.sampleName}.matched.cns
 	"""
 
@@ -68,9 +69,10 @@ touch CNVKit/matched/${meta.sampleName}.matched.cns
 process cnv_kit_single {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
 
 	input:
+		val (genome_build)
 		val (reference)
 		val (reference_flat)
 		tuple path (interval_bed), path (interval_bed_index)
@@ -117,7 +119,7 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/single
-#cp ${params.stub_dir}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
 touch CNVKit/single/${meta.sampleName}.${type}.cns
 	"""
 }
@@ -129,6 +131,7 @@ process cnv_kit_segment {
 	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
 
 	input:
+		val (genome_build)
 		val (coverage_source)
 		tuple val (meta), val (type), val(resolution), path (coverage_cnr)
 

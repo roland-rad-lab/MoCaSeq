@@ -4,9 +4,10 @@ params.manta = [:]
 process manta_matched {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Manta/variants", mode: "copy", pattern: "results/variants/*.vcf.gz*", saveAs: { it.replaceFirst ("^results/variants/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta/variants", mode: "copy", pattern: "results/variants/*.vcf.gz*", saveAs: { it.replaceFirst ("^results/variants/","") }
 
 	input:
+		val (genome_build)
 		val (reference)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
@@ -66,9 +67,10 @@ touch results/variants/candidateSmallIndels.vcf.gz.tbi
 process manta_matched_post {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/Manta", mode: "copy", pattern: "*.Manta.vcf.gz*"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta", mode: "copy", pattern: "*.Manta.vcf.gz*"
 
 	input:
+		val (genome_build)
 		tuple val (meta), val(type), path (somatic_vcf), path (somatic_vcf_index)
 
 	output:

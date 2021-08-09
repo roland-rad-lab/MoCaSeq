@@ -5,6 +5,7 @@ include { loh_matched; loh_matched_assign_alleles; } from "../software/loh/main"
 workflow LOH {
 
 	take:
+		genome_build
 		ch_fasta
 		ch_fasta_index
 		ch_interval
@@ -33,8 +34,8 @@ workflow LOH {
 				[it[0][0]] + m["Normal"] + m["Tumor"]
 			}
 
-		loh_matched (ch_interval_bed, ch_data_single_sample)
-		loh_matched_assign_alleles (ch_fasta, ch_fasta_index, ch_interval_csv_string, loh_matched.out.result)
+		loh_matched (genome_build, ch_interval_bed, ch_data_single_sample)
+		loh_matched_assign_alleles (genome_build, ch_fasta, ch_fasta_index, ch_interval_csv_string, loh_matched.out.result)
 
 	emit:
 		result = loh_matched_assign_alleles.out.result
