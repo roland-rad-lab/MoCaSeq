@@ -11,7 +11,7 @@ process dry_clean_detergent {
 		path (normal_coverage_tsv)
 
 	output:
-		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.rds"), path ("PON/detergent.rds"), emit: result
+		tuple path ("PON/normal_table.rds"), path ("PON/germline.markers.filtered.rds"), path ("PON/detergent.rds"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -57,6 +57,15 @@ saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)
 
 identify_germline (normal.table.path="PON/normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98,all.chr=intervals)
 
+grm <- readRDS("PON/germline.markers.rds")
+grm_merged <- unlist(GenomicRanges::reduce (GenomicRanges::split (grm, ~germline.status)))
+mcols(grm_merged)[,"germline.status.region"] <- names(grm_merged)
+
+mcols(grm)[,"mi"] <- width(grm_merged)[GenomicRanges::findOverlaps (grm,grm_merged,select="first")]
+mcols(grm)[mcols(grm)[,"mi"]==1000,"germline.status"] <- F
+
+saveRDS(grm,file="PON/germline.markers.filtered.rds")
+
 	"""
 }
 
@@ -100,7 +109,7 @@ cov_out <- switch ("${type}",
 		start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)	
 	},
 	"Normal"={
-		start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=F,is.human=F,all.chr=intervals)
+		start_wash_cycle(cov=coverage_data,detergent.pon.path="${detergent_rds}",whole_genome=T,chr=NA,germline.filter=T,germline.file="${germline_rds}",is.human=F,all.chr=intervals)
 	},
 	{
 		stop ("Unsupported type: '${type}'")
