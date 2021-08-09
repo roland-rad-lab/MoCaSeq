@@ -15,8 +15,8 @@ workflow MANTA
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 
-		manta_matched (ch_fasta, ch_interval_bed, ch_data_expanded)
-		manta_matched_post (manta_matched.out.sv)
+		manta_matched (genome_build, ch_fasta, ch_interval_bed, ch_data_expanded)
+		manta_matched_post (genome_build, manta_matched.out.sv)
 
 	emit:
 		result = manta_matched_post.out.result

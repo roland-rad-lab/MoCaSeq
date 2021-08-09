@@ -65,6 +65,7 @@ process strelka_matched_post {
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta", mode: "copy"
 
 	input:
+		val (genome_build)
 		tuple val (meta), val (type), path (somatic_snv_vcf), path (somatic_snv_vcf_index), path (somatic_indel_vcf), path (somatic_indel_vcf_index)
 
 	output:
@@ -100,10 +101,10 @@ java -jar ${params.gatk.jar} SelectVariants \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi .
 
 touch ${meta.sampleName}.str.snp.post-processed.vcf.gz
 touch ${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi
