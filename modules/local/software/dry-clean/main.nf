@@ -55,14 +55,14 @@ for ( i in seq_along (data_normal_coverage[,"sample"]) )
 
 saveRDS (as.data.table (cbind (data_normal_coverage,decomposed_cov=decomp_paths)),file="PON/normal_table.rds")
 
-identify_germline (normal.table.path="PON/normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.5,pct.thresh=0.98,all.chr=intervals)
+identify_germline (normal.table.path="PON/normal_table.rds",path.to.save="PON",save.grm=T,signal.thresh=0.75,pct.thresh=0.98,all.chr=intervals)
 
 grm <- readRDS("PON/germline.markers.rds")
 grm_merged <- unlist(GenomicRanges::reduce (GenomicRanges::split (grm, ~germline.status)))
 mcols(grm_merged)[,"germline.status.region"] <- names(grm_merged)
 
 mcols(grm)[,"mi"] <- width(grm_merged)[GenomicRanges::findOverlaps (grm,grm_merged,select="first")]
-mcols(grm)[mcols(grm)[,"mi"]==1000,"germline.status"] <- F
+mcols(grm)[mcols(grm)[,"mi"]<=5000,"germline.status"] <- F
 
 saveRDS(grm,file="PON/germline.markers.filtered.rds")
 
