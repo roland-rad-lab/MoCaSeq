@@ -39,6 +39,7 @@ workflow IGV_TRACK_RDS {
 workflow IGV_TRACK_CNS {
 
 	take:
+		genome_build
 		coverage_source
 		ch_cns
 
