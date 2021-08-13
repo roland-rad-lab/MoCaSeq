@@ -1222,7 +1222,7 @@ if [ $runmode = "MS" ]; then
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 	Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type $resolution \
-	$mapWig_file $gcWig_file $centromere_file $varregions_file
+	$mapWig_file $gcWig_file $centromere_file $varregions_file $runmode $types
 	Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy $resolution $CGC_file $TruSight_file
 fi
 

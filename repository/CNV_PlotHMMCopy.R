@@ -22,6 +22,16 @@ varregions_file <- args[9]
 runmode <- args[10]
 types <- args[11]
 
+# for some reason the chr column is sometimes called "space", in this case we rename
+FixChrColname <- function(dt){
+  spaceFound <- any(grepl("space", colnames(dt)))
+  chrFound <- any(grepl("chr", colnames(dt)))
+  if(spaceFound & !chrFound){
+    names(dt)[names(dt) == "space"] <- "chr"
+  }
+  return(dt)
+}
+
 if (runmode == "MS") {
   types <- "Tumor Normal"
 }
@@ -32,38 +42,38 @@ suppressPackageStartupMessages(library(GenomeInfoDb))
 suppressPackageStartupMessages(library(naturalsort))
 suppressPackageStartupMessages(library(GenomicRanges))
 
-
 # choose correct map_file and gc_file
 map_file=gsub("20000",resolution,map_file)
 gc_file=gsub("20000",resolution,gc_file)
 
-
 # read in wig files and correct for GC and mappability bias
-
 if (runmode == "SS") {
   if (types == "Tumor") {
     tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
     tumor$reads <- tumor$reads+1
     tumor <- as.data.frame(correctReadcount(tumor))
+    tumor <- FixChrColname(tumor)
     tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
   } else if (types == "Normal") {
     normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
     normal$reads <- normal$reads+1
     normal <- as.data.frame(correctReadcount(normal))
+    normal <- FixChrColname(normal)
     normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
   }
 } else {
   normal <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Normal.",resolution,".wig",sep=""),gc_file,map_file)
   normal$reads <- normal$reads+1
   normal <- as.data.frame(correctReadcount(normal))
+  normal <- FixChrColname(normal)
   normal_copy=GRanges(normal$chr, IRanges(normal$start, normal$end),copy=normal$copy)
   
   tumor <- wigsToRangedData(paste(name,"/results/HMMCopy/",name,".Tumor.",resolution,".wig",sep=""),gc_file,map_file)
   tumor$reads <- tumor$reads+1
   tumor <- as.data.frame(correctReadcount(tumor))
+  tumor <- FixChrColname(tumor)
   tumor_copy=GRanges(tumor$chr, IRanges(tumor$start, tumor$end),copy=tumor$copy)
 }
-
 
 # remove regions with increased variability for mice and centromere regions for humams
 if (species == "Human")
