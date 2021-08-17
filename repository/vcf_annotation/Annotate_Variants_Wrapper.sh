@@ -10,28 +10,18 @@
 # dt[, V1 := gsub("chr", "", V1)]
 # fwrite(dt, "GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed", sep="\t", col.names = F)
 
-#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC02_HD_PPT-1
-#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC02_HD_LivMet-1
-#echo "ALL DONE"
 
-sudo docker run \
--it --entrypoint=/bin/bash \
--v ${working_directory}:/var/pipeline/ \
--v ${ref_directory}:/var/pipeline/ref/ \
--v ${script_directory}:/opt/MoCaSeq \
--v ${working_directory}/temp/:/var/pipeline/temp/ \
--v ${fastq_directory}:/var/pipeline/raw/ \
-mocaseq2
+# RUN THIS WITHIN DOCKER
+# sudo docker run \
+# -it --entrypoint=/bin/bash \
+# -v ${working_directory}:/var/pipeline/ \
+# -v ${ref_directory}:/var/pipeline/ref/ \
+# -v ${script_directory}:/opt/MoCaSeq \
+# -v ${working_directory}/temp/:/var/pipeline/temp/ \
+# mocaseq2
 
-
-#name=hPDAC02_HD_PPT-1
-#name=hPDAC02_HD_LivMet-1
-#name=hPDAC03_HD_LivMet-1
-#name=hPDAC03_HD_PPT-1
-#species="Mouse"
-
-bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_HD_LivMet-1 Human
-
+# USING THIS COMMAND
+#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_HD_LivMet-1 Human
 
 name=$1
 species=$2
