@@ -121,9 +121,23 @@ def main():
     ofile.write("#\t-      Map the reads to the snv locations, concatenate all the reads and calculate the mean gc% of all the mapped reads\n")
     ofile.write("echo '#\t- 5.2) Get the mean GC% for all the reads the SNV overlaps'\n")
     ofile.write("echo '#\t-      Map the reads to the snv locations, concatenate all the reads and calculate the mean gc% of all the mapped reads'\n")
+
+    #snvReadMeanGCpcFile = "{}_snvReads_Mean_GC_percentage.txt".format(filteredInterimFileName)
+    #ofile.write('time bedtools map -prec 2 -a {0} -b {1} -c 10,10 -o count,concat -g {3} | awk -v OFS="\\t" \'{{n=length($6); gc=gsub("[gcGC]", "", $6); print $1,$2,$3,$4,gc/n}}\'  > {2}\n\n'.format(snvBedFile, snvSubBamFile, snvReadMeanGCpcFile, genomeInfoFile))
+
+    snvReadMeanGCpcFileRAW = "{}_snvReads_Mean_GC_percentage_raw.txt".format(filteredInterimFileName)
+    ofile.write('time bedtools map -prec 2 -a {0} -b {1} -c 10,10 -o count,concat -g {3} | awk -v OFS="\\t" \'{{print $1,$2,$3,$4,$6}}\' > {2}\n\n'.format(snvBedFile, snvSubBamFile, snvReadMeanGCpcFileRAW, genomeInfoFile))
+
+    snvReadMeanGCpcFileSTRING = "{}_snvReads_Mean_GC_percentage_string.txt".format(filteredInterimFileName)
+    ofile.write('awk -v OFS="\\t" \'{{print $5}}\' {0} > {1}\n\n'.format(snvReadMeanGCpcFileRAW, snvReadMeanGCpcFileSTRING))
+
+    snvReadMeanGCpcFilePERCENT = "{}_snvReads_Mean_GC_percentage_percent.txt".format(filteredInterimFileName)
+    ofile.write('while read p; do len=$(echo $p | sed \'s/N//g\' | tr -d \'\\n\' | wc -c); cnt=$(echo $p | grep -oh \'C\|G\|g\|c\' | tr -d \'\\n\' | wc -c); gc=$(awk "BEGIN {{printf \\"%.6f\\",${{cnt}}/${{len}}}}"); echo -e $gc; done<{0} > {1}\n\n'.format(snvReadMeanGCpcFileSTRING, snvReadMeanGCpcFilePERCENT))
+
     snvReadMeanGCpcFile = "{}_snvReads_Mean_GC_percentage.txt".format(filteredInterimFileName)
-    ofile.write('time bedtools map -prec 2 -a {0} -b {1} -c 10,10 -o count,concat -g {3} | awk -v OFS="\\t" \'{{n=length($6); gc=gsub("[gcGC]", "", $6); print $1,$2,$3,$4,gc/n}}\'  > {2}\n'.format(snvBedFile, snvSubBamFile, snvReadMeanGCpcFile, genomeInfoFile))
-    ofile.write("\n#\t- Adding the header to the file\n")
+    ofile.write('paste {0} {1} | awk \'{{print $1,$2,$3,$4,$6}}\' > {2}\n\n'.format(snvReadMeanGCpcFileRAW, snvReadMeanGCpcFilePERCENT, snvReadMeanGCpcFile))
+
+    ofile.write("\n\n#\t- Adding the header to the file\n")
     ofile.write("sed -i '1iChrom\\tStart\\tGenomicPos\\tVariantIDKey\\tVariantReadsMeanGCPc' {}\n".format(snvReadMeanGCpcFile))
 
     # 6) Get the 10 bp sequence around the SNV from the genome

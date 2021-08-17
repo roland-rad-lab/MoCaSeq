@@ -10,63 +10,74 @@
 # dt[, V1 := gsub("chr", "", V1)]
 # fwrite(dt, "GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed", sep="\t", col.names = F)
 
-
-
-# OPEN DOCKER
-# working_directory=/media/rad/HDD1/hPDAC
-# ref_directory=/media/rad/SSD1/MoCaSeq_ref/
-# script_directory=/media/rad/HDD1/MoCaSeq/
-#
-# sudo docker run \
-# -it --entrypoint=/bin/bash \
-# -v ${working_directory}:/var/pipeline/ \
-# -v ${ref_directory}:/var/pipeline/ref \
-# -v ${script_directory}:/opt/MoCaSeq \
-# -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro \
-# mocaseq-human2
-
-
-#bash /opt/MoCaSeq/niklas_dev/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_LivMet-1
-#bash /opt/MoCaSeq/niklas_dev/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_PPT-1
+#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC02_HD_PPT-1
+#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC02_HD_LivMet-1
 #echo "ALL DONE"
 
-#name=hPDAC02_PPT-1
-#name=hPDAC02_LivMet-1
-#name=hPDAC03_LivMet-1
+sudo docker run \
+-it --entrypoint=/bin/bash \
+-v ${working_directory}:/var/pipeline/ \
+-v ${ref_directory}:/var/pipeline/ref/ \
+-v ${script_directory}:/opt/MoCaSeq \
+-v ${working_directory}/temp/:/var/pipeline/temp/ \
+-v ${fastq_directory}:/var/pipeline/raw/ \
+mocaseq2
+
+
+#name=hPDAC02_HD_PPT-1
+#name=hPDAC02_HD_LivMet-1
+#name=hPDAC03_HD_LivMet-1
+#name=hPDAC03_HD_PPT-1
+#species="Mouse"
+
+bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_HD_LivMet-1 Human
+
 
 name=$1
-echo "RUNNING $name"
+species=$2
+echo "RUNNING $name for species $species"
+
+
 
 temp_dir=/var/pipeline/temp2
+annTmp=${temp_dir}/annInput
+mkdir -p ${annTmp}
+# example: /home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_wgs/annInput
+
+
 genomes_dir=/var/pipeline/ref
-genome_dir=$genomes_dir/GRCh38.p12
-genome_file=$genome_dir/GRCh38.p12.fna
 
-
-# Input parameters
-projname="${name}_annPipeline" #'mPDAC_wgs' # Just some name... you can use 'tmp'
-jobdir='/home/rad/users/gaurav/projects/pdacMetastasis'
-
-annoScriptDir=/opt/MoCaSeq/repository/vcf_annotation/
-# THIS IS HARDCODED WITHIN annotate_variant_bash_wrapper.py
+# set some species specific arguments
+if [ $species = 'Mouse' ]; then
+	echo 'Species set to Mouse'
+  genome_dir=$genomes_dir/GRCm38.p6
+  genome_file=$genome_dir/GRCm38.p6.fna
+  segdupbed=$genome_dir"/vcf_annotation/mm10_ucsc_segmentalDups.bed"
+  repmaskbed=$genome_dir"/vcf_annotation/mm10_repeatMasker.bed"
+  gcbed=$genome_dir"/vcf_annotation/mm10_5bp_GC_percentage.bedgraph"
+  probesbed=$genome_dir"/GRCm38.SureSelect_Mouse_All_Exon_V1.bed"
+elif [ $species = 'Human' ]; then
+	echo 'Species set to Human'
+  genome_dir=$genomes_dir/GRCh38.p12
+  genome_file=$genome_dir/GRCh38.p12.fna
+  segdupbed=$genome_dir"/vcf_annotation/hg38_ucsc_segmentalDups.bed"
+  repmaskbed=$genome_dir"/vcf_annotation/hg38_repeatMasker.bed"
+  gcbed=$genome_dir"/vcf_annotation/hg38_5bp_GC_percentage.bedgraph"
+  probesbed=$genome_dir"/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed"
+else echo "Invalid species input (${species}). Choose Mouse or Human"; exit 1
+fi
 
 #genomeFasta="${jobdir}/input/annotation/${species}/GRCm38.p6.fna" # given by genome_file
 
-segdupbed=$genome_dir"/vcf_annotation/hg38_ucsc_segmentalDups.bed"
-repmaskbed=$genome_dir"/vcf_annotation/hg38_repeatMasker.bed"
-gcbed=$genome_dir"/vcf_annotation/hg38_5bp_GC_percentage.bedgraph"
+# Input parameters
+projname="${name}_annPipeline" #'mPDAC_wgs' # Just some name... you can use 'tmp'
+#jobdir='/home/rad/users/gaurav/projects/pdacMetastasis' # do we even need this?!
 
-annTmp=${temp_dir}/annInput
-# example: /home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_wgs/annInput
+annoScriptDir=/opt/MoCaSeq/repository/vcf_annotation/
+# THIS IS ALSO HARDCODED WITHIN annotate_variant_bash_wrapper.py
 
 tumbamFile=${name}/results/bam/${name}.Tumor.bam
 norbamFile=${name}/results/bam/${name}.Normal.bam
-
-#probesbed="${jobdir}/input/annotation/${species}/wes_S0276129_Probes_${species}.bed"
-# HUMAN SPECIFIC
-probesbed=$genome_dir"/GRCh38_SureSelect.S31285117_MergedProbes_All_Exons_V7.bed"
-
-
 
 
 # 0) Merge rescued files and save to temp
@@ -88,7 +99,7 @@ mutationfile=${annTmp}/${name}_Mutect2.txt
 python3.7 ${annoScriptDir}annotate_variant_bash_wrapper.py -gf=${genome_file} -sd=${segdupbed} -rp=${repmaskbed} -gc=${gcbed} -pb=${probesbed} -tb=${tumbamFile} -nb=${norbamFile} -pn=${projname} -pd=${annTmp} -sn=${name}
 
 # Run the wrapper
-mkdir ${annTmp}/finalAnnotation/
+mkdir -p ${annTmp}/finalAnnotation/
 bash ${annTmp}/scripts/wrapper/${projname}/${name}_Mutect2_annotation_wrapper.sh
 
 mkdir ${name}/results/VariantAnnotation
