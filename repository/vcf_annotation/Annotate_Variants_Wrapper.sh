@@ -21,7 +21,7 @@
 # mocaseq2
 
 # USING THIS COMMAND
-#bash /opt/MoCaSeq/repository/vcf_annotation/Wrapper_helper_for_Niklas_convertToMoCaSeq.sh hPDAC03_HD_LivMet-1 Human
+#bash /opt/MoCaSeq/repository/vcf_annotation/Annotate_Variants_Wrapper.sh hPDAC03_HD_LivMet-1 Human
 
 name=$1
 species=$2
