@@ -20,8 +20,7 @@ runmode = args[5] # SS or MS
 
 suppressPackageStartupMessages(library(ABSOLUTE))
 
-if (cnv_method=="Copywriter")
-{
+if (cnv_method=="Copywriter"){
 	load(paste0(name,"/results/Copywriter/CNAprofiles/segment.Rdata"))
 	segments = segment.CNA.object$output
 	Selection = unique(grep("Normal",grep("Tumor",segments$ID,value=T),value=T))
@@ -74,13 +73,40 @@ if (cnv_method=="Copywriter")
 
 # depending on if Mutect2 was called this is changed
 if(mutect2 == "yes"){
-  maf=read.delim(paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf"),fill=T,skip=1)
-  names(maf)[names(maf) == 't_maf'] <- 't_vaf'
-  names(maf)[names(maf) == 'Start_Position'] <- 'Start_position'
-  names(maf)[names(maf) == 'End_Position'] <- 'End_position'
-  write.table(maf,paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
   
-  maf.fn <- file.path(paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf.fn"))
+  
+  if(runmode == "MS"){
+    maf=read.delim(paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf"),fill=T,skip=1)
+    names(maf)[names(maf) == 't_maf'] <- 't_vaf'
+    names(maf)[names(maf) == 'Start_Position'] <- 'Start_position'
+    names(maf)[names(maf) == 'End_Position'] <- 'End_position'
+    write.table(maf,paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+    maf.fn <- file.path(paste0(name,"/results/Mutect2/",name,".Mutect2.vep.maf.fn"))
+  } else if(runmode == "SS"){
+
+    # identify if single sample is Tumor or Normal
+    mafT=paste0(name,"/results/Mutect2/",name,".Tumor.Mutect2.vep.maf")
+    mafN=paste0(name,"/results/Mutect2/",name,".Normal.Mutect2.vep.maf")
+    
+    if(file.exists(mafT)){
+      ssPrefix <- "Tumor"
+    } else if(file.exists(mafN)){
+      ssPrefix <- "Normal"
+    } else {
+      stop("No MAF file found!") 
+    }
+    
+    maf=read.delim(paste0(name,"/results/Mutect2/",name,".",ssPrefix,".Mutect2.vep.maf"),fill=T,skip=1)
+    names(maf)[names(maf) == 't_maf'] <- 't_vaf'
+    names(maf)[names(maf) == 'Start_Position'] <- 'Start_position'
+    names(maf)[names(maf) == 'End_Position'] <- 'End_position'
+    write.table(maf,paste0(name,"/results/Mutect2/",name,".",ssPrefix,".Mutect2.vep.maf.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+    maf.fn <- file.path(paste0(name,"/results/Mutect2/",name,".",ssPrefix,".Mutect2.vep.maf.fn"))
+    
+  } else {
+    stop(paste0("Incorrect runmode parameter: ", runmode))
+  }
+  
   min.mut.af <- 0
 } else if(mutect2 == "no"){
   maf.fn <- NULL
@@ -116,8 +142,17 @@ abs.rawfile <- paste0(results.dir, "/", name, ".ABSOLUTE.RData")
 load(abs.rawfile)
 seg.list <- list(seg.dat)
 seg.results <- seg.list[[1]][["mode.res"]][["mode.tab"]]
-colnames(seg.results)[1] <- "purity"
-colnames(seg.results)[2] <- "ploidy"
 
+# ABSOLUTE sometimes just can not process samples (error message: "Sample has failed ABSOLUTE")
 abs.tabfile <- paste0(results.dir, "/", name, ".ABSOLUTE.results.tsv")
-write.table(seg.results, abs.tabfile, quote = F, sep="\t", row.names = F)
+if(is.null(seg.results)){
+  fileConn<-file(abs.tabfile)
+  writeLines(c("Sample has failed ABSOLUTE"), fileConn)
+  close(fileConn)
+} else {
+  colnames(seg.results)[1] <- "purity"
+  colnames(seg.results)[2] <- "ploidy"
+  write.table(seg.results, abs.tabfile, quote = F, sep="\t", row.names = F)
+}
+
+
