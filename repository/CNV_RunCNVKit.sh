@@ -83,7 +83,7 @@ fi
 # rename the matched files to prevent any confusion
 # rename the matched files to prevent any confusion
 if [ $runmode = "MS" ]; then
-cnvkit_files=$(find ${CNVKit_folder}/matched/ -type f -name *Tumor*)
+cnvkit_files=$(find ${CNVKit_folder}/matched/ -type f -name "*Tumor*")
 
 for file in $cnvkit_files
 do
