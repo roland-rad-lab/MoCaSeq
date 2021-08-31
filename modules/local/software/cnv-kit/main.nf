@@ -144,6 +144,12 @@ process cnv_kit_segment {
 
 cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnr}
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
+touch ${meta.sampleName}.${type}.${coverage_source}.cns
+	"""
 }
 
 

@@ -154,10 +154,24 @@ library (gGnome)
 
 graph = gG (jabba="${jabba_rds}")
 graph_events <- events (graph,verbose=F)
+saveRDS (graph_events,file="graph_events.rds")
 cat ("Finished calling events\\n")
 data_graph_events_type <- as.data.frame (graph_events\$meta\$event[, table (type)])
 
 write.table (data_graph_events_type,file="${meta.sampleName}.events.counts.tsv",sep="\\t",quote=F,row.names=F)
+
+data_junctions <- data.frame (
+	"chrom1"=character (0),
+	"start1"=integer (0),
+	"end1"=integer (0),
+	"chrom2"=character (0),
+	"start2"=integer (0),
+	"end2"=integer (0),
+	"name"=charactr (0),
+	"score"=numeric (0),
+	"strand1"=character (0),
+	"strand2"=character (0),
+	"meta_feature_type"=character (0))
 
 for (i in seq_len (nrow (data_graph_events_type)) )
 {
@@ -168,14 +182,16 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 	pdf (file=plot_file_path,width=9)
 
 	switch (event_type,
-			dm={ e <- graph_events[dm>0];plot (e\$gt,streduce (e\$gr,1e6));title (paste(event_type," in ${meta.sampleName}")) },
-			dup={ e <- graph_events[dup>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(5e5));title (paste(event_type," in ${meta.sampleName}")) },
-			inv={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^INV[0-9]+\$",simple)]\$shadow %>% streduce (1e5));title (paste(event_type," in ${meta.sampleName}")) },
-			invdup={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^INVDUP[0-9]+\$",simple)]\$shadow %>% streduce (1e5));title (paste(event_type," in ${meta.sampleName}")) },
-			tic={ e <- graph_events[tic>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(5e5));title (paste(event_type," in ${meta.sampleName}")) },
-			tra={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^TRA[0-9]+\$",simple)]\$shadow %>% streduce (1e5));title (paste(event_type," in ${meta.sampleName}")) },
-			chromoplexy={ e <- graph_events[chromoplexy>0];plot (e\$gt,e\$edges[which(chromoplexy>0)]\$shadow %>% streduce(5e6));title (paste(event_type," in ${meta.sampleName}")) },
-			tyfonas={ e <- graph_events[tyfonas>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(1e6));title (paste(event_type," in ${meta.sampleName}")) },
+			dm={ e <- graph_events[dm>0];plot (e\$gt,streduce (e\$gr,1e6),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			dup={ e <- graph_events[dup>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(5e5),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			inv={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^INV[0-9]+\$",simple)]\$shadow %>% streduce (1e5),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			invdup={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^INVDUP[0-9]+\$",simple)]\$shadow %>% streduce (1e5),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			tic={ e <- graph_events[tic>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(5e5),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			tra={ e <- graph_events[simple>0];plot (e\$gt,e\$edges[grepl("^TRA[0-9]+\$",simple)]\$shadow %>% streduce (1e5),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			bfb={ e <- graph_events[bfb>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(1e6),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			cpxdm={ e <- graph_events[cpxdm>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(1e6),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			chromoplexy={ e <- graph_events[chromoplexy>0];plot (e\$gt,e\$edges[which(chromoplexy>0)]\$shadow %>% streduce(5e6),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
+			tyfonas={ e <- graph_events[tyfonas>0];plot (e\$gt,e\$footprint %>% GRanges %>% streduce(1e6),xaxis.label.angle=90,xaxis.chronly=T);title (paste(event_type," in ${meta.sampleName}")) },
 			{
 				stop (paste ("Event type '",event_type,"' is not implemented yet in sample ${meta.sampleName}",sep=""))
 			}
@@ -183,6 +199,8 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 
 	dev.off ()
 }
+
+write.table (data_junctions,file="${meta.sampleName}.junctions.bedpe",sep="\\t",quote=F,row.names=F)
 
 	"""
 

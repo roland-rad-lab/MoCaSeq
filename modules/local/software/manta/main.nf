@@ -51,10 +51,10 @@ python2 runWorkflow.py -m local -j ${params.manta.threads}
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p results/variants
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz.tbi results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz results/variants/
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz.tbi results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz.tbi results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz results/variants/
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz.tbi results/variants/
 
 touch results/variants/somaticSV.vcf.gz
 touch results/variants/somaticSV.vcf.gz.tbi
@@ -99,9 +99,9 @@ java -Xmx${params.annotation.snpeff.ram}g \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz.tbi .
-#cp ${params.stub_dir}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.annotated.vcf .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz.tbi .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.annotated.vcf .
 
 touch ${meta.sampleName}.Manta.vcf.gz
 touch ${meta.sampleName}.Manta.vcf.gz.tbi

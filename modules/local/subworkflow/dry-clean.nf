@@ -17,7 +17,7 @@ workflow DRY_CLEAN {
 	if ( !dir_pon.exists ()) exit 1, "[MoCaSeq] error: PON directory '${dir_pon}' not found."
 	if ( !dir_pon.isDirectory ()) exit 1, "[MoCaSeq] error: PON directory required '${dir_pon}' is not a directory."
 
-	ch_pon = Channel.of ([dir_pon.resolve ("${genome_build}.normal_table.rds"), dir_pon.resolve ("${genome_build}.germline.markers.filtered.rds"), dir_pon.resolve ("${genome_build}.detergent.rds") ]).first ()
+	ch_pon = Channel.of ([dir_pon.resolve ("${genome_build}_PON/${genome_build}.normal_table.rds"), dir_pon.resolve ("${genome_build}_PON/${genome_build}.germline.markers.filtered.rds"), dir_pon.resolve ("${genome_build}_PON/${genome_build}.detergent.rds") ]).first ()
 
 	dry_clean (genome_build, ch_interval_csv_string, ch_pon, ch_tumor_coverage)
 
