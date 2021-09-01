@@ -145,7 +145,7 @@ process jabba_plot {
 		tuple val (meta), path (jabba_rds)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.events.counts.tsv"), path ("${meta.sampleName}.events.json") emit: events
+		tuple val (meta), path ("${meta.sampleName}.events.counts.tsv"), path ("${meta.sampleName}.events.json"), emit: events
 		path ("graph_events.rds")
 		path ("*.pdf")
 
@@ -160,7 +160,7 @@ graph = gG (jabba="${jabba_rds}")
 graph_events <- events (graph,verbose=F)
 saveRDS (graph_events,file="graph_events.rds")
 cat ("Finished calling events\\n")
-graph_events$json (filename="${meta.sampleName}.events.json")
+graph_events\$json (filename="${meta.sampleName}.events.json")
 data_graph_events_type <- as.data.frame (graph_events\$meta\$event[, table (type)])
 
 write.table (data_graph_events_type,file="${meta.sampleName}.events.counts.tsv",sep="\\t",quote=F,row.names=F)
