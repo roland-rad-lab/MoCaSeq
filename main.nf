@@ -165,7 +165,7 @@ workflow HUMAN_WGS
 	if ( params.pon_dir == null )
 	{
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.tsv, LOH.out.result)
-		JABBA (params.genome_build.human, MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
 	}
 	else
 	{
@@ -173,7 +173,7 @@ workflow HUMAN_WGS
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, "dryclean", DRY_CLEAN.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
-		JABBA (params.genome_build.human, MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{

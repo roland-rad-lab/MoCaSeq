@@ -5,12 +5,14 @@ workflow JABBA
 {
 	take:
 		genome_build
+		ch_interval
 		ch_manta
 		ch_ratio
 		ch_bubble
 
 	main:
 
+		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
 		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" && it[3] == "1000" }
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[4], it[5]]], it[0]] }
@@ -37,7 +39,7 @@ workflow JABBA
 			.dump (tag: 'manta_ratio_and_bubble')
 
 		jabba_matched (genome_build, ch_manta_and_ratio_and_bubble)
-		jabba_plot (genome_build, jabba_matched.out.result)
+		jabba_plot (genome_build, ch_interval_csv_string, jabba_matched.out.result)
 }
 
 

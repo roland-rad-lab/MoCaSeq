@@ -141,10 +141,12 @@ process jabba_plot {
 
 	input:
 		val (genome_build)
+		val (intervals)
 		tuple val (meta), path (jabba_rds)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.events.counts.tsv"), emit: event_counts
+		tuple val (meta), path ("${meta.sampleName}.events.counts.tsv"), path ("${meta.sampleName}.events.json") emit: events
+		path ("graph_events.rds")
 		path ("*.pdf")
 
 	script:
@@ -152,26 +154,16 @@ process jabba_plot {
 
 library (gGnome)
 
+intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
+
 graph = gG (jabba="${jabba_rds}")
 graph_events <- events (graph,verbose=F)
 saveRDS (graph_events,file="graph_events.rds")
 cat ("Finished calling events\\n")
+graph_events$json (filename="${meta.sampleName}.events.json")
 data_graph_events_type <- as.data.frame (graph_events\$meta\$event[, table (type)])
 
 write.table (data_graph_events_type,file="${meta.sampleName}.events.counts.tsv",sep="\\t",quote=F,row.names=F)
-
-data_junctions <- data.frame (
-	"chrom1"=character (0),
-	"start1"=integer (0),
-	"end1"=integer (0),
-	"chrom2"=character (0),
-	"start2"=integer (0),
-	"end2"=integer (0),
-	"name"=charactr (0),
-	"score"=numeric (0),
-	"strand1"=character (0),
-	"strand2"=character (0),
-	"meta_feature_type"=character (0))
 
 for (i in seq_len (nrow (data_graph_events_type)) )
 {
@@ -200,7 +192,15 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 	dev.off ()
 }
 
-write.table (data_junctions,file="${meta.sampleName}.junctions.bedpe",sep="\\t",quote=F,row.names=F)
+pdf (file="all.events.pdf",width=9)
+
+for ( i in seq_len (length (intervals)) )
+{
+	plot (graph_events$gt,graph_events$gr[seqnames(graph_events$gr) == intervals[i]],xaxis.chronly=T)
+}
+
+
+dev.off ()
 
 	"""
 
