@@ -1,8 +1,6 @@
 # GOAL  : Combine VCFrescued files
 # USAGE : Rscript scripts/R_merge_vcf_rescued_files.R path/to/rescued/directory path/to/output/directory
 # SOURCE: Modified Niklas's original script just to add command line arguments
-# AUTHOR: 
-#       - Niklas de Andrade Krätzig (niklas.andrade-kraetzig@tum.de)
 
 # Load libraries
 suppressPackageStartupMessages(library('rapportools'))

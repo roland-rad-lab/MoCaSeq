@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: merge_annotation_files.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -361,9 +360,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/merge_annotation_files.py -mf=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.txt -pf=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_readQ_mappingQuality.txt -sf=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_segmentalDups.bed -rf=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_repeatmasker.txt -gb=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_5bp_GC_percentage.txt -ab=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_10bp_around_SNV.txt -gr=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_snvReads_Mean_GC_percentage.txt -cp=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_closest_wes_probe.txt -ti=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_indels.txt -tx=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_parsed_tumor_extendedpileup.txt -nx=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_parsed_normal_extendedpileup.txt
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

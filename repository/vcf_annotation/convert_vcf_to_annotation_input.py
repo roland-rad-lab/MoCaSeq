@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: convert_vcf_to_annotation_input.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -109,9 +108,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/convert_vcf_to_annotation_input.py -if=/media/rad/HDD1/pdacMetastasis/input/mPDAC_wgs/DS4/results/Mutect2/DS4.Mutect2.txt -od=/home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_wgs/txt
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

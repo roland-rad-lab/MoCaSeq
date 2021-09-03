@@ -1,7 +1,6 @@
 """
 ***********************************************
 - PROGRAM: gjainPyLib.py
-- CONTACT: Gaurav Jain(gauravj49@gmail.com)
 ***********************************************
 """
 __version_info__ = ('1', '0', '1')

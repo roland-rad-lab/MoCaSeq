@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: get_usable_indels_for_annoatation.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 print(__doc__)
@@ -371,8 +370,6 @@ def get_insertion_baseQuality(bamfile, insDF):
         # 8     HS10_08370:1:2106:7014:84227#2
         # dtype: object
 
-    # egrep 'HS10_08370:1:2114:14943:69620#2' /home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_cherrypicked1/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.sam
-    # HS10_08370:1:2114:14943:69620#2	83	8	117024204	60	4S39M2I30M	=	117023986	-287	CATTCTTTCCCCCAACCCTGCTTCTAACCCAGTGACTAACCATTGTCTGGCCATTTCCCTCTGGACTCTAAGTTT	C@@;D@@;BBBBC@@BBBBBB@@C>@@BBCBABC?B>@@BC?@AA@CABBBC??@@BBB@CAAC@?@C>@CAA@?	SA:Z:JH590470.1,156859,+,75M,60,0;	MC:Z:67M7S	MD:Z:7G12G42T5	PG:Z:MarkDuplicates	RG:Z:1	NM:i:5	AS:i:46	XS:i:0	pa:f:0.613
 
     '''
     # Create a copy of original DF so that we avoid accidental errors by modifying original DF
@@ -453,9 +450,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/get_usable_indels_for_annoatation.py -mf=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.txt -pf=/home/rad/users/gaurav/projects/pdacMetastasis/output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_readQ_mappingQuality.txt -od=
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

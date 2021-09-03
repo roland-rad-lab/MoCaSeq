@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: annotate_variant_bash_wrapper.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -235,9 +234,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         python3.7 annotate_variant_bash_wrapper.py -gf=/home/rad/users/gaurav/projects/pdacMetastasis/input/annotation/mm10/GRCm38.p6.fna -tb=/media/rad/HDD1/pdacMetastasis/input/mPDAC/cherrypicked1/DS08_5320_LivMet-1/results/bam/DS08_5320_LivMet-1.Tumor.bam -nb=/media/rad/HDD1/pdacMetastasis/input/mPDAC/cherrypicked1/DS08_5320_LivMet-1/results/bam/DS08_5320_LivMet-1.Normal.bam -sd=/home/rad/users/gaurav/projects/pdacMetastasis/input/annotation/mm10/mm10_ucsc_segmentalDups.bed -rp=/home/rad/users/gaurav/projects/pdacMetastasis/input/annotation/mm10/mm10_repeatMasker.bed -gc=/home/rad/users/gaurav/projects/pdacMetastasis/input/annotation/mm10/mm10_5bp_GC_percentage.bedgraph -pb=/home/rad/users/gaurav/projects/pdacMetastasis/input/annotation/mm10/wes_S0276129_Probes_mm10.bed -pn=mPDAC_cherrypicked1 -pd=/home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_cherrypicked1
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

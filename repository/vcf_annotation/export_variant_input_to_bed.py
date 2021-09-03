@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: export_variant_input_to_bed.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -85,9 +84,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/export_variant_input_to_bed.py -if=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.txt -od=/home/rad/users/gaurav/projects/pdacMetastasis/output/mPDAC_cherrypicked1
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

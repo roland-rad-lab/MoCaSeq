@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: parse_extended_mpileup.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 print(__doc__)
@@ -286,9 +285,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/parse_extended_mpileup.py -ip=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.extendedpileup -ib=output/AGRad_mPDAC/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2_indels.bed
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

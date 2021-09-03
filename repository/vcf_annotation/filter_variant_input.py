@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: filter_variant_input.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -39,7 +38,7 @@ def main():
     # mergedvcfDF = pd.read_csv(inputVariantFile, sep='\t', quoting=3)
     # Import data into the datatable
     start_time = time.time()
-    variantDT = dt.fread(inputVariantFile, sep="\t", header=True, nthreads=16, quotechar="'",)
+    variantDT = dt.fread(inputVariantFile, sep="\t", header=True, nthreads=16, quotechar="'",columns={"Chrom":dt.str32})
     print("%s seconds" % (time.time() - start_time))
 
     # Filter all rows with TumorVAFCustom == 0
@@ -68,9 +67,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/filter_variant_input.py -if=/media/rad/HDD1/pdacMetastasis/output/mPDAC_wes/annInput/DS01_2259_LNMet-1_Mutect2.txt -of=/media/rad/HDD1/pdacMetastasis/output/mPDAC_wes/interimFiles/DS01_2259_LNMet-1/DS01_2259_LNMet-1_Mutect2
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: parse_mpileup.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -287,9 +286,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/parse_mpileup.py -ip=output/mPDAC_cherrypicked1/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.pileup -ib=output/mPDAC_cherrypicked1/mergedvcf/txt/DS08_5320_LivMet-1-Mutect2.bed
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 

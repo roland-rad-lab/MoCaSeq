@@ -3,7 +3,6 @@
 """
 ***********************************************
 - PROGRAM: export_repeatmasker2bed.py
-- CONTACT: Gaurav Jain(gaurav.jain@tum.de)
 ***********************************************
 """
 
@@ -67,9 +66,6 @@ def check_options():
         ----------------- SAMPLE USAGE ------------------
         - python scripts/export_repeatmasker2bed.py -if=input/annotation/mm10/mm10_ucsc_repeatMasker.txt
         -------------------------------------------------
-        CONTACT:
-            Gaurav Jain
-            gaurav.jain@tum.de
         -------------------------------------------------
         '''))
 
