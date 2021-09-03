@@ -63,6 +63,7 @@ include {
 
 include {
 	IGV_TRACK_READ;
+	IGV_TRACK_CNR as IGV_TRACK_CNR_dryclean;
 	IGV_TRACK_CNS;
 	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
 	IGV_TRACK_RDS
@@ -169,7 +170,9 @@ workflow HUMAN_WGS
 	}
 	else
 	{
-		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
+
+		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
 		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, "dryclean", DRY_CLEAN.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
@@ -178,6 +181,7 @@ workflow HUMAN_WGS
 		if ( params.track_cn )
 		{
 			IGV_TRACK_RDS (params.genome_build.human, PREPARE_GENOME.out.interval_bed, "fragCounter", FRAG_COUNTER.out.result)
+			IGV_TRACK_CNR_dryclean (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, "dryclean", DRY_CLEAN.out.cnr)
 			IGV_TRACK_CNS_dryclean (params.genome_build.human, "dryclean-CNVKit", CNV_KIT_SEGMENT.out.cns)
 		}
 	}

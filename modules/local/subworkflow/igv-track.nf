@@ -3,6 +3,7 @@
 include {
 	igv_track_depth as igv_track_depth_normal;
 	igv_track_depth as igv_track_depth_tumor;
+	igv_track_cnr;
 	igv_track_cns;
 	igv_track_rds
 } from "../software/igv-track/main"
@@ -34,6 +35,18 @@ workflow IGV_TRACK_RDS {
 
 	main:
 		igv_track_rds (genome_build, ch_interval_bed, coverage_source, ch_rds)
+}
+
+workflow IGV_TRACK_CNR {
+
+	take:
+		genome_build
+		ch_interval_bed
+		coverage_source
+		ch_cnr
+
+	main:
+		igv_track_cnr (genome_build, ch_interval_bed, coverage_source, ch_cnr)
 }
 
 workflow IGV_TRACK_CNS {

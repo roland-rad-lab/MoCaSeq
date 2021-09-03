@@ -192,11 +192,11 @@ for (i in seq_len (nrow (data_graph_events_type)) )
 	dev.off ()
 }
 
-pdf (file="all.events.pdf",width=9)
+pdf (file="${meta.sampleName}.events.pdf",width=9)
 
 for ( i in seq_len (length (intervals)) )
 {
-	plot (graph_events$gt,graph_events$gr[seqnames(graph_events$gr) == intervals[i]],xaxis.chronly=T)
+	plot (graph_events\$gt,graph_events\$gr[seqnames(graph_events\$gr) == intervals[i]],xaxis.chronly=T)
 }
 
 
@@ -207,7 +207,9 @@ dev.off ()
 	stub:
 	"""#!/usr/bin/env bash
 touch ${meta.sampleName}.events.counts.tsv
-touch ${meta.sampleName}.event.foo.pdf
+touch ${meta.sampleName}.events.json
+touch ${meta.sampleName}.events.pdf
+touch graph_events.rds
 	"""
 
 }

@@ -29,6 +29,55 @@ rm ${meta.sampleName}.${type}.depth.raw.all.wig
 	"""
 }
 
+process igv_track_cnr {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Tracks", mode: "copy"
+
+	input:
+		val (genome_build)
+		tuple path (interval_bed), path (interval_bed_index)
+		val (coverage_source)
+		tuple val (meta), val (type), val(resolution), path (cnr)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.bigWig")
+
+	script:
+	"""#!/usr/bin/env Rscript
+
+library (dplyr)
+
+data <- read.table (file="${cnr}",sep="\\t",header=T,stringsAsFactors=F)
+data_genome_sizes <- read.table (file=gzfile ("${interval_bed}"),sep="\\t",header=F,stringsAsFactors=F)
+names (data_genome_sizes) <- c("chromosome", "start", "end")
+
+head (data)
+head (data_genome_sizes)
+
+write.table (data_genome_sizes %>% dplyr::select (chromosome,end) %>% data.frame ,file="genome.sizes",sep="\\t",row.names=F,col.names=F,quote=F)
+
+data_bed <- switch ("${coverage_source}",
+		"dryclean"={
+			data %>%
+			dplyr::filter (chromosome %in% !!data_genome_sizes[,"chromosome"]) %>%
+			dplyr::select (chromosome,start,end,log2)
+		},
+		{
+			data
+		}) %>%
+		dplyr::mutate (start=as.numeric (start)) %>%
+		dplyr::arrange (chromosome,start) %>%
+		data.frame
+
+write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGraph",sep="\\t",row.names=F,col.names=F,quote=F)
+
+system ("bedGraphToBigWig ${meta.sampleName}.${type}.${coverage_source}.bedGraph genome.sizes ${meta.sampleName}.${type}.${coverage_source}.bigWig")
+file.remove ("${meta.sampleName}.${type}.${coverage_source}.bedGraph")
+
+	"""
+}
+
 process igv_track_cns {
 	tag "${meta.sampleName}"
 

@@ -11,7 +11,7 @@ workflow FRAG_COUNTER {
 		ch_interval
 		ch_gc_wig
 		ch_map_wig
-		ch_data
+		ch_data_expanded
 
 	main:
 		ch_resolution = params.frag_counter && params.frag_counter["resolution"] ? Channel.value (params.frag_counter["resolution"].toString ()) : Channel.empty ()
@@ -31,15 +31,6 @@ workflow FRAG_COUNTER {
 
 		ch_wig_resolution = ch_gc_wig_resolution.join (ch_map_wig_resolution)
 			.join (ch_resolution.flatten ().map { [it] })
-
-		ch_data_expanded_normal = ch_data.map { it ->
-			tuple (it, "Normal", it["normalBAM"], it["normalBAI"])
-		}
-		ch_data_expanded_tumor = ch_data.map { it ->
-			tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"])
-		}
-
-		ch_data_expanded = ch_data_expanded_normal.mix (ch_data_expanded_tumor)
 
 		frag_counter_wig_to_rds (genome_build, ch_interval_csv_string, ch_wig_resolution)
 		frag_counter (genome_build, frag_counter_wig_to_rds.out.result.first (), ch_data_expanded)
