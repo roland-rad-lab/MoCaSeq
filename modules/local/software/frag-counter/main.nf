@@ -1,6 +1,6 @@
 process frag_counter_wig_to_rds {
 
-	publishDir "${params.output_base}/PON", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}_PON", mode: "copy"
 
 	input:
 		val (genome_build)
@@ -44,8 +44,8 @@ saveRDS (GenomicRanges::makeGRangesFromDataFrame (as.data.frame (map_ranged_subs
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/PON/${genome_build}.gc.${resolution}.rds .
-#cp ${params.stub_dir}/PON/${genome_build}.map.${resolution}.rds .
+#cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.gc.${resolution}.rds .
+#cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.map.${resolution}.rds .
 touch ${genome_build}.gc.${resolution}.rds
 touch ${genome_build}.map.${resolution}.rds
 	"""

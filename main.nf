@@ -228,7 +228,7 @@ workflow HUMAN_PON {
 		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2]].join ("\t") }
 		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
-			.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/PON")
+			.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
 
 		if ( params.pon_dry )
 		{
@@ -255,7 +255,7 @@ workflow MOUSE_PON {
 		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2]].join ("\t") }
 		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
-			.collectFile (name: "${params.genome_build.mouse}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/PON")
+			.collectFile (name: "${params.genome_build.mouse}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.mouse}_PON")
 
 		if ( params.pon_dry )
 		{
