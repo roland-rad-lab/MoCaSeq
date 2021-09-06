@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_reference } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
 
@@ -48,5 +48,41 @@ workflow CNV_KIT_SEGMENT {
 	emit:
 		tsv = cnv_kit_segment.out.result
 		cns = cnv_kit_segment.out.cns
+}
+
+workflow CNV_KIT_COVERAGE {
+
+	take:
+		genome_build
+	main:
+		cnv_kit_coverage (genome_build)	
+}
+
+workflow CNV_KIT_PON {
+
+	take:
+		genome_build
+		ch_interval
+		ch_par_interval_bed
+		ch_normal_coverage_tsv
+
+	main:
+		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+
+		ch_normal_coverage_tsv_filtered = ch_normal_coverage_tsv.splitCsv (header: true, sep: "\t")
+		.filter {
+			if ( !it.containsKey ("genome_build") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_coverage_tsv, no 'genome_build' column '${it}'"
+			return it["genome_build"] == genome_build
+		}.tap { ch_paths }
+		.map { jt ->
+			def f = file (jt["normal_cov"],glob: false)
+			// DO NOT MODIFY jt
+			def header = ["sample", "genome_build", "normal_cov"]
+			def ldata = [jt["sample"], jt["genome_build"], f.name]
+			[ header.join ("\t"), ldata.join ("\t"), ""].join ("\n")
+		}
+		.collectFile (keepHeader: true, skip: 1)
+
+		cnv_kit_reference (genome_build, ch_interval_csv_string, ch_par_interval_bed, ch_paths.map { file (it["normal_cov"], glob: false) }.collect (), ch_normal_coverage_tsv_filtered)
 }
 
