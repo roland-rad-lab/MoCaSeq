@@ -136,19 +136,22 @@ process cnv_kit_segment {
 		tuple val (meta), val (type), val(resolution), path (coverage_cnr)
 
 	output:
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_cnr), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: result
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_cnr), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: result
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
 
 	script:
 	"""#!/usr/bin/env bash
 
 cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnr}
+cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --center mode ${meta.sampleName}.${type}.${coverage_source}.cns
 	"""
 
 	stub:
 	"""#!/usr/bin/env bash
 #cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
 touch ${meta.sampleName}.${type}.${coverage_source}.cns
+touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
 	"""
 }
 

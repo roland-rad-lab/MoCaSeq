@@ -15,8 +15,8 @@ workflow BUBBLE_TREE {
 		ch_interval_csv_string = ch_interval_auto.toList ().map { it.join (",") }
 
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }
-		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" && it[3] == "1000" }
-			.map { [it[0]["sampleName"], ["ratio", [it[2], it[5]]], it[0]] }
+		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" }
+			.map { [it[0]["sampleName"], ["ratio", [it[2], it[3], it[6]]], it[0]] }
 
 		ch_loh_and_ratio = ch_loh_key.mix (ch_ratio_key)
 			.dump (tag: 'bubble tree before groupTuple')

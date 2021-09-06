@@ -8,7 +8,7 @@ process bubble_tree_matched {
 	input:
 		val (genome_build)
 		val (intervals)
-		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
+		tuple val (meta), path (loh_tsv), val (cn_source), val (resolution), path (segments_tsv)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Bubbletree.txt"), emit: result
@@ -62,6 +62,7 @@ add_num_probes <- function (data)
 cat ("Running BubbleTree using copy number data from ${cn_source}\\n")
 intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
+min_num_markers <- 10
 
 data_loh <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 data_cnv <- read.table (file="${segments_tsv}",sep="\\t",header=T,stringsAsFactors=F)
@@ -87,6 +88,7 @@ gr_cnv <- switch ("${cn_source}",
 		}
 	) %>%
 	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
+	dplyr::filter (num.mark>=!!min_num_markers) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
 	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
@@ -103,6 +105,13 @@ r <- new("RBD", unimodal.kurtosis=-0.1)
 rbd <- makeRBD(r, gr_loh,gr_cnv)
 btreepredictor <- new("BTreePredictor", rbd=rbd, max.ploidy=6, prev.grid=seq(0.2,3, by=0.01))
 btreepredictor@config\$min.segSize <- ifelse(max(btreepredictor@rbd\$seg.size,na.rm=TRUE) < 0.4, 0.1, 0.4)
+# ^was copied from the manual, however the vignette filters on num.markers instead
+# rbd\$seg.size <- rbd\$num.mark / total.mark * 100
+# The default: min.segSize = 0.5
+# for the PON CNVKit calls the top call has seg.size ~ 1.5, therefore the top 65 calls would be used
+# There is a problem if there are only a handful of calls above the 0.4 threshold
+btreepredictor@config\$min.segSize <- ifelse(max(btreepredictor@rbd\$seg.size,na.rm=TRUE) < 0.4 || nrow (btreepredictor@rbd[btreepredictor@rbd[,"seg.size"] > 0.4,]) < 50, 0.1, 0.4)
+cat ("\\nUsing min.segSize: ",btreepredictor@config\$min.segSize," retained ",nrow (btreepredictor@rbd[btreepredictor@rbd[,"seg.size"] > btreepredictor@config\$min.segSize,])," segments\\n")
 pred <- btpredict(btreepredictor)
 
 info <- info(pred)
