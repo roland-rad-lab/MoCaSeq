@@ -70,7 +70,7 @@ gr_loh <- data_loh %>%
 	dplyr::mutate (start=Pos-1) %>%
 	dplyr::rename (seqnames=Chrom,end=Pos,freq=Tumor_Freq) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
-	GenomeInfoDb::keepSeqlevels (intervals)
+	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
 gr_cnv <- switch ("${cn_source}",
 		"hmm-copy"={
@@ -88,7 +88,7 @@ gr_cnv <- switch ("${cn_source}",
 	) %>%
 	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
-	GenomeInfoDb::keepSeqlevels (intervals)
+	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
 print (gr_loh)
 print (gr_cnv)

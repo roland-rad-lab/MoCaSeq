@@ -128,7 +128,7 @@ touch CNVKit/single/${meta.sampleName}.${type}.cns
 process cnv_kit_segment {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
 
 	input:
 		val (genome_build)

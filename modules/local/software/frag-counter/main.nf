@@ -72,8 +72,8 @@ suppressPackageStartupMessages(library(skidb))
 suppressPackageStartupMessages(library(data.table))
 
 out = fragCounter(bam="${bam}", window=${resolution}, gc.rds.dir=".", map.rds.dir=".")
-names (mcols (out))[names (mcols (out)) == "reads.corrected"] <- "reads.corrected.raw"
-mcols (out)[,"reads.corrected"] <- mcols (out)[,"reads.corrected.raw"]/mean (mcols (out)[,"reads.corrected.raw"],na.rm=T)
+attr (out,which="reads.corrected.raw.mean") <- mean (mcols (out)[,"reads.corrected"],na.rm=T)
+mcols (out)[,"reads.corrected"] <- mcols (out)[,"reads.corrected"]/mean (mcols (out)[,"reads.corrected"],na.rm=T)
 saveRDS (out,file="${meta.sampleName}.${type}.coverage.${resolution}.rds")
 	"""
 

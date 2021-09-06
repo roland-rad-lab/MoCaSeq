@@ -225,8 +225,8 @@ workflow HUMAN_PON {
 
 		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
 
-		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2]].join ("\t") }
-		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "normal_cov"].join ("\t")  )
+		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
+		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
 			.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
 
@@ -252,8 +252,8 @@ workflow MOUSE_PON {
 
 		FRAG_COUNTER (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
 
-		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2]].join ("\t") }
-		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "normal_cov"].join ("\t")  )
+		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2], it[3]].join ("\t") }
+		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
 			.collectFile (name: "${params.genome_build.mouse}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.mouse}_PON")
 
