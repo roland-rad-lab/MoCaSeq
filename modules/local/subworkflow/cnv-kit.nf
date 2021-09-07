@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_reference } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_coverage; cnv_kit_reference } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
 
@@ -54,20 +54,24 @@ workflow CNV_KIT_COVERAGE {
 
 	take:
 		genome_build
+		ch_fasta
+		ch_interval_bed
+		ch_data_expanded
 	main:
-		cnv_kit_coverage (genome_build)	
+		cnv_kit_coverage (genome_build, ch_fasta, ch_interval_bed, ch_data_expanded)
+
+	emit:
+		result = cnv_kit_coverage.out.result
 }
 
 workflow CNV_KIT_PON {
 
 	take:
 		genome_build
-		ch_interval
-		ch_par_interval_bed
+		ch_fasta
 		ch_normal_coverage_tsv
 
 	main:
-		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
 
 		ch_normal_coverage_tsv_filtered = ch_normal_coverage_tsv.splitCsv (header: true, sep: "\t")
 		.filter {
@@ -83,6 +87,6 @@ workflow CNV_KIT_PON {
 		}
 		.collectFile (keepHeader: true, skip: 1)
 
-		cnv_kit_reference (genome_build, ch_interval_csv_string, ch_par_interval_bed, ch_paths.map { file (it["normal_cov"], glob: false) }.collect (), ch_normal_coverage_tsv_filtered)
+		cnv_kit_reference (genome_build, ch_fasta, ch_paths.map { file (it["normal_cov"], glob: false) }.collect (), ch_normal_coverage_tsv_filtered)
 }
 

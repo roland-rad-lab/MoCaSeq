@@ -38,7 +38,9 @@ include {
 
 include {
 	CNV_KIT;
-	CNV_KIT_SEGMENT
+	CNV_KIT_SEGMENT;
+	CNV_KIT_COVERAGE;
+	CNV_KIT_PON
 } from "./modules/local/subworkflow/cnv-kit"
 
 include {
@@ -68,15 +70,6 @@ include {
 	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
 	IGV_TRACK_RDS
 } from "./modules/local/subworkflow/igv-track"
-
-include {
-	FRAG_COUNTER
-} from "./modules/local/subworkflow/frag-counter"
-
-include {
-	DRY_CLEAN;
-	DRY_CLEAN_PON
-} from "./modules/local/subworkflow/dry-clean"
 
 include {
 	COHORT_QC as COHORT_QC_human;
@@ -172,8 +165,7 @@ workflow HUMAN_WGS
 	{
 		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
-		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_tumor)
-		DRY_CLEAN (params.genome_build.human, PREPARE_GENOME.out.chrom_names, params.pon_dir, FRAG_COUNTER.out.result)
+		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_tumor)
 		CNV_KIT_SEGMENT (params.genome_build.human, "dryclean", DRY_CLEAN.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
@@ -223,21 +215,21 @@ workflow HUMAN_PON {
 	{
 		ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
-		FRAG_COUNTER (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
+		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
 
-		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
+		ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
 		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
 			.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
 
 		if ( params.pon_dry )
 		{
-			DRY_CLEAN_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+			CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
 		}
 	}
 	else
 	{
-		DRY_CLEAN_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+		CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
 	}
 }
 
@@ -250,21 +242,21 @@ workflow MOUSE_PON {
 	{
 		ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
-		FRAG_COUNTER (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam_normal)
+		CNV_KIT_COVERAGE (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
 
-		ch_normal_coverage_lines = FRAG_COUNTER.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2], it[3]].join ("\t") }
+		ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.mouse, it[2], it[3]].join ("\t") }
 		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
 			.concat (ch_normal_coverage_lines)
 			.collectFile (name: "${params.genome_build.mouse}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.mouse}_PON")
 
 		if ( params.pon_dry )
 		{
-			DRY_CLEAN_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+			CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
 		}
 	}
 	else
 	{
-		DRY_CLEAN_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+		CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
 	}
 }
 

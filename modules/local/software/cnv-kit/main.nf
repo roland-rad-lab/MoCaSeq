@@ -158,21 +158,34 @@ touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
 process cnv_kit_coverage {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/fragCounter", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy"
 
 	input:
 		val (genome_build)
-		tuple val (resolution), path ("gc${resolution}.rds"), path ("map${resolution}.rds")
+		val (reference)
+		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.${resolution}.cnn"), emit: cnn
+		tuple val (meta), val (type), val (267), path ("${meta.sampleName}.${type}.coverage.${resolution}.cnn"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
+source ${params.script_base}/file_handling.sh
+temp_file_b=\$(moc_mktemp_file . bed)
+trap "rm \${temp_file_b}" EXIT
+
+extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
+
+# Stop CNVKit indexing the bam if bam is newer than bai
+touch ${bai}
+
 cnvkit.py coverage \
-	--output ${meta.sampleName}.${type}.coverage.${resolution}.cnn \
-	${bam}
+	--fasta ${reference} \
+	--output ${meta.sampleName}.${type}.coverage.267.cnn \
+	--processes 1 \
+	${bam} \
+	\${interval_bed_extracted}
 	"""
 }
 
@@ -182,8 +195,7 @@ process cnv_kit_reference {
 
 	input:
 		val (genome_build)
-		val (intervals)
-		val (par_region_bed)
+		val (reference)
 		path ("*")
 		path (normal_coverage_tsv)
 
@@ -193,12 +205,20 @@ process cnv_kit_reference {
 	script:
 	"""#!/usr/bin/env bash
 
-cnvkit.py reference \ 
+#cnvkit.py reference \
+#	--fasta ${reference} \
+#	--output reference.cnn \
+#	--no-gc \
+#	--no-edge \
+#	--no-rmask \
+#	*.cnn
+
+cnvkit.py reference \
+	--fasta ${reference} \
 	--output reference.cnn \
-	--no-gc \
 	--no-edge \
-	--no-rmask \
 	*.cnn
+	"""
 }
 
 
