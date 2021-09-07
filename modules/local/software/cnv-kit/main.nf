@@ -180,12 +180,13 @@ extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 # Stop CNVKit indexing the bam if bam is newer than bai
 touch ${bai}
 
+# Giving CNVKit a bed file will give you ratios for those regions
+# so one per chromosome if thats what you give
 cnvkit.py coverage \\
 	--fasta ${reference} \\
 	--output ${meta.sampleName}.${type}.coverage.267.cnn \\
 	--processes ${params.cnv_kit.threads} \\
-	${bam} \\
-	\${interval_bed_extracted}
+	${bam}
 	"""
 }
 
