@@ -183,7 +183,7 @@ touch ${bai}
 cnvkit.py coverage \
 	--fasta ${reference} \
 	--output ${meta.sampleName}.${type}.coverage.267.cnn \
-	--processes 1 \
+	--processes ${params.cnv_kit.threads} \
 	${bam} \
 	\${interval_bed_extracted}
 	"""
