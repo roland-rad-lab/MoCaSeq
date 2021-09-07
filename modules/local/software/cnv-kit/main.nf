@@ -167,7 +167,7 @@ process cnv_kit_coverage {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val (267), path ("${meta.sampleName}.${type}.coverage.${resolution}.cnn"), emit: result
+		tuple val (meta), val (type), val (267), path ("${meta.sampleName}.${type}.coverage.267.cnn"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
