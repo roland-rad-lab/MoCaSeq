@@ -180,11 +180,11 @@ extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 # Stop CNVKit indexing the bam if bam is newer than bai
 touch ${bai}
 
-cnvkit.py coverage \
-	--fasta ${reference} \
-	--output ${meta.sampleName}.${type}.coverage.267.cnn \
-	--processes ${params.cnv_kit.threads} \
-	${bam} \
+cnvkit.py coverage \\
+	--fasta ${reference} \\
+	--output ${meta.sampleName}.${type}.coverage.267.cnn \\
+	--processes ${params.cnv_kit.threads} \\
+	${bam} \\
 	\${interval_bed_extracted}
 	"""
 }
@@ -205,18 +205,18 @@ process cnv_kit_reference {
 	script:
 	"""#!/usr/bin/env bash
 
-#cnvkit.py reference \
-#	--fasta ${reference} \
-#	--output reference.cnn \
-#	--no-gc \
-#	--no-edge \
-#	--no-rmask \
+#cnvkit.py reference \\
+#	--fasta ${reference} \\
+#	--output reference.cnn \\
+#	--no-gc \\
+#	--no-edge \\
+#	--no-rmask \\
 #	*.cnn
 
-cnvkit.py reference \
-	--fasta ${reference} \
-	--output reference.cnn \
-	--no-edge \
+cnvkit.py reference \\
+	--fasta ${reference} \\
+	--output reference.cnn \\
+	--no-edge \\
 	*.cnn
 	"""
 }
