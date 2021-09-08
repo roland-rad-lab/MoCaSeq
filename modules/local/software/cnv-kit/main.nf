@@ -155,6 +155,49 @@ touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
 	"""
 }
 
+process cnv_kit_target_bed {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}_PON", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (reference)
+		val (intervals)
+		tuple val (meta), val (type), path (bam), path (bai)
+
+	output:
+		tuple path ("target.bed"), path ("resolution.json"), emit: result	
+
+	script:
+	"""#!/usr/bin/env python3.7
+
+from cnvlib import access, autobin, target
+from skgenome import tabio
+
+import json
+
+chromosomes = set ("${intervals}".split (","))
+
+access_arr = access.do_access ("${reference}",skip_noncanonical=False).filter (func=lambda x: x["chromosome"] in chromosomes)
+tabio.write (access_arr, "access.bed", "bed3")
+
+autobin_args = ['wgs', None, access_arr]
+(wgs_depth, target_avg_size), _ = autobin.do_autobin ("${bam}", *autobin_args, bp_per_bin=50000., fasta="${reference}")
+
+print ("wgs_depth: %i\\ntarget_avg_size: %i" % (wgs_depth, target_avg_size))
+with open ("resolution.json", "w") as resolution_file:
+	resolution_file.write (json.dumps ({"target_avg_size":target_avg_size,"wgs_depth":wgs_depth}))
+
+annotate = None
+short_names = False
+
+target_arr = target.do_target (access_arr, annotate, short_names, True, **({'avg_size': target_avg_size}))
+tabio.write(target_arr, "target.bed", 'bed4')
+
+	"""
+}
+
 process cnv_kit_coverage {
 	tag "${meta.sampleName}"
 
@@ -163,11 +206,11 @@ process cnv_kit_coverage {
 	input:
 		val (genome_build)
 		val (reference)
-		tuple path (interval_bed), path (interval_bed_index)
+		tuple path (interval_bed), val (resolution), val (depth)
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val (267), path ("${meta.sampleName}.${type}.coverage.267.cnn"), emit: result
+		tuple val (meta), val (type), val (resolution), path ("${meta.sampleName}.${type}.coverage.${resolution}.cnn"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -184,9 +227,10 @@ touch ${bai}
 # so one per chromosome if thats what you give
 cnvkit.py coverage \\
 	--fasta ${reference} \\
-	--output ${meta.sampleName}.${type}.coverage.267.cnn \\
+	--output ${meta.sampleName}.${type}.coverage.${resolution}.cnn \\
 	--processes ${params.cnv_kit.threads} \\
-	${bam}
+	${bam} \\
+	${interval_bed}
 	"""
 }
 

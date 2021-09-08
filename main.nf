@@ -39,6 +39,8 @@ include {
 include {
 	CNV_KIT;
 	CNV_KIT_SEGMENT;
+	CNV_KIT_SELECT_SAMPLE;
+	CNV_KIT_TARGET_BED;
 	CNV_KIT_COVERAGE;
 	CNV_KIT_PON
 } from "./modules/local/subworkflow/cnv-kit"
@@ -77,6 +79,7 @@ include {
 } from "./modules/local/subworkflow/qc"
 
 tsv_path = null
+pon_bed_path = null
 pon_tsv_path = null
 
 ch_input_sample = Channel.empty ()
@@ -89,6 +92,7 @@ if (params.input == null && params.pon_tsv == null && params.qc_dir == null) {
 
 // Read in files properly from TSV file
 if (params.input && (file_has_extension (params.input, "tsv"))) tsv_path = params.input
+if (params.pon_bed && (file_has_extension (params.pon_bed, "bed"))) pon_bed_path = params.pon_bed
 if (params.pon_tsv && (file_has_extension (params.pon_tsv, "tsv"))) pon_tsv_path = params.pon_tsv
 
 if (tsv_path) {
@@ -211,25 +215,60 @@ workflow HUMAN_PON {
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	if ( pon_tsv_path == null )
+	if ( pon_bed_path == null )
 	{
+		// Generate target regions for CNVKit
 		ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
-		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
-
-		ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
-		ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
-			.concat (ch_normal_coverage_lines)
-			.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
-
-		if ( params.pon_dry )
+		if ( params.pon_sample == null )
 		{
-			CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+			// First we need to pick a median coverage bam
+			ch_normal_size_lines = ch_bam_normal.map { [ it[0]["sampleName"], params.genome_build.human, it[0]["normalBAM"], it[0]["normalBAI"], it[0]["normalBAM"].size () ].join ("\t") }
+			ch_normal_size_tsv = Channel.of ( ["sample", "genome_build", "bam_path", "bai_path", "bam_size"].join ("\t") )
+				.concat (ch_normal_size_lines)
+				.collectFile (name: "${params.genome_build.human}.normal_sizes.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
+
+			if ( params.pon_dry )
+			{
+				CNV_KIT_SELECT_SAMPLE (params.genome_build.human, ch_normal_size_tsv)
+				ch_bam_normal_sample = ch_bam_normal.map { [ it[0]["sampleName"], it] }.join (CNV_KIT_SELECT_SAMPLE.out.result).map { it[1] }
+				CNV_KIT_TARGET_BED (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, ch_bam_normal_sample)
+				CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, CNV_KIT_TARGET_BED.out.result, ch_bam_normal)
+
+				ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
+				ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
+					.concat (ch_normal_coverage_lines)
+					.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
+			}
+		}
+		else
+		{
+			ch_bam_normal_sample = ch_bam_normal.first { it[0]["sampleName"] == params.pon_sample }
+			CNV_KIT_TARGET_BED (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, ch_bam_normal_sample)
 		}
 	}
 	else
 	{
-		CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+		if ( pon_tsv_path == null )
+		{
+			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+
+			CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
+
+			ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
+			ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
+				.concat (ch_normal_coverage_lines)
+				.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
+
+			if ( params.pon_dry )
+			{
+				//CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+			}
+		}
+		else
+		{
+			//CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+		}
 	}
 }
 
@@ -251,12 +290,12 @@ workflow MOUSE_PON {
 
 		if ( params.pon_dry )
 		{
-			CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+			//CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
 		}
 	}
 	else
 	{
-		CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+		//CNV_KIT_PON (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
 	}
 }
 

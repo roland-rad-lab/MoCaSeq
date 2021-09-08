@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_coverage; cnv_kit_reference } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_target_bed; cnv_kit_coverage; cnv_kit_reference } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
 
@@ -48,6 +48,52 @@ workflow CNV_KIT_SEGMENT {
 	emit:
 		tsv = cnv_kit_segment.out.result
 		cns = cnv_kit_segment.out.cns
+}
+
+workflow CNV_KIT_SELECT_SAMPLE {
+
+
+	take:
+		genome_build
+		size_tsv
+
+	main:
+		ch_representative_sample = size_tsv.splitCsv (header: true, sep: "\t")
+		.filter {
+			if ( !it.containsKey ("sample") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_size_tsv, no 'sample' column '${it}'"
+			if ( !it.containsKey ("genome_build") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_size_tsv, no 'genome_build' column '${it}'"
+			if ( !it.containsKey ("bam_size") ) exit 1, "[MoCaSeq] error: Invalid lines in normal_size_tsv, no 'bam_size' column '${it}'"
+			if ( !it["bam_size"].isLong () ) exit 1, "[MoCaSeq] error: Invalid lines in normal_size_tsv, 'bam_size' column was not a long integer '${it}'"
+			return it["genome_build"] == genome_build
+		}.toSortedList( { a, b -> b["bam_size"] as long <=> a["bam_size"] as long } )
+		.map {
+			if ( it.isEmpty () ) exit 1, "[MoCaSeq] error: No samples were found in normal_size_tsv"
+			["sample", "genome_build"].collect { jt -> it[it.size ().intdiv (2)][jt] }
+		}
+
+	emit:
+		result = ch_representative_sample
+}
+
+workflow CNV_KIT_TARGET_BED {
+
+	take:
+		genome_build
+		ch_fasta
+		ch_interval
+		ch_data_expanded
+
+	main:
+		ch_interval_csv_string = ch_interval.map { it.join (",") }
+		cnv_kit_target_bed (genome_build, ch_fasta, ch_interval_csv_string, ch_data_expanded)
+
+		ch_parsed = cnv_kit_target_bed.out.result.map {
+			def jsonSlurper = new groovy.json.JsonSlurper ()
+			def data = jsonSlurper.parse (it[1])
+			tuple ( it[0], data["target_avg_size"], data["wgs_depth"] )
+		}
+	emit:
+		result = ch_parsed.first ()
 }
 
 workflow CNV_KIT_COVERAGE {
