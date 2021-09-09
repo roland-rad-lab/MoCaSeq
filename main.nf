@@ -253,6 +253,7 @@ workflow HUMAN_PON {
 	{
 		if ( pon_tsv_path == null )
 		{
+			if ( params.pon_resolution == null ) exit 1, "[MoCaSeq] error: You must also supply --pon_resolution when you give --pon_tsv (to ensure consistent names for the coverage .cnn files)"
 			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 			ch_target_bed = Channel.value ( [ file (pon_bed_path, glob: false), 0, 0 ] )
 
