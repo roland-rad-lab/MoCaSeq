@@ -240,7 +240,7 @@ workflow HUMAN_PON {
 					.concat (ch_normal_coverage_lines)
 					.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
 
-				CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+				CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_normal_coverage_tsv)
 			}
 		}
 		else
@@ -266,12 +266,12 @@ workflow HUMAN_PON {
 
 			if ( params.pon_dry )
 			{
-				//CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
+				CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_normal_coverage_tsv)
 			}
 		}
 		else
 		{
-			//CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, Channel.fromPath (pon_tsv_path))
+			CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.fasta, Channel.fromPath (pon_tsv_path))
 		}
 	}
 }

@@ -199,8 +199,8 @@ tabio.write(target_arr, "${genome_build}.target.bed", 'bed4')
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.target.bed
-cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json
+cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.target.bed .
+cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json .
 #touch ${genome_build}.target.bed
 #touch ${genome_build}.resolution.json
 	"""
@@ -259,22 +259,14 @@ process cnv_kit_reference {
 		path (normal_coverage_tsv)
 
 	output:
-		path ("reference.cnn"), emit: result
+		path ("${genome_build}.reference.cnn"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
 
-#cnvkit.py reference \\
-#	--fasta ${reference} \\
-#	--output reference.cnn \\
-#	--no-gc \\
-#	--no-edge \\
-#	--no-rmask \\
-#	*.cnn
-
 cnvkit.py reference \\
 	--fasta ${reference} \\
-	--output reference.cnn \\
+	--output ${genome_build}.reference.cnn \\
 	--no-edge \\
 	*.cnn
 	"""
