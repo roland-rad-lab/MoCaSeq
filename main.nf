@@ -239,6 +239,8 @@ workflow HUMAN_PON {
 				ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )
 					.concat (ch_normal_coverage_lines)
 					.collectFile (name: "${params.genome_build.human}.normal_coverage_file_paths.tsv", newLine: true, sort: false, storeDir: "${params.output_base}/${params.genome_build.human}_PON")
+
+				CNV_KIT_PON (params.genome_build.human, PREPARE_GENOME.out.chrom_names, GENOME_ANNOTATION.out.par_interval_bed, ch_normal_coverage_tsv)
 			}
 		}
 		else
@@ -252,8 +254,9 @@ workflow HUMAN_PON {
 		if ( pon_tsv_path == null )
 		{
 			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+			ch_target_bed = Channel.value ( [ file (pon_bed_path, glob: false), 0, 0 ] )
 
-			CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
+			CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_normal)
 
 			ch_normal_coverage_lines = CNV_KIT_COVERAGE.out.result.map { [it[0]["sampleName"], params.genome_build.human, it[2], it[3]].join ("\t") }
 			ch_normal_coverage_tsv = Channel.of ( ["sample", "genome_build", "resolution", "normal_cov"].join ("\t")  )

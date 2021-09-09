@@ -167,7 +167,7 @@ process cnv_kit_target_bed {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple path ("target.bed"), path ("resolution.json"), emit: result	
+		tuple path ("${genome_build}.target.bed"), path ("${genome_build}.resolution.json"), emit: result	
 
 	script:
 	"""#!/usr/bin/env python3.7
@@ -186,15 +186,23 @@ autobin_args = ['wgs', None, access_arr]
 (wgs_depth, target_avg_size), _ = autobin.do_autobin ("${bam}", *autobin_args, bp_per_bin=50000., fasta="${reference}")
 
 print ("wgs_depth: %i\\ntarget_avg_size: %i" % (wgs_depth, target_avg_size))
-with open ("resolution.json", "w") as resolution_file:
+with open ("${genome_build}.resolution.json", "w") as resolution_file:
 	resolution_file.write (json.dumps ({"target_avg_size":target_avg_size,"wgs_depth":wgs_depth}))
 
 annotate = None
 short_names = False
 
 target_arr = target.do_target (access_arr, annotate, short_names, True, **({'avg_size': target_avg_size}))
-tabio.write(target_arr, "target.bed", 'bed4')
+tabio.write(target_arr, "${genome_build}.target.bed", 'bed4')
 
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.target.bed
+cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json
+#touch ${genome_build}.target.bed
+#touch ${genome_build}.resolution.json
 	"""
 }
 
@@ -231,6 +239,12 @@ cnvkit.py coverage \\
 	--processes ${params.cnv_kit.threads} \\
 	${bam} \\
 	${interval_bed}
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.coverage.${resolution}.cnn .
+#touch ${meta.sampleName}.${type}.coverage.${resolution}.cnn
 	"""
 }
 
