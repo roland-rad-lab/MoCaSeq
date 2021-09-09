@@ -133,16 +133,16 @@ process cnv_kit_segment {
 	input:
 		val (genome_build)
 		val (coverage_source)
-		tuple val (meta), val (type), val(resolution), path (coverage_cnr)
+		tuple val (meta), val (type), val(resolution), path (coverage_cnn)
 
 	output:
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path (coverage_cnr), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: result
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
 
-cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnr}
+cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnn}
 cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --center mode ${meta.sampleName}.${type}.${coverage_source}.cns
 	"""
 

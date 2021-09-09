@@ -46,8 +46,8 @@ workflow CNV_KIT_SEGMENT {
 		cnv_kit_segment (genome_build, coverage_source, ch_coverage)
 
 	emit:
-		tsv = cnv_kit_segment.out.result
 		cns = cnv_kit_segment.out.cns
+		call = cnv_kit_segment.out.call
 }
 
 workflow CNV_KIT_SELECT_SAMPLE {

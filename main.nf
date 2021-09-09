@@ -168,10 +168,18 @@ workflow HUMAN_WGS
 	else
 	{
 		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
+		ch_target_bed = Channel.of ([
+			file ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.target.bed", glob: false),
+			file ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.resolution.json", glob: false)
+		]).map {
+			def jsonSlurper = new groovy.json.JsonSlurper ()
+			def data = jsonSlurper.parse (it[1])
+			tuple ( it[0], data["target_avg_size"], data["wgs_depth"] )
+		}
 
-		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_tumor)
-		CNV_KIT_SEGMENT (params.genome_build.human, "dryclean", DRY_CLEAN.out.cnr)
-		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.tsv, LOH.out.result)
+		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_tumor)
+		CNV_KIT_SEGMENT (params.genome_build.human, "cnvkit-pon", CNV_KIT_COVERAGE.out.result)
+		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.cns, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_SEGMENT.out.tsv, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
@@ -255,7 +263,7 @@ workflow HUMAN_PON {
 		{
 			if ( params.pon_resolution == null ) exit 1, "[MoCaSeq] error: You must also supply --pon_resolution when you give --pon_tsv (to ensure consistent names for the coverage .cnn files)"
 			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
-			ch_target_bed = Channel.value ( [ file (pon_bed_path, glob: false), 0, 0 ] )
+			ch_target_bed = Channel.value ( [ file (pon_bed_path, glob: false), params.pon_resolution as long, 0 ] )
 
 			CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_normal)
 
