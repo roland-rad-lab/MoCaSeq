@@ -12,7 +12,7 @@ workflow BUBBLE_TREE {
 		ch_loh
 
 	main:
-		ch_interval_csv_string = ch_interval.map { it.join (",") }
+		ch_interval_csv_string = ch_interval_auto.map { it.join (",") }
 
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }
 		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" }

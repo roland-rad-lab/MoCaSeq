@@ -86,7 +86,7 @@ gr_cnv <- switch ("${cn_source}",
 		"cnv-kit-pon"={
 			data_cnv
 		},
-		"cnv-kit-pon-cnv-it"={
+		"cnv-kit-pon-cnv-kit"={
 			data_cnv %>%
 			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
 		},
