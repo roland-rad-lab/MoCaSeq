@@ -37,8 +37,7 @@ process igv_track_cnr {
 	input:
 		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
-		val (coverage_source)
-		tuple val (meta), val (type), val(resolution), path (cnr)
+		tuple val (meta), val (type), val(coverage_source), path (cnr)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.bigWig")
@@ -85,8 +84,7 @@ process igv_track_cns {
 
 	input:
 		val (genome_build)
-		val (coverage_source)
-		tuple val (meta), val (type), path (cns)
+		tuple val (meta), val (type), val (coverage_source), path (cns)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.bedGraph")

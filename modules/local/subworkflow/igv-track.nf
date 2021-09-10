@@ -42,22 +42,20 @@ workflow IGV_TRACK_CNR {
 	take:
 		genome_build
 		ch_interval_bed
-		coverage_source
 		ch_cnr
 
 	main:
-		igv_track_cnr (genome_build, ch_interval_bed, coverage_source, ch_cnr)
+		igv_track_cnr (genome_build, ch_interval_bed, ch_cnr)
 }
 
 workflow IGV_TRACK_CNS {
 
 	take:
 		genome_build
-		coverage_source
 		ch_cns
 
 	main:
-		igv_track_cns (genome_build, coverage_source, ch_cns)
+		igv_track_cns (genome_build, ch_cns)
 }
 
 

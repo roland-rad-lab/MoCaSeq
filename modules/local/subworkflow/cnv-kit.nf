@@ -53,11 +53,9 @@ workflow CNV_KIT_SEGMENT {
 
 	take:
 		genome_build
-		coverage_source
 		ch_coverage
-
 	main:
-		cnv_kit_segment (genome_build, coverage_source, ch_coverage)
+		cnv_kit_segment (genome_build, ch_coverage)
 
 	emit:
 		cns = cnv_kit_segment.out.cns

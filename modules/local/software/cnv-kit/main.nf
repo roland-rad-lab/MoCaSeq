@@ -252,12 +252,17 @@ process cnv_kit_fix {
 		tuple val (meta), val (type), val (resolution), path (coverage_cnn) 
 
 	output:
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
+		tuple val (meta), val (type), val("cnv-kit-pon"), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
 touch empty.antitargetcoverage.cnn
-cnvkit.py fix ${coverage_cnn} empty.antitargetcoverage.cnn ${reference_cnn} -o ${meta.sampleName}.${type}.ratio.${resolution}.cnr
+cnvkit.py fix \\
+	--no-edge \\
+	--output ${meta.sampleName}.${type}.ratio.${resolution}.cnr \\
+	${coverage_cnn} \\
+	empty.antitargetcoverage.cnn \\
+	${reference_cnn}
 
 	"""
 }
@@ -269,8 +274,7 @@ process cnv_kit_segment {
 
 	input:
 		val (genome_build)
-		val (coverage_source)
-		tuple val (meta), val (type), path (coverage_cnr)
+		tuple val (meta), val (type), val (coverage_source), path (coverage_cnr)
 
 	output:
 		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
