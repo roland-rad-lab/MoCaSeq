@@ -124,37 +124,6 @@ touch CNVKit/single/${meta.sampleName}.${type}.cns
 	"""
 }
 
-
-process cnv_kit_segment {
-	tag "${meta.sampleName}"
-
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
-
-	input:
-		val (genome_build)
-		val (coverage_source)
-		tuple val (meta), val (type), val(resolution), path (coverage_cnn)
-
-	output:
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
-
-	script:
-	"""#!/usr/bin/env bash
-
-cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnn}
-cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --center mode ${meta.sampleName}.${type}.${coverage_source}.cns
-	"""
-
-	stub:
-	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
-touch ${meta.sampleName}.${type}.${coverage_source}.cns
-touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
-	"""
-}
-
 process cnv_kit_target_bed {
 	tag "${meta.sampleName}"
 
@@ -206,6 +175,30 @@ cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json .
 	"""
 }
 
+process cnv_kit_reference {
+
+	publishDir "${params.output_base}/${genome_build}_PON", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (reference)
+		path ("*")
+		path (normal_coverage_tsv)
+
+	output:
+		path ("${genome_build}.reference.cnn"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+
+cnvkit.py reference \\
+	--fasta ${reference} \\
+	--output ${genome_build}.reference.cnn \\
+	--no-edge \\
+	*.cnn
+	"""
+}
+
 process cnv_kit_coverage {
 	tag "${meta.sampleName}"
 
@@ -248,30 +241,54 @@ cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.s
 	"""
 }
 
-process cnv_kit_reference {
+process cnv_kit_fix {
+	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}_PON", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy"
 
 	input:
 		val (genome_build)
-		val (reference)
-		path ("*")
-		path (normal_coverage_tsv)
+		path (reference_cnn)
+		tuple val (meta), val (type), val (resolution), path (coverage_cnn) 
 
 	output:
-		path ("${genome_build}.reference.cnn"), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+touch empty.antitargetcoverage.cnn
+cnvkit.py fix ${coverage_cnn} empty.antitargetcoverage.cnn ${reference_cnn} -o ${meta.sampleName}.${type}.ratio.${resolution}.cnr
+
+	"""
+}
+
+process cnv_kit_segment {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
+
+	input:
+		val (genome_build)
+		val (coverage_source)
+		tuple val (meta), val (type), path (coverage_cnr)
+
+	output:
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
 
-cnvkit.py reference \\
-	--fasta ${reference} \\
-	--output ${genome_build}.reference.cnn \\
-	--no-edge \\
-	*.cnn
+cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnr}
+cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --center mode ${meta.sampleName}.${type}.${coverage_source}.cns
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
+#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
+touch ${meta.sampleName}.${type}.${coverage_source}.cns
+touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
 	"""
 }
-
-
-
 

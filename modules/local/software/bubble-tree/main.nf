@@ -8,7 +8,7 @@ process bubble_tree_matched {
 	input:
 		val (genome_build)
 		val (intervals)
-		tuple val (meta), path (loh_tsv), val (cn_source), val (resolution), path (segments_tsv)
+		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Bubbletree.txt"), emit: result
@@ -80,6 +80,13 @@ gr_cnv <- switch ("${cn_source}",
 			dplyr::rename (seqnames=Chrom,start=Start,end=End,seg.mean=Mean)
 		},
 		"dryclean-cnv-kit"={
+			data_cnv %>%
+			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
+		},
+		"cnv-kit-pon"={
+			data_cnv
+		},
+		"cnv-kit-pon-cnv-it"={
 			data_cnv %>%
 			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
 		},

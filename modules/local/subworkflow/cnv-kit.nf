@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 include { interval_bed_intersect } from "../software/genome/main"
-include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_target_bed; cnv_kit_coverage; cnv_kit_reference } from "../software/cnv-kit/main"
+include { cnv_kit_matched; cnv_kit_single; cnv_kit_segment; cnv_kit_target_bed; cnv_kit_coverage; cnv_kit_fix; cnv_kit_reference } from "../software/cnv-kit/main"
 
 workflow CNV_KIT {
 
@@ -33,6 +33,20 @@ workflow CNV_KIT {
 
 	emit:
 		cns = cnv_kit_single.out.cns
+}
+
+workflow CNV_KIT_FIX {
+
+	take:
+		genome_build
+		ch_reference
+		ch_coverage
+
+	main:
+		cnv_kit_fix (genome_build, ch_reference, ch_coverage)
+
+	emit:
+		result = cnv_kit_fix.out.result
 }
 
 workflow CNV_KIT_SEGMENT {
