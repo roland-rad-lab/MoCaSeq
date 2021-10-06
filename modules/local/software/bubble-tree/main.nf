@@ -96,13 +96,24 @@ gr_cnv <- switch ("${cn_source}",
 	) %>%
 	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
 	dplyr::filter (num.mark>=!!min_num_markers) %>%
+	dplyr::mutate (seg.sig=abs(seg.mean)>0.68) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
 	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
 print (gr_loh)
 print (gr_cnv)
 
+# Investigate the distribution of CNV events
+cnv_plot <- ggplot (data.frame (width=width (gr_cnv),seg.mean=mcols (gr_cnv)[,"seg.mean"],seg.sig=mcols (gr_cnv)[,"seg.sig"]),aes (seg.mean, width)) +
+	scale_y_continuous (trans="log10") +
+	scale_x_continuous (limits=c(-5,5),oob=scales::squish) +
+	geom_point (aes(colour=seg.sig)) +
+	theme_bw ()
 
+ggsave(filename="${meta.sampleName}.Bubbletree.cnv.pdf", plot = cnv_plot, width = 16, height = 9, device = "pdf")
+
+# Get rid of the unreliable segments
+mcols(gr_cnv)[!mcols(gr_cnv)[,"seg.sig"],"seg.mean"] <- 0
 
 # for some stupid reason, the first entry is set to color white, this way we catch it
 emptyElem <- data.frame(seqnames=0,start=0, end=0,width=0, strand="*", seg.id=1000, num.mark=1000, lrr=0, kurtosis=0, hds=0, hds.sd=0,het.cnt=0,seg.size=0)
