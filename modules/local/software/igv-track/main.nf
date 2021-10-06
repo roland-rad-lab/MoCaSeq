@@ -57,16 +57,14 @@ head (data_genome_sizes)
 write.table (data_genome_sizes %>% dplyr::select (chromosome,end) %>% data.frame ,file="genome.sizes",sep="\\t",row.names=F,col.names=F,quote=F)
 
 data_bed <- switch ("${coverage_source}",
-		"dryclean"={
-			data %>%
-			dplyr::filter (chromosome %in% !!data_genome_sizes[,"chromosome"]) %>%
-			dplyr::select (chromosome,start,end,log2)
-		},
 		{
 			data
 		}) %>%
+		dplyr::filter (chromosome %in% !!data_genome_sizes[,"chromosome"]) %>%
+		dplyr::select (chromosome,start,end,log2) %>%
 		dplyr::mutate (start=as.numeric (start)) %>%
 		dplyr::arrange (chromosome,start) %>%
+		dplyr::mutate (start=format(start,scientific=F,trim=T)) %>%
 		data.frame
 
 write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGraph",sep="\\t",row.names=F,col.names=F,quote=F)
