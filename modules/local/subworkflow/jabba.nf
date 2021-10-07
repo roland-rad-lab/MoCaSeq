@@ -13,7 +13,7 @@ workflow JABBA
 
 	main:
 
-		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+		ch_interval_csv_string = ch_interval.map { it.join (",") }
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
 		ch_coverage_key = ch_coverage.filter { it[1] == "Tumor" }
 			.map { [it[0]["sampleName"], ["coverage", [it[2], it[4]]], it[0]] }

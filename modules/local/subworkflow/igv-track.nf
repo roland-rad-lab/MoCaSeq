@@ -17,7 +17,7 @@ workflow IGV_TRACK_READ {
 		ch_data
 
 	main:
-		ch_interval_space_string = ch_interval.toList ().map { it.join (" ") }
+		ch_interval_space_string = ch_interval.map { it.join (" ") }
 		ch_data_normal = ch_data.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		ch_data_tumor = ch_data.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 

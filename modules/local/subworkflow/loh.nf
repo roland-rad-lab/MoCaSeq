@@ -13,7 +13,7 @@ workflow LOH {
 		ch_data
 
 	main:
-		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+		ch_interval_csv_string = ch_interval.map { it.join (",") }
 
 		ch_data_branched = ch_data.branch {
 			single: it[1] == "Normal" || it[1] == "Tumor"

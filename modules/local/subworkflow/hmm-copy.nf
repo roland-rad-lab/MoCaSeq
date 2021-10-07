@@ -17,7 +17,7 @@ workflow HMM_COPY {
 	main:
 		ch_resolution = params.hmm_copy && params.hmm_copy.resolution && params.hmm_copy.resolution ? params.hmm_copy.resolution.tokenize (",") : Channel.empty ()
 
-		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
+		ch_interval_csv_string = ch_interval.map { it.join (",") }
 		ch_data_expanded_normal = ch_data.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		ch_data_expanded_tumor = ch_data.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
