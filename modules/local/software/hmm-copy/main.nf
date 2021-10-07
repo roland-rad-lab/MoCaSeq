@@ -37,7 +37,9 @@ process hmm_copy_tsv {
 		tuple val (resolution), val (gc_wig), val (map_wig), val (meta), path (normal_wig), path (tumor_wig)
 
 	output:
-		tuple val (meta), val ("matched"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
+		tuple val (meta), val ("matched"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
+		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), emit: cns
+		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: call
 
 	script:
 
@@ -170,11 +172,11 @@ process hmm_copy_plot {
 
 	input:
 		val (genome_build)
-		tuple path (interval_bed), path(interval_bed_index)
-		tuple val (meta), val (type), val (source), val (resolution), path (log2_file), path (segments_file)
+		tuple path (interval_bed), path (interval_bed_index)
+		tuple val (meta), val (type), val (resolution), path (log2_file), path (segments_file)
 
 	output:
-		tuple val (meta), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.genome.pdf"), path ("${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf")
+		tuple val (meta), path ("${meta.sampleName}.HMMCopy.${resolution}.genome.pdf"), path ("${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript

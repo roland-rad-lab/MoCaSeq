@@ -107,12 +107,13 @@ process bwa_mem_paired {
 
 	script:
 	"""#!/usr/bin/env bash
+set -e
 
 bwa mem -t ${params.bwa_mem.threads} \\
-	${reference} \\
 	-Y \\
 	-K ${params.bwa_mem.input_bases} \\
 	-v 1 \\
+	${reference} \\
 	${fastq_r1} \\
 	${fastq_r2} \\
 	| java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\

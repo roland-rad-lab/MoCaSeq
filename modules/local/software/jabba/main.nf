@@ -8,7 +8,7 @@ process jabba_matched {
 
 	input:
 		val (genome_build)
-		tuple val (meta), path (manta_vcf), val (cn_source), path (coverage_tsv), path (segments_tsv), val (purity), val (ploidy)
+		tuple val (meta), path (manta_vcf), val (cv_source), path (coverage_tsv), val (sg_source), path (segments_tsv), val (purity), val (ploidy)
 
 	output:
 		tuple val (meta), path ("JaBbA/jabba.rds"), emit: result
@@ -20,7 +20,7 @@ options(error=function()traceback(2))
 library(dplyr)
 library(JaBbA)
 
-cat ("Running JaBbA with copy number data from ${cn_source}\\n")
+cat ("Running JaBbA with copy number data from ${cv_source} and ${sg_source}\\n")
 
 system("rm -r JaBbA")
 system("mkdir -p JaBbA")
@@ -29,30 +29,30 @@ data_coverage <- read.table (file="${coverage_tsv}",sep="\\t",header=T,stringsAs
 data_segments <- read.table (file="${segments_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 
 junctions = "../${manta_vcf}"
-coverage = switch ("${cn_source}",
+coverage = switch ("${cv_source}",
 		"hmm-copy"={
 			data_coverage %>%
 			mutate (log2Ratio=if_else(is.na (log2Ratio) | is.nan (log2Ratio),1,log2Ratio)) %>%
-			dplyr::rename (seqnames=Chrom,start=Start,end=End,ratio=log2Ratio) %>%
-			dplyr::mutate (strand="*")
+			dplyr::rename (seqnames=Chrom,start=Start,end=End,ratio=log2Ratio)
 		},
-		"dryclean-cnv-kit"={
+		"cnv-kit-pon"={
 			data_coverage %>%
-			dplyr::rename (ratio=foreground.log)
+			dplyr::rename (seqnames=chromosome,ratio=log2)
 		},
 		{
 			data_coverage
 		}
 	) %>%
+	dplyr::mutate (strand="*") %>%
 	dplyr::select (seqnames,start,end,strand,ratio) %>%
 	data.frame
 
-segments = switch ("${cn_source}",
+segments = switch ("${sg_source}",
 		"hmm-copy"={
 			data_segments %>%
 			dplyr::rename (seqnames=Chrom,start=Start,end=End)
 		},
-		"dryclean-cnv-kit"={
+		"cnv-kit-pon-cnv-kit"={
 			data_segments %>%
 			dplyr::rename (seqnames=chromosome)
 		},

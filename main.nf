@@ -163,8 +163,8 @@ workflow HUMAN_WGS
 
 	if ( params.pon_dir == null )
 	{
-		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.tsv, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.tsv, BUBBLE_TREE.out.result)
+		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 	}
 	else
 	{
@@ -182,7 +182,7 @@ workflow HUMAN_WGS
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, CNV_KIT_FIX.out.result)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_FIX.out.result, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
@@ -217,7 +217,7 @@ workflow MOUSE_WEX
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (params.genome_build.human, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
-	BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.tsv, LOH.out.result)
+	BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
 }
 
 workflow HUMAN_PON {

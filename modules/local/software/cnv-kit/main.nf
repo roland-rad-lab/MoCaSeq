@@ -252,7 +252,7 @@ process cnv_kit_fix {
 		tuple val (meta), val (type), val (resolution), path (coverage_cnn) 
 
 	output:
-		tuple val (meta), val (type), val("cnv-kit-pon"), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
+		tuple val (meta), val (type), val("cnv-kit-pon"), val(resolution), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -274,11 +274,11 @@ process cnv_kit_segment {
 
 	input:
 		val (genome_build)
-		tuple val (meta), val (type), val (coverage_source), path (coverage_cnr)
+		tuple val (meta), val (type), val (coverage_source), val (resolution), path (coverage_cnr)
 
 	output:
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
+		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash

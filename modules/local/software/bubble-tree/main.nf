@@ -18,8 +18,8 @@ process bubble_tree_matched {
 	"""#!/usr/bin/env Rscript
 
 library(ggplot2)
-library (dplyr)
 library(BubbleTree)
+library (dplyr)
 
 # function to plot all chromosomes individually
 PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
@@ -166,6 +166,7 @@ ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btre
 touch ${meta.sampleName}.Bubbletree.txt
 touch ${meta.sampleName}.Bubbletree.adjusted.pdf
 touch ${meta.sampleName}.Bubbletree.adjustmentshift.pdf
+touch ${meta.sampleName}.Bubbletree.cnv.pdf
 touch ${meta.sampleName}.Bubbletree.unadjusted.pdf
 	"""
 

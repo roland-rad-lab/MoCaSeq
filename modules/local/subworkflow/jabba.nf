@@ -7,15 +7,18 @@ workflow JABBA
 		genome_build
 		ch_interval
 		ch_manta
-		ch_ratio
+		ch_coverage
+		ch_segment
 		ch_bubble
 
 	main:
 
 		ch_interval_csv_string = ch_interval.toList ().map { it.join (",") }
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
-		ch_ratio_key = ch_ratio.filter { it[1] == "Tumor" && it[3] == "1000" }
-			.map { [it[0]["sampleName"], ["ratio", [it[2], it[4], it[5]]], it[0]] }
+		ch_coverage_key = ch_coverage.filter { it[1] == "Tumor" }
+			.map { [it[0]["sampleName"], ["coverage", [it[2], it[4]]], it[0]] }
+		ch_segment_key = ch_segment.filter { it[1] == "Tumor" }
+			.map { [it[0]["sampleName"], ["segment", [it[2], it[4]]], it[0]] }
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()
 				def m_bubble_tree_output = bubble_tree_output =~ /\s*(\w+):\s+?([0-9\.,\s]+);?/
@@ -26,15 +29,15 @@ workflow JABBA
 				[it[0]["sampleName"], ["bubble", [result["Purity"], result["Ploidy"]]], it[0]]
 			}
 
-		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_ratio_key,ch_bubble_key)
+		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_coverage_key,ch_segment_key,ch_bubble_key)
 			.dump (tag: 'jabba before groupTuple')
-			.groupTuple (size: 3)
+			.groupTuple (size: 4)
 			.map {
 				def m = it[1].inject ([:]) { accumulator, item ->
 					accumulator[item[0]] = item[1]
 					accumulator
 				}
-				[it[2][0]] + m["manta"] + m["ratio"] + m["bubble"]
+				[it[2][0]] + m["manta"] + m["coverage"] + m["segment"] + m["bubble"]
 			}
 			.dump (tag: 'manta_ratio_and_bubble')
 
