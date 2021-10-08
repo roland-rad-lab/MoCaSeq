@@ -565,11 +565,13 @@ elif [ $repeat_mapping = "no" ]; then
 		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
 			cp $bam_normal $name/results/bam/$name.Normal.bam
 			samtools index -@ $threads $name/results/bam/$name.Normal.bam
+			cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
 		fi
 
 		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
 			cp $bam_tumor $name/results/bam/$name.Tumor.bam
 			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+			cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
 		fi
 
 	elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
@@ -577,6 +579,7 @@ elif [ $repeat_mapping = "no" ]; then
 		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
 			cp $bam_tumor $name/results/bam/$name.Tumor.bam
 			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+			cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
 		fi
 
 	elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
@@ -584,6 +587,7 @@ elif [ $repeat_mapping = "no" ]; then
 		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
 			cp $bam_normal $name/results/bam/$name.Normal.bam
 			samtools index -@ $threads $name/results/bam/$name.Normal.bam
+			cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
 		fi
 
 	fi
@@ -709,7 +713,7 @@ if [ $repeat_mapping = "yes" ]; then
 		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
 		-o $temp_dir/$name.$type.cleaned.sorted.marked.bam /dev/stdin &&
 
-		rm $temp_dir/$name.$type.cleaned.bam &&
+		rm -f $temp_dir/$name.$type.cleaned.bam &&
 
 		echo "Postprocessing I: Adding read groups for $type" | tee -a $name/results/QC/$name.report.txt &&
 		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
@@ -719,11 +723,11 @@ if [ $repeat_mapping = "yes" ]; then
 		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
 		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
 
-		rm $temp_dir/$name.$type.cleaned.sorted.bam &&
-		rm $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
-
-		echo "Postprocessing I done for $type" | tee -a $name/results/QC/$name.report.txt & PIDS="$PIDS $!"
-		rm $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+		rm -f $temp_dir/$name.$type.cleaned.sorted.bam &&
+		rm -f $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+		rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam &&
+		rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam.bai &&
+		rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS
@@ -748,14 +752,15 @@ if [ $repeat_mapping = "yes" ]; then
 	--use-original-qualities \
 	-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
+	# this will also generate a bam index (.bai)
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
 	-R $genome_file \
 	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
 	-O $name/results/bam/$name.$type.bam \
 	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
-	rm $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
+	rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+	rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
 	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
 	-R $genome_file \
@@ -764,11 +769,12 @@ if [ $repeat_mapping = "yes" ]; then
 	--use-original-qualities \
 	-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-	echo "Running Sambamba Index for $type"  | tee -a $name/results/QC/$name.report.txt &&
-	/opt/bin/sambamba index \
-	-t $threads \
-	$name/results/bam/$name.$type.bam \
-	$name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
+	# /opt/bin/sambamba index \
+	# -t $threads \
+	# $name/results/bam/$name.$type.bam \
+	# $name/results/bam/$name.$type.bai &&
+
+	cp $name/results/bam/$name.$type.bai $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
 	done
 
 	wait $PIDS

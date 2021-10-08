@@ -14,6 +14,7 @@ args <- commandArgs(TRUE)
 
 name = args[1]
 cnv_method = args[2]
+species = args[3]
 
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(BubbleTree))
@@ -65,7 +66,28 @@ if (cnv_method=="Copywriter"){
   write.table(segments, seg.dat.fn.file, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
 	cnv = read.delim(seg.dat.fn.file)
 } else if (cnv_method=="HMMCopy") {
-	cnv = read.delim(paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt.fn"))
+  
+  segments = read.delim(paste0(name,"/results/HMMCopy/",name,".HMMCopy.20000.segments.txt"))
+  segments = segments[segments[,"Chrom"] %in% seq(1,22,1),]
+  if(species=="Human"){
+    chrom.sizes = c(248956422,242193529,198295559,190214555,181538259,170805979,159345973,145138636,
+                    138394717,133797422,135086622,133275309,114364328,107043718,101991189,90338345,
+                    83257441,80373285,58617616,64444167,46709983,50818468)
+    names(chrom.sizes) = c(1:22)
+  } else if(species=="Mouse"){
+    chrom.sizes = c(195471971,182113224,160039680,156508116,151834684,149736546,145441459,129401213,124595110,
+                    130694993,122082543,120129022,120421639,124902244,104043685,98207768,94987271,90702639,61431566)
+    names(chrom.sizes) = c(1:19)
+  }
+  for (i in 1:nrow(segments)){
+    segments[i,"Num_Probes"]=round((segments[i,"End"]-segments[i,"Start"])/sum(chrom.sizes)*1000000)
+  }
+  segments=segments[,c("Chrom","Start","End","Num_Probes","Mean")]
+  colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
+  write.table(segments, paste0(name,"/results/BubbleTree/",name,".HMMCopy.20000.segments.txt.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+  seg.dat.fn <- file.path(paste0(name,"/results/BubbleTree/",name,".HMMCopy.20000.segments.txt.fn"))
+  
+	cnv = read.delim(seg.dat.fn)
 }
 
 cnv.gr <- GenomicRanges::GRanges(cnv$Chromosome, IRanges(cnv$Start, cnv$End), num.mark=cnv$Num_Probes, seg.mean=cnv$Segment_Mean)
