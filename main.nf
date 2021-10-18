@@ -164,7 +164,7 @@ workflow HUMAN_WGS
 	if ( params.pon_dir == null )
 	{
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.cns, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 	}
 	else
 	{

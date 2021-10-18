@@ -12,6 +12,9 @@ process sam_to_fastq_paired {
 	script:
 	"""#!/usr/bin/env bash
 
+mkdir -p tmp
+export JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=${PWD}/tmp"
+
 java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false -jar ${params.picard.jar} SamToFastq \\
 	-INPUT ${bam} \\
 	-FASTQ ${meta.sampleName}.${type}.R1.fastq.gz \\
