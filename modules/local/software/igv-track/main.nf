@@ -142,4 +142,25 @@ system ("rm ${meta.sampleName}.${type}.${coverage_source}.${resolution}.bedGraph
 	"""
 }
 
+process igv_track_vcf_sv {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Tracks", mode: "copy"
+
+	input:
+		val (genome_build)
+		tuple val (meta), val (type), path (vcf)
+
+	output:
+		val (meta), path ("${meta.sampleName}.bedpe")
+
+
+	script:
+	"""#!/usr/bin/env bash
+
+echo "extract"
+
+	"""
+}
+
 

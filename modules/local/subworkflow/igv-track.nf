@@ -5,7 +5,8 @@ include {
 	igv_track_depth as igv_track_depth_tumor;
 	igv_track_cnr;
 	igv_track_cns;
-	igv_track_rds
+	igv_track_rds;
+	igv_track_vcf_sv
 } from "../software/igv-track/main"
 
 workflow IGV_TRACK_READ {
@@ -58,4 +59,13 @@ workflow IGV_TRACK_CNS {
 		igv_track_cns (genome_build, ch_cns)
 }
 
+workflow IGV_TRACK_VCF_SV {
+
+	take:
+		genome_build
+		ch_vcf
+
+	main:
+		igv_track_vcf_sv (genome_build, ch_vcf)
+}
 

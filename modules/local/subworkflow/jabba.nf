@@ -43,6 +43,10 @@ workflow JABBA
 
 		jabba_matched (genome_build, ch_manta_and_ratio_and_bubble)
 		jabba_plot (genome_build, ch_interval_csv_string, jabba_matched.out.result)
+
+	emit:
+		vcf = jabba_matched.out.vcf
+		vcf_simple = jabba_matched.out.vcf_simple
 }
 
 

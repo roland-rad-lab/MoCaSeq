@@ -71,7 +71,8 @@ include {
 	IGV_TRACK_CNR as IGV_TRACK_CNR_dryclean;
 	IGV_TRACK_CNS;
 	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
-	IGV_TRACK_RDS
+	IGV_TRACK_RDS;
+	IGV_TRACK_VCF_SV
 } from "./modules/local/subworkflow/igv-track"
 
 include {
@@ -189,6 +190,10 @@ workflow HUMAN_WGS
 			IGV_TRACK_RDS (params.genome_build.human, PREPARE_GENOME.out.interval_bed, "fragCounter", FRAG_COUNTER.out.result)
 			IGV_TRACK_CNR_dryclean (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, "dryclean", DRY_CLEAN.out.cnr)
 			IGV_TRACK_CNS_dryclean (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
+		}
+		if ( params.track_sv )
+		{
+			IGV_TRACK_VCF_SV (params.genome_build.human, JABBA.out.vcf.map { [ it[0], "JaBbA", it[1] ] })
 		}
 	}
 

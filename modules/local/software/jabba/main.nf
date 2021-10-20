@@ -12,6 +12,8 @@ process jabba_matched {
 
 	output:
 		tuple val (meta), path ("JaBbA/jabba.rds"), emit: result
+		tuple val (meta), path ("JaBbA/jabba.vcf"), path ("JaBbA/jabba.cnv.vcf"), emit: vcf
+		tuple val (meta), path ("JaBbA/jabba.simple.vcf"), path ("JaBbA/jabba.simple.cnv.vcf"), emit: vcf_simple
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -130,6 +132,10 @@ jab = JaBbA(
 	"""#!/usr/bin/env bash
 mkdir -p JaBbA
 #cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
+cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.vcf JaBbA/
+cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.cnv.vcf JaBbA/
+cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.vcf JaBbA/
+cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.cnv.vcf JaBbA/
 touch JaBbA/jabba.rds
 	"""
 }
