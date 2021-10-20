@@ -17,7 +17,7 @@ include {
 } from "./modules/local/subworkflow/genome"
 
 include {
-	REMAP
+	REMAP as REMAPER
 } from "./modules/local/subworkflow/remap"
 
 include {
@@ -136,6 +136,7 @@ ch_input_branched_bam_branched = ch_input_branched.bam.branch {
 
 ch_input_branched_remap_branched = ch_input_branched.remap.branch {
 	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wgs: it["organism"] == "mouse" && it["seqType"] == "wgs"
 	mouse_wex: it["organism"] == "mouse" && it["seqType"] == "wex"
 	other: true
 }
@@ -149,8 +150,7 @@ workflow HUMAN_WGS
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	REMAP (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
-	ch_bam = REMAP.out.result.mix (ch_input_branched_bam_branched.human_wgs)
+	ch_bam = ch_input_branched_bam_branched.human_wgs
 
 	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
 	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
@@ -208,16 +208,31 @@ workflow MOUSE_WEX
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
-	REMAP (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wex)
-	ch_bam = REMAP.out.result.mix (ch_input_branched_bam_branched.mouse_wex)
+	ch_bam = ch_input_branched_bam_branched.mouse_wex
 
-	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
-	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
-	MUTECT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
-	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
-	LOH (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
-	MSI_SENSOR (params.genome_build.human, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
-	BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
+	MANTA (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
+	STRELKA (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
+	MUTECT (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
+	HMM_COPY (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+	LOH (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
+	MSI_SENSOR (params.genome_build.mouse, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
+	BUBBLE_TREE (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
+}
+
+workflow HUMAN_REMAP {
+	main:
+	PREPARE_GENOME (params.genome_build.human)
+	GENOME_ANNOTATION (params.genome_build.human)
+
+	REMAPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
+}
+
+workflow MOUSE_REMAP {
+	main:
+	PREPARE_GENOME (params.genome_build.mouse)
+	GENOME_ANNOTATION (params.genome_build.mouse)
+
+	REMAPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wgs)
 }
 
 workflow HUMAN_PON {
@@ -316,6 +331,12 @@ workflow MOUSE_PON {
 workflow {
 	HUMAN_WGS ()
 	MOUSE_WEX ()
+}
+
+// Run using -entry REMAP
+workflow REMAP {
+	HUMAN_REMAP ()
+	MOUSE_REMAP ()
 }
 
 // Run using -entry PON
