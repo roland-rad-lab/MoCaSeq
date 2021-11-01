@@ -110,7 +110,6 @@ process bwa_mem_paired {
 
 	script:
 	"""#!/usr/bin/env bash
-set -e
 
 bwa mem -t ${params.bwa_mem.threads} \\
 	-Y \\
@@ -118,12 +117,20 @@ bwa mem -t ${params.bwa_mem.threads} \\
 	-v 1 \\
 	${reference} \\
 	${fastq_r1} \\
-	${fastq_r2} \\
-	| java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
+	${fastq_r2} > ${meta.sampleName}.sam
+
+java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
 	-jar ${params.picard.jar} CleanSam \\
-	-I /dev/stdin \\
+	-I ${meta.sampleName}.sam \\
 	-O ${meta.sampleName}.${type}.cleaned.bam \\
 	-VALIDATION_STRINGENCY LENIENT
+
+if [ \$? -eq 0 ]; then
+	echo "CleanSam succeeded"
+	rm ${meta.sampleName}.sam
+else
+	echo "CleanSam failed"
+fi
 
 	"""
 }
