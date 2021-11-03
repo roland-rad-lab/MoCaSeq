@@ -152,7 +152,7 @@ process igv_track_vcf_sv {
 		tuple val (meta), val (type), path (vcf)
 
 	output:
-		val (meta), path ("${meta.sampleName}.bedpe")
+		tuple val (meta), path ("${meta.sampleName}.bedpe")
 
 
 	script:
