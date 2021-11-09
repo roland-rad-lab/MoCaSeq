@@ -16,6 +16,7 @@ usage()
 	echo "	-nr, --fastq_normal_rev  Path to second normal Fastq. Do NOT use if running single-sample tumor only."
 	echo "	-tf, --fastq_tumor_fw    Path to first tumor fastq. Do NOT use if running single-sample normal only."
 	echo "	-tr, --fastq_tumor_rev   Path to second tumor fastq. Do NOT use if running single-sample normal only."
+	echo "	-s, --species   	 Determine the species. Choose from Mouse or Human. Defaults to Mouse"
 	echo "	-e, --ends               Determine sequencing mode. Choose from PE or SE. Defaults to SE."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --RAM                Amount of Gb RAM. Optional. Defaults to 32."
@@ -52,6 +53,7 @@ while [ "$1" != "" ]; do case $1 in
 	-nr|--fastq_normal_rev) shift;fastq_normal_2="$1";;
 	-tf|--fastq_tumor_fw) shift;fastq_tumor_1="$1";;
 	-tr|--fastq_tumor_rev) shift;fastq_tumor_2="$1";;
+	-s|--species) shift;species="$1";;
 	-e|--ends) shift;ends="$1";;
 	-t|--threads) shift;threads="$1";;
 	-r|--RAM) shift;RAM="$1";;
