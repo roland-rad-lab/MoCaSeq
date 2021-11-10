@@ -6,6 +6,7 @@ include {
 	igv_track_cnr;
 	igv_track_cns;
 	igv_track_rds;
+	igv_track_vcf_sv_extract;
 	igv_track_vcf_sv
 } from "../software/igv-track/main"
 
@@ -66,6 +67,7 @@ workflow IGV_TRACK_VCF_SV {
 		ch_vcf
 
 	main:
-		igv_track_vcf_sv (genome_build, ch_vcf)
+		igv_track_vcf_sv_extract (genome_build, ch_vcf)
+		igv_track_vcf_sv (genome_build, igv_track_vcf_sv_extract.out.result)
 }
 
