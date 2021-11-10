@@ -208,6 +208,9 @@ data_sv <- switch ("${type}",
 	"JaBbA"={
 		bedpe_from_jabba (data_sv_tsv)
 	},
+	"Manta"={
+		bedpe_from_manta (data_sv_tsv)
+	},
 	{
 		data
 	}

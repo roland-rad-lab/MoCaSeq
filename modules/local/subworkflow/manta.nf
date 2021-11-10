@@ -20,7 +20,7 @@ workflow MANTA
 
 	emit:
 		result = manta_matched_post.out.result
-		basic = manta_matched_post.out.filtered_vcf
+		vcf = manta_matched_post.out.filtered_vcf
 		indel = manta_matched.out.indel
 }
 

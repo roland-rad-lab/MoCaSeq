@@ -32,3 +32,14 @@ bedpe_from_jabba <- function (data)
 	return (result)
 }
 
+bedpe_from_manta <- function (data)
+{
+	data_aux <- data %>%
+		dplyr::mutate (id_sample=paste (id,sample,sep="__"),info.mateid_sample=paste (info.mateid,sample,sep="__"),info.event_sample=paste (info.event,sample,sep="__")) %>%
+		data.frame
+
+	print (head (data_aux))
+
+	return (data)
+}
+

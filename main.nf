@@ -72,7 +72,8 @@ include {
 	IGV_TRACK_CNS;
 	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
 	IGV_TRACK_RDS;
-	IGV_TRACK_VCF_SV
+	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_jabba;
+	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_manta
 } from "./modules/local/subworkflow/igv-track"
 
 include {
@@ -165,7 +166,7 @@ workflow HUMAN_WGS
 	if ( params.pon_dir == null )
 	{
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, HMM_COPY.out.cns, HMM_COPY.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cns, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 	}
 	else
 	{
@@ -183,7 +184,7 @@ workflow HUMAN_WGS
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, CNV_KIT_FIX.out.result)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.basic, CNV_KIT_FIX.out.result, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_FIX.out.result, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
@@ -193,7 +194,8 @@ workflow HUMAN_WGS
 		}
 		if ( params.track_sv )
 		{
-			IGV_TRACK_VCF_SV (params.genome_build.human, JABBA.out.vcf.map { [ it[0], "JaBbA", it[1] ] })
+			IGV_TRACK_VCF_SV_jabba (params.genome_build.human, JABBA.out.vcf.map { [ it[0], "JaBbA", it[1] ] })
+			IGV_TRACK_VCF_SV_manta (params.genome_build.human, MANTA.out.vcf.map { [ it[0], "Manta", it[1] ] })
 		}
 	}
 
