@@ -6,7 +6,8 @@ include {
 	fastqc_paired as fastqc_paired_trimmed;
 	trim_paired;
 	bwa_mem_paired;
-	mark_duplicates_recalibrate
+	mark_duplicates;
+	recalibrate
 } from "../software/remap/main"
 
 workflow REMAP
@@ -39,7 +40,8 @@ workflow REMAP
 
 		fastqc_paired_trimmed (genome_build, ch_trim)
 		bwa_mem_paired (ch_fasta, ch_trim)
-		mark_duplicates_recalibrate (genome_build, ch_fasta, ch_common_vcf, bwa_mem_paired.out.result)
+		mark_duplicates (genome_build, bwa_mem_paired.out.result)
+		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = mark_duplicates_recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
 			.map { it[1] }

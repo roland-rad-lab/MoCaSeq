@@ -135,7 +135,36 @@ fi
 	"""
 }
 
-process mark_duplicates_recalibrate {
+process mark_duplicates {
+	tag "${meta.sampleName}"
+
+	input:
+		val (genome_build)
+		tuple val (meta), val (type), path (bam)
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.cleaned.sorted.marked.bam"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+mkdir temp_name
+mkdir temp_coor
+/opt/bin/sambamba sort \\
+	--sort-by-name \\
+	-t ${params.sambamba.threads} \\
+	-m ${params.sambamba.ram}GB \\
+	--tmpdir temp_name \\
+	-o /dev/stdout \\
+	${bam} | samtools view -h | /opt/samblaster-0.1.26/samblaster | samtools view -Sb | /opt/bin/sambamba sort \\
+	-t ${params.sambamba.threads} \\
+	-m ${params.sambamba.ram}GB \\
+	--tmpdir temp_coor \\
+	-o ${meta.sampleName}.${type}.cleaned.sorted.marked.bam \\
+	/dev/stdin
+
+	"""
+}
+
+process recalibrate {
 	tag "${meta.sampleName}"
 
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap", mode: "copy"
