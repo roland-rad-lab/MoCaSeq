@@ -126,8 +126,8 @@ if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_ha
 }
 
 ch_input_branched = ch_input_sample.branch {
-	bam: it["normalBAM"] != null //These are all BAMs
-	remap: it["normalR1"] != null && it["normalR1"].toString().endsWith (".bam") //Path.endsWith tries to match entire final segment
+	bam: it["normalBAM"] != null || it["tumorBAM"] != null //These are all BAMs
+	remap: ( it["normalR1"] != null && it["normalR1"].toString().endsWith (".bam") ) || ( it["tumorR1"] != null && it["tumorR1"].toString().endsWith (".bam") ) //Path.endsWith tries to match entire final segment
 }
 
 ch_input_branched_bam_branched = ch_input_branched.bam.branch {

@@ -33,18 +33,28 @@ def row_check_column_n (row, number)
 	return true
 }
 
+// Check if a row has empty columns
+def row_check_column_null (row)
+{
+	def row_null = row.findAll { it.value == null }
+	row_null_key_string = row_null.keySet ().join (",")
+	if ( row_null.size () != 0 ) exit 1, "[MoCaSeq] error:  Invalid TSV input - malformed row (e.g. null values for columns '${row_null_key_string}') in ${row}, see '--help' flag and documentation under 'running the pipeline' for more information"
+	return true
+}
+
 // Channelling the TSV file containing FASTQ or BAM 
 def extract_data (tsv_file)
 {
 	Channel.fromPath (tsv_file)
 		.splitCsv (header: true, sep: '\t')
 		.map { row ->
-			def expected_keys = ['Sample_Name', 'Library_ID', 'Lane', 'Colour_Chemistry', 'SeqType', 'Organism', 'Type', 'R1', 'R2', 'BAM']
+			def expected_keys = ['Sample_Name', 'Sample_Group', 'Library_ID', 'Lane', 'Colour_Chemistry', 'SeqType', 'Organism', 'Type', 'R1', 'R2', 'BAM']
 			if ( !row.keySet ().containsAll (expected_keys) ) exit 1, "[MoCaSeq] error: Invalid TSV input - malformed column names. Please check input TSV. Column names should be: ${expected_keys.join(", ")}"
 
-			row_check_column_n (row, 10)
+			row_check_column_null (row)
 
 			if ( row.Sample_Name.isEmpty() ) exit 1, "[MoCaSeq] error: the Sample_Name column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
+			if ( row.Sample_Group.isEmpty() ) exit 1, "[MoCaSeq] error: the Sample_Group column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 			if ( row.Type.isEmpty () ) exit 1, "[MoCaSeq] error: the Type column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 			if ( row.BAM.isEmpty() ) exit 1, "[MoCaSeq] error: the BAM column is empty. Ensure all cells are filled or contain 'NA' for optional fields. Check row:\n ${row}"
 
@@ -57,6 +67,7 @@ def extract_data (tsv_file)
 
                         [
                                 "sampleName": row.Sample_Name,
+				"sampleGroup": row.Sample_Group,
                                 "libraryId": row.Library_ID,
                                 "lane": row.Lane,
                                 "colour": row.Colour_Chemistry,
@@ -83,9 +94,12 @@ def extract_data (tsv_file)
 				if ( accumulator.size () == 0 )
 				{
 					accumulator["sampleName"] = it.key
+					accumulator["sampleGroup"] = item["sampleGroup"]
 					accumulator["seqType"] = item["seqType"].toLowerCase ()
 					accumulator["organism"] = item["organism"].toLowerCase ()
+					accumulator["type"] = item["type"]
 				}
+				if ( item["type"] != accumulator["type"] ) exit 1, "[MoCaSeq] error: Type: '${item.type}' was not consistent for Sample_Name: '${it.key}'. Only one Type is allowed per Sample_Name, use Sample_Group for matched samples."
 				if ( item["type"] == "Normal")
 				{
 					accumulator["normalR1"] = item["r1"]
@@ -103,5 +117,51 @@ def extract_data (tsv_file)
 				accumulator
 			}
 		}
+		.dump (tag: 'done sample cc')
+		.reduce ( [:] ) { accumulator, item ->
+			if ( accumulator.containsKey (item["sampleGroup"]) )
+			{
+				accumulator[item["sampleGroup"]].add (item)
+			}
+			else
+			{
+				accumulator[item["sampleGroup"]] = [item]
+			}
+			accumulator
+		}.dump (tag: 'input sample group')
+		.flatMap ().flatMap { it ->
+			def samples_by_type = it.value.inject ([:]) { accumulator, item ->
+				if ( accumulator.containsKey (item["type"]) )
+				{
+					accumulator[item["type"]].add (item)
+				}
+				else
+				{
+					accumulator[item["type"]] = [item]
+				}
+				accumulator
+			}
+			println ("samples_by_type")
+			println (samples_by_type)
+			def result = []
+			if ( samples_by_type.containsKey ("Normal") )
+			{
+				if ( samples_by_type["Normal"].size () != 1 ) exit 1, "[MoCaSeq] error: Please supply only one 'Normal' Type sample for Sample_Group: '${it.key}'."
+				result.addAll (samples_by_type["Normal"].collect { jt -> jt.putAll (["tumorR1":null,"tumorR2":null,"tumorBAM":null,"tumorBAI":null]);jt})
+
+				if ( samples_by_type.containsKey ("Tumor") )
+				{
+					result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (samples_by_type["Normal"][0].subMap (["normalR1", "normalR2", "normalBAM", "normalBAI"]));jt } )
+				}
+			}
+			else if ( samples_by_type.containsKey ("Tumor" ) )
+			{
+				result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (["normalR1":null,"normalR2":null,"normalBAM":null,"normalBAI":null]);jt })
+			}
+			println ("sbt result")
+			println (result)
+			result
+		}
+		.dump (tag: 'input done')
 }
 

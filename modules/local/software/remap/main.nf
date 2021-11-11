@@ -31,7 +31,7 @@ md5sum ${meta.sampleName}.${type}.R2.fastq.gz > ${meta.sampleName}.${type}.R2.fa
 process fastqc_paired {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","") }
 
 	input:
 		val (genome_build)
