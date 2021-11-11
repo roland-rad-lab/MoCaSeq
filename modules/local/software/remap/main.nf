@@ -180,25 +180,11 @@ process recalibrate {
 
 	script:
 	"""#!/usr/bin/env bash
-mkdir temp
 mkdir QC
-# next give it to SAMBLASTER for read dup marking, followed by sorting back to coordinates and format to BAM
-/opt/bin/sambamba sort \\
-	--sort-by-name \\
-	-t ${params.sambamba.threads} \\
-	-m ${params.sambamba.ram}GB \\
-	--tmpdir temp \\
-	-o /dev/stdout \\
-	${bam} | samtools view -h | /opt/samblaster-0.1.26/samblaster | samtools view -Sb | /opt/bin/sambamba sort \\
-	-t ${params.sambamba.threads} \\
-	-m ${params.sambamba.ram}GB \\
-	--tmpdir temp \\
-	-o ${meta.sampleName}.${type}.cleaned.sorted.marked.bam \\
-	/dev/stdin
 
 java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
 		-jar ${params.picard.jar} AddOrReplaceReadGroups \\
-		-I ${meta.sampleName}.${type}.cleaned.sorted.marked.bam \\
+		-I ${bam} \\
 		-O ${meta.sampleName}.${type}.cleaned.sorted.readgroups.marked.bam \\
 		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \\
 		-MAX_RECORDS_IN_RAM ${params.picard.max_records_in_ram}

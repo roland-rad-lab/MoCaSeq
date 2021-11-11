@@ -42,7 +42,7 @@ workflow REMAP
 		bwa_mem_paired (ch_fasta, ch_trim)
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
-		sample = mark_duplicates_recalibrate.out.result.map { [it[0]["sampleName"], it] }
+		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
 			.map { it[1] }
 			.map { it ->
