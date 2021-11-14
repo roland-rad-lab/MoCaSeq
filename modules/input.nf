@@ -80,6 +80,7 @@ def extract_data (tsv_file)
 				"bai": bai
                         ]
 		}.reduce ( [:] ) { accumulator, item ->
+			// Group samples
 			if ( accumulator.containsKey (item["sampleName"]) )
 			{
 				accumulator[item["sampleName"]].add (item)
@@ -91,6 +92,7 @@ def extract_data (tsv_file)
 			accumulator
 		}.flatMap ().map { it ->
 			it.value.inject ([:]) { accumulator, item ->
+				// Extract the information from each row for this sample
 				if ( accumulator.size () == 0 )
 				{
 					accumulator["sampleName"] = it.key
@@ -99,7 +101,9 @@ def extract_data (tsv_file)
 					accumulator["organism"] = item["organism"].toLowerCase ()
 					accumulator["type"] = item["type"]
 				}
-				if ( item["type"] != accumulator["type"] ) exit 1, "[MoCaSeq] error: Type: '${item.type}' was not consistent for Sample_Name: '${it.key}'. Only one Type is allowed per Sample_Name, use Sample_Group for matched samples."
+				if ( item["sampleGroup"] != accumulator["sampleGroup"] ) exit 1, "[MoCaSeq] error: Sample_Group: '${item.sampleGroup}' was not consistent for Sample_Name: '${it.key}'. Only one Sample_Group is allowed per Sample_Name."
+				if ( item["organism"] != accumulator["organism"] ) exit 1, "[MoCaSeq] error: Organism: '${item.organism}' was not consistent for Sample_Name: '${it.key}'. Only one Organism is allowed per Sample_Name."
+				if ( item["type"] != accumulator["type"] ) exit 1, "[MoCaSeq] error: Type: '${item.type}' was not consistent for Sample_Name: '${it.key}'. Only one Type is allowed per Sample_Name, matched samples should share a Sample_Group."
 				if ( item["type"] == "Normal")
 				{
 					accumulator["normalR1"] = item["r1"]
@@ -119,6 +123,7 @@ def extract_data (tsv_file)
 		}
 		.dump (tag: 'done sample cc')
 		.reduce ( [:] ) { accumulator, item ->
+			// Group by sample group
 			if ( accumulator.containsKey (item["sampleGroup"]) )
 			{
 				accumulator[item["sampleGroup"]].add (item)
@@ -130,6 +135,7 @@ def extract_data (tsv_file)
 			accumulator
 		}.dump (tag: 'input sample group')
 		.flatMap ().flatMap { it ->
+			// Within the sample group, collect entries for each type (Normal,Tumor) and annotate Tumor entries with Normal
 			def samples_by_type = it.value.inject ([:]) { accumulator, item ->
 				if ( accumulator.containsKey (item["type"]) )
 				{
@@ -146,7 +152,7 @@ def extract_data (tsv_file)
 			def result = []
 			if ( samples_by_type.containsKey ("Normal") )
 			{
-				if ( samples_by_type["Normal"].size () != 1 ) exit 1, "[MoCaSeq] error: Please supply only one 'Normal' Type sample for Sample_Group: '${it.key}'."
+				if ( samples_by_type["Normal"].size () != 1 ) exit 1, "[MoCaSeq] error: Please supply only one sample of Type 'Normal' for Sample_Group: '${it.key}'."
 				result.addAll (samples_by_type["Normal"].collect { jt -> jt.putAll (["tumorR1":null,"tumorR2":null,"tumorBAM":null,"tumorBAI":null]);jt})
 
 				if ( samples_by_type.containsKey ("Tumor") )
