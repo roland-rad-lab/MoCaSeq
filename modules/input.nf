@@ -102,7 +102,7 @@ def extract_data (tsv_file)
 					accumulator["type"] = item["type"]
 				}
 				if ( item["sampleGroup"] != accumulator["sampleGroup"] ) exit 1, "[MoCaSeq] error: Sample_Group: '${item.sampleGroup}' was not consistent for Sample_Name: '${it.key}'. Only one Sample_Group is allowed per Sample_Name."
-				if ( item["organism"] != accumulator["organism"] ) exit 1, "[MoCaSeq] error: Organism: '${item.organism}' was not consistent for Sample_Name: '${it.key}'. Only one Organism is allowed per Sample_Name."
+				if ( item["organism"].toLowerCase () != accumulator["organism"] ) exit 1, "[MoCaSeq] error: Organism: '${item.organism}' was not consistent for Sample_Name: '${it.key}'. Only one Organism is allowed per Sample_Name."
 				if ( item["type"] != accumulator["type"] ) exit 1, "[MoCaSeq] error: Type: '${item.type}' was not consistent for Sample_Name: '${it.key}'. Only one Type is allowed per Sample_Name, matched samples should share a Sample_Group."
 				if ( item["type"] == "Normal")
 				{

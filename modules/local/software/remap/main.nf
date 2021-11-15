@@ -130,6 +130,7 @@ if [ \$? -eq 0 ]; then
 	rm ${meta.sampleName}.sam
 else
 	echo "CleanSam failed"
+	exit 1
 fi
 
 	"""
