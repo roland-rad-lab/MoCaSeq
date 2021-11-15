@@ -68,10 +68,9 @@ include {
 
 include {
 	IGV_TRACK_READ;
-	IGV_TRACK_CNR as IGV_TRACK_CNR_dryclean;
+	IGV_TRACK_CNR as IGV_TRACK_CNR_cnv_kit;
 	IGV_TRACK_CNS;
-	IGV_TRACK_CNS as IGV_TRACK_CNS_dryclean;
-	IGV_TRACK_RDS;
+	IGV_TRACK_CNS as IGV_TRACK_CNS_cnv_kit;
 	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_jabba;
 	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_manta
 } from "./modules/local/subworkflow/igv-track"
@@ -170,7 +169,7 @@ workflow HUMAN_WGS
 	}
 	else
 	{
-		ch_bam_tumor = ch_bam.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
+		ch_bam_tumor = ch_bam.filter { it["type"] == "Tumor" }.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 		ch_target_bed = Channel.of ([
 			file ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.target.bed", glob: false),
 			file ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.resolution.json", glob: false)
@@ -188,9 +187,8 @@ workflow HUMAN_WGS
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_RDS (params.genome_build.human, PREPARE_GENOME.out.interval_bed, "fragCounter", FRAG_COUNTER.out.result)
-			IGV_TRACK_CNR_dryclean (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, "dryclean", DRY_CLEAN.out.cnr)
-			IGV_TRACK_CNS_dryclean (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
+			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, "cnv-kit", CNV_KIT_FIX.out.result)
+			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
 		}
 		if ( params.track_sv )
 		{

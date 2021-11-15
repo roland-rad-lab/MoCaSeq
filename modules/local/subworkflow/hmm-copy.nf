@@ -16,10 +16,18 @@ workflow HMM_COPY {
 
 	main:
 		ch_resolution = params.hmm_copy && params.hmm_copy.resolution && params.hmm_copy.resolution ? params.hmm_copy.resolution.tokenize (",") : Channel.empty ()
-
 		ch_interval_csv_string = ch_interval.map { it.join (",") }
-		ch_data_expanded_normal = ch_data.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
-		ch_data_expanded_tumor = ch_data.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
+
+		ch_data_branched = ch_data.branch {
+			normal: it["type"] == "Normal"
+			tumor: it["type"] == "Tumor"
+			other: true
+		}
+
+		ch_data_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [Normal,Tumor]." }
+
+		ch_data_expanded_normal = ch_data_branched.normal.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+		ch_data_expanded_tumor = ch_data_branched.tumor.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
 		hmm_copy_wig_normal (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
 		hmm_copy_wig_tumor (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)

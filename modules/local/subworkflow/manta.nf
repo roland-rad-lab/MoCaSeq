@@ -11,7 +11,7 @@ workflow MANTA
 		ch_data
 
 	main:
-		ch_data_expanded = ch_data.map { it ->
+		ch_data_expanded = ch_data.filter { it["type"] == "Tumor" }.map { it ->
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 

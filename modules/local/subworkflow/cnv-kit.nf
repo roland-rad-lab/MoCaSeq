@@ -18,15 +18,20 @@ workflow CNV_KIT {
 
 		ch_interval_bed_intersection = interval_bed_intersect.out.result.first ()
 
-		ch_data_expanded = ch_data.map { it ->
+		ch_data_expanded = ch_data.filter { it["type"] == "Tumor" }.map { it ->
 			tuple (it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
-		ch_data_expanded_normal = ch_data.map { it ->
-			tuple (it, "Normal", it["normalBAM"], it["normalBAI"])
+
+		ch_data_branched = ch_data.branch {
+			normal: it["type"] == "Normal"
+			tumor: it["type"] == "Tumor"
+			other: true
 		}
-		ch_data_expanded_tumor = ch_data.map { it ->
-			tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"])
-		}
+
+		ch_data_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [Normal,Tumor]." }
+
+		ch_data_expanded_normal = ch_data_branched.normal.map { it -> tuple (it, "Normal", it["normalBAM"], it["normalBAI"]) }
+		ch_data_expanded_tumor = ch_data_branched.tumor.map { it -> tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"]) }
 
 		cnv_kit_matched (genome_build, ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded)
 		cnv_kit_single (genome_build, ch_fasta, ch_fasta_index_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))

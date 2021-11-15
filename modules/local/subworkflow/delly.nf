@@ -9,7 +9,7 @@ workflow DELLY
 		ch_fasta
 		ch_data
 	main:
-		ch_data_expanded = ch_data.map {
+		ch_data_expanded = ch_data.filter { it["type"] == "Tumor" }.map {
 			tuple ( it, it["normalBAM"], it["normalBAI"], it["tumorBAM"], it["tumorBAI"] )
 		}
 		delly_matched_call (genome_build, ch_fasta, ch_data_expanded)
