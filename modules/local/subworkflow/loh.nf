@@ -23,15 +23,29 @@ workflow LOH {
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching LOH workflow path for input:\n${it}" }
 
-		ch_data_single_sample = ch_data_branched.single.map { [it[0]["sampleName"], it] }
-			.groupTuple (size: 2)
-			.map { it[1] }
-			.map {
-				def m = it.inject ([:]) { accumulator, item ->
-					accumulator[item[1]] = [item[2],item[3]]
+		ch_data_single_sample = ch_data_branched.single.map { [groupKey (it[0].sampleGroup, it[0].sampleGroupSize), it] }
+			.groupTuple (remainder: true)
+			.flatMap {
+				// Collect [Normal,Tumor] samples in the Sample_Group, output tuple (with normal) for each Tumor sample
+				def m = it[1].inject ([:]) { accumulator, item ->
+					if ( accumulator.containsKey (item[1]) )
+					{
+						accumulator[item[1]].add ([meta: item[0], vcf: item[2], vcf_index: item[3]])
+					}
+					else
+					{
+						accumulator[item[1]] = [[meta: item[0], vcf: item[2], vcf_index: item[3]]]
+					}
 					accumulator
 				}
-				[it[0][0]] + m["Normal"] + m["Tumor"]
+				if ( m.containsKey ("Normal") && m.containsKey ("Tumor") )
+				{
+					m["Tumor"].collect { jt -> [jt["meta"], m["Normal"][0]["vcf"], m["Normal"][0]["vcf_index"], jt["vcf"], jt["vcf_index"]] }
+				}
+				else
+				{
+					[]
+				}
 			}
 
 		loh_matched (genome_build, ch_interval_bed, ch_data_single_sample)
