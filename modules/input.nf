@@ -121,7 +121,6 @@ def extract_data (tsv_file)
 				accumulator
 			}
 		}
-		.dump (tag: 'done sample cc')
 		.reduce ( [:] ) { accumulator, item ->
 			// Group by sample group
 			if ( accumulator.containsKey (item["sampleGroup"]) )
@@ -133,9 +132,9 @@ def extract_data (tsv_file)
 				accumulator[item["sampleGroup"]] = [item]
 			}
 			accumulator
-		}.dump (tag: 'input sample group')
+		}
 		.flatMap ().flatMap { it ->
-			// Within the sample group, collect entries for each type (Normal,Tumor) and annotate Tumor entries with Normal
+			// Within the sample group, collect entries for each type (Normal,Tumor) and annotate Tumor entries with Normal, also annotate all entries with the size of the Sample_Group
 			def samples_by_type = it.value.inject ([:]) { accumulator, item ->
 				if ( accumulator.containsKey (item["type"]) )
 				{
@@ -153,19 +152,17 @@ def extract_data (tsv_file)
 			if ( samples_by_type.containsKey ("Normal") )
 			{
 				if ( samples_by_type["Normal"].size () != 1 ) exit 1, "[MoCaSeq] error: Please supply only one sample of Type 'Normal' for Sample_Group: '${it.key}'."
-				result.addAll (samples_by_type["Normal"].collect { jt -> jt.putAll (["tumorR1":null,"tumorR2":null,"tumorBAM":null,"tumorBAI":null]);jt})
+				result.addAll (samples_by_type["Normal"].collect { jt -> jt.putAll (["tumorR1":null,"tumorR2":null,"tumorBAM":null,"tumorBAI":null,"sampleGroupSize":it.value.size ()]);jt})
 
 				if ( samples_by_type.containsKey ("Tumor") )
 				{
-					result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (samples_by_type["Normal"][0].subMap (["normalR1", "normalR2", "normalBAM", "normalBAI"]));jt } )
+					result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (samples_by_type["Normal"][0].subMap (["normalR1", "normalR2", "normalBAM", "normalBAI"]));jt.put ("sampleGroupSize",it.value.size ());jt } )
 				}
 			}
 			else if ( samples_by_type.containsKey ("Tumor" ) )
 			{
-				result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (["normalR1":null,"normalR2":null,"normalBAM":null,"normalBAI":null]);jt })
+				result.addAll (samples_by_type["Tumor"].collect { jt -> jt.putAll (["normalR1":null,"normalR2":null,"normalBAM":null,"normalBAI":null,"sampleGroupSize":it.value.size ()]);jt })
 			}
-			println ("sbt result")
-			println (result)
 			result
 		}
 		.dump (tag: 'input done')

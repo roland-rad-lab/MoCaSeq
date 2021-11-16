@@ -44,22 +44,36 @@ workflow HMM_COPY {
 		}
 
 		ch_wig_resolution = ch_gc_wig_resolution.join (ch_map_wig_resolution)
-		ch_hmm_copy_wig_normal_keyed = hmm_copy_wig_normal.out.result.map { tuple ( tuple (it[0].sampleName, it[2]), it ) }
-		ch_hmm_copy_wig_tumor_keyed = hmm_copy_wig_tumor.out.result.map { tuple ( tuple (it[0].sampleName, it[2]), it ) }
+		ch_hmm_copy_wig_normal_keyed = hmm_copy_wig_normal.out.result.map { tuple ( tuple (groupKey (it[0].sampleGroup, it[0].sampleGroupSize), it[2]), it ) }
+		ch_hmm_copy_wig_tumor_keyed = hmm_copy_wig_tumor.out.result.map { tuple ( tuple (groupKey (it[0].sampleGroup, it[0].sampleGroupSize), it[2]), it ) }
 
-		ch_hmm_copy_wig = ch_hmm_copy_wig_normal_keyed.mix (ch_hmm_copy_wig_tumor_keyed).groupTuple (size:2)
-			.map {
+		ch_hmm_copy_wig = ch_hmm_copy_wig_normal_keyed.mix (ch_hmm_copy_wig_tumor_keyed).groupTuple (remainder: true)
+			.flatMap {
+				// Collect [Normal,Tumor] samples in the Sample_Group, output tuple (with normal) for each Tumor sample
 				def m = it[1].inject ([:]) { accumulator, item ->
-					accumulator[item[1]] = [meta: item[0], resolution: item[2], wig: item[3]]
+					if ( accumulator.containsKey (item[1]) )
+					{
+						accumulator[item[1]].add ([meta: item[0], resolution: item[2], wig: item[3]])
+					}
+					else
+					{
+						accumulator[item[1]] = [[meta: item[0], resolution: item[2], wig: item[3]]]
+					}
 					accumulator
 				}
-				tuple ( m["Normal"]["resolution"], m["Normal"]["meta"], m["Normal"]["wig"], m["Tumor"]["wig"] )
+				if ( m.containsKey ("Normal") && m.containsKey ("Tumor") )
+				{
+					m["Tumor"].collect { jt -> jt.put ("wigNormal", m["Normal"][0]["wig"]);[jt["resolution"], jt] }
+				}
+				else
+				{
+					[]
+				}
 			}
 		ch_hmm_copy_wig_resolution = ch_wig_resolution.cross (ch_hmm_copy_wig)
-			.dump (tag: 'hcw')
 			.map {
-				tuple ( it[0][0], it[0][1], it[0][2], it[1][1], it[1][2], it[1][3] )
-			}
+				tuple ( it[0][0], it[0][1], it[0][2], it[1][1]["meta"], it[1][1]["wig"], it[1][1]["wigNormal"] )
+			}.dump (tag: 'hmm-copy wr')
 
 		hmm_copy_tsv (genome_build, ch_interval_csv_string, ch_hmm_copy_wig_resolution)
 		hmm_copy_plot (genome_build, ch_interval_bed, hmm_copy_tsv.out.result)
