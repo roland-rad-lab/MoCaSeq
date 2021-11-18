@@ -25,6 +25,8 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [System Requirements](#system-requirements)
 * [Input formats](#input-formats)
 * [Usage](#usage)
+    - [Available Analyses](#available-analyses)
+    - [Input TSV](#input-tsv)
     - [User ID](#user-ID)
     - [Folder locations](#folder-locations)
     - [Options](#options)
@@ -97,6 +99,21 @@ Although most analysis is specified in the input file (a mix of mouse and human 
 # To run the REMAP workflow
 nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry REMAP --input input.tsv
 ```
+
+## Input TSV
+| Column header    | Details |
+|------------------|---------|
+| Sample_Name      | Unique name for each biological isolate (Must be different for a Tumor/Normal pair) |
+| Sample_Group     | Unique name for a group of samples that should be analysed together (i.e. shared by a Tumor/Normal pair) |
+| Library_ID       | Sequencing library id (ignored for now) |
+| Lane             | Sequencing lane (ignored for now) |
+| Colour_Chemistry | Property of sequence data (ignored for now)|
+| SeqType          | 'wgs' for genome or 'wex' for exome data |
+| Organism         | 'human' or 'mouse' |
+| Type             | 'Normal' or 'Tumor' |
+| R1               | Fastq file for read 1 (or BAM file path if remapping) |
+| R2               | Fastq file for read 2 if paired end (or repeat BAM file path if remapping paired data) |
+| BAM              | BAM file path |
 
 ### Folder locations
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using
