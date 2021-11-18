@@ -249,7 +249,7 @@ workflow HUMAN_PON {
 	if ( pon_bed_path == null )
 	{
 		// Generate target regions for CNVKit
-		ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+		ch_bam_normal = ch_input_branched_bam_branched.human_wgs.filter { it["type"] == "Normal" }.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
 		if ( params.pon_sample == null )
 		{
@@ -285,7 +285,7 @@ workflow HUMAN_PON {
 		if ( pon_tsv_path == null )
 		{
 			if ( params.pon_resolution == null ) exit 1, "[MoCaSeq] error: You must also supply --pon_resolution when you give --pon_tsv (to ensure consistent names for the coverage .cnn files)"
-			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+			ch_bam_normal = ch_input_branched_bam_branched.human_wgs.filter { it["type"] == "Normal" }.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 			ch_target_bed = Channel.value ( [ file (pon_bed_path, glob: false), params.pon_resolution as long, 0 ] )
 
 			CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_normal)
@@ -314,7 +314,7 @@ workflow MOUSE_PON {
 
 	if ( pon_tsv_path == null )
 	{
-		ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
+		ch_bam_normal = ch_input_branched_bam_branched.mouse_wex.filter { it["type"] == "Normal" }.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 
 		CNV_KIT_COVERAGE (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam_normal)
 
