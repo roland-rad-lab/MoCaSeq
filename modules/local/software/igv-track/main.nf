@@ -37,7 +37,7 @@ process igv_track_cnr {
 	input:
 		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
-		tuple val (meta), val (type), val(coverage_source), path (cnr)
+		tuple val (meta), val (type), val(coverage_source), val (resolution), path (cnr)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.bigWig")
@@ -82,7 +82,7 @@ process igv_track_cns {
 
 	input:
 		val (genome_build)
-		tuple val (meta), val (type), val (coverage_source), path (cns)
+		tuple val (meta), val (type), val (coverage_source), val (resolution), path (cns)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.${coverage_source}.bedGraph")
@@ -95,7 +95,14 @@ library (dplyr)
 data <- read.table (file="${cns}",sep="\\t",header=T,stringsAsFactors=F)
 #head (data)
 
-data_bed <- data %>%
+data_bed <- switch ("${coverage_source}",
+	{
+		data %>%
+		dplyr::rename (seqnames=Chrom,start=Start,end=End,log2=Mean)
+	},
+	{
+		data
+	}) %>%
 	dplyr::select (chromosome,start,end,log2) %>%
 	data.frame
 

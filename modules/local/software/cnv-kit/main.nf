@@ -252,7 +252,7 @@ process cnv_kit_fix {
 		tuple val (meta), val (type), val (resolution), path (coverage_cnn) 
 
 	output:
-		tuple val (meta), val (type), val("cnv-kit-pon"), val(resolution), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: result
+		tuple val (meta), val (type), val("cnv-kit-pon"), val(resolution), path ("${meta.sampleName}.${type}.ratio.${resolution}.cnr"), emit: cnr
 
 	script:
 	"""#!/usr/bin/env bash

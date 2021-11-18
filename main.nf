@@ -165,7 +165,7 @@ workflow HUMAN_WGS
 	if ( params.pon_dir == null )
 	{
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cns, HMM_COPY.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cnr, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 	}
 	else
 	{
@@ -183,12 +183,13 @@ workflow HUMAN_WGS
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, CNV_KIT_FIX.out.result)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_FIX.out.result, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_FIX.out.cnr, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, "cnv-kit", CNV_KIT_FIX.out.result)
+			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_FIX.out.cnr)
 			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
+			IGV_TRACK_CNS_hmm_copy (params.genome_build.human, HMM_COPY.out.cns)
 		}
 		if ( params.track_sv )
 		{

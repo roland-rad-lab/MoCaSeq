@@ -38,7 +38,7 @@ process hmm_copy_tsv {
 
 	output:
 		tuple val (meta), val ("matched"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
-		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), emit: cns
+		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), emit: cnr
 		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: call
 
 	script:
@@ -149,7 +149,7 @@ somatic_CNA <- smooth.CNA(CNA(genomdat=somatic_tab\$log2Ratio,chrom=somatic_tab\
 cnv_segments <- segment(somatic_CNA,alpha=0.0001,min.width=5,undo.splits='sdundo',undo.SD=2,verbose=2)\$output
 
 colnames(cnv_segments) <- c("ID", "Chrom", "Start", "End", "num.mark", "Mean")
-cnv_segments <- cnv_segments[,c("Chrom", "Start", "End","Mean")]
+cnv_segments <- cnv_segments[,c("Chrom", "Start", "End","Mean", "num.mark")]
 cnv_segments <- cnv_segments[naturalorder(cnv_segments\$Chrom),]
 write.table(cnv_segments,"${meta.sampleName}.HMMCopy.${resolution}.segments.txt",quote=F,row.names=F,col.names=T,sep="\\t")
 

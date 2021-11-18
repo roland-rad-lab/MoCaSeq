@@ -76,7 +76,6 @@ gr_loh <- data_loh %>%
 gr_cnv <- switch ("${cn_source}",
 		"hmm-copy"={
 			data_cnv %>%
-			dplyr::mutate (num.mark=(End-Start)/1000) %>%
 			dplyr::rename (seqnames=Chrom,start=Start,end=End,seg.mean=Mean)
 		},
 		"dryclean-cnv-kit"={
