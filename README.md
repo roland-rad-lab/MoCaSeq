@@ -35,7 +35,7 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [License](./LICENSE)
 
 ## Overview
-This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data. The manuscript, published in *Nature Protocols*, can be accessed [online](https://t.co/bRmsqg2lgb?amp=1).
+This repository serves as a companion to an analysis workflow protocol for mouse cancer next-generation data. The manuscript, published in *Nature Protocols*, can be accessed [online](https://t.co/bRmsqg2lgb?amp=1). The pipeline has been extended to also run human cancer data and now uses [nextflow](https://www.nextflow.io/) for ease of use and increased support of high performance computing environments.
 
 ### Abstract
 Mouse models of human cancer have transformed our ability to link genetics, molecular mechanisms and phenotypes. Both reverse and forward genetics in mice are currently gaining momentum through advances in next generation sequencing. Methodologies to analyse sequencing data were however developed for humans, and hence do not account for species-specific differences in genome structures and experimental setups.
@@ -44,15 +44,21 @@ Here, we describe standardised computational pipelines tailored specifically for
 
 Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation.
 
-The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq) and as a [dockerized version](https://cloud.docker.com/u/rolandradlab/repository/docker/rolandradlab/mocaseq).
+The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq/tree/human-pipeline-nextflow) and can be run as a nextflow pipeline.
+
+```bash
+# input is a required parameter and is a tab separated file providing information about samples and file paths
+nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow --input input.tsv
+```
 
 This protocol takes 2-7 days, depending on the desired analyses.  
 
 ## System Requirements
-We **strongly** recommend to use the Docker version of this pipeline!
+We **strongly** recommend to use the container images that accompany this pipeline and encapsulate the required software.
 
-- Using the *Docker* version: Platform of your choice.
-- Using the *bash* version: Linux, we run this pipeline under Ubuntu 18.04 LTS.
+- This pipeline was developed under under Ubuntu 20.04 LTS.
+- To use the provided container images we recommend using [Charliecloud](https://hpc.github.io/charliecloud/index.html) a contiainer runtime that does not require administrator privieges.
+
 - Hardware:
 	- Minimum: 8-core processor, 32 GB RAM
 	- Optimal (running multiple samples in parallel): 48-core processor, 256 GB RAM, Solid-State Drive
@@ -61,29 +67,36 @@ We **strongly** recommend to use the Docker version of this pipeline!
 	- Results: 30 GB (WES 100x), 300 GB (WGS)
 	- Temporary files during analysis: ~170 GB (WES), ~1000 GB (WGS)
 
+Most of the code is written as nextflow `modules` but some is imported as libraries from `repository`.
 All *bash*, *R* and *python* scripts are directly invokable from `repository`.
 
 ## Input formats
 The standard input format are FASTQ files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
 
 ## Usage
-We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
-```bash
-sudo docker run \
--v <your_working_directory>:/var/pipeline/ \
-rolandradlab/mocaseq:<mocaseq_version> <options>
-```
-Options are listed [below](#options). When invoked without options, the container will start, display usage information and shut down.
+The pipeline requires a tsv file containing the sample information and file paths to the fastq or bam files. We also recommend supplying a custom configuration with details of your computational environment such as genome reference file locations, scheduling system, resource limits etc.
 
-### User ID
-Docker by design runs the container and its contents as user root (UID 1 and GID 1). Persistent directories mounted into the container with the option '-v' therefore are owned by root. If this is undesirable, you can pass the UID and GID of your current user into the container by specifying ``--user $(id -u):$(id -g) `` when calling `docker run`:
+We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example`.
+
 ```bash
-sudo docker run \
--v <your_working_directory>:/var/pipeline/ \
---user $(id -u):$(id -g) \
-rolandradlab/mocaseq:<mocaseq_version> <options>
+# To run with the charliecloud profile defined in the custom configuration files in ${HOME}/nextflow-configs/human-pipeline-nextflow you can start the pipeline as follows:
+nextflow run \
+	roland-rad-lab/MoCaSeq \
+	-r human-pipeline-nextflow \
+	-profile charliecloud \
+	--custom_config_version human-pipeline-nextflow \
+	--custom_config_base ${HOME}/nextflow-configs \
+	--input input.full.tsv
 ```
-This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
+
+## Available Analyses
+Although most analysis is specified in the input file (a mix of mouse and human samples is fine) it is also possible to specify an alternative workflow using entry.
+- REMAP
+
+```bash
+# To run the REMAP workflow
+nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry REMAP --input input.tsv
+```
 
 ### Folder locations
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using
