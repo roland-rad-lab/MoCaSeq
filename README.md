@@ -27,9 +27,8 @@ __Sebastian Lange<sup>1,2,3</sup>, Thomas Engleitner<sup>1,3</sup>, Sebastian Mu
 * [Usage](#usage)
     - [Available Analyses](#available-analyses)
     - [Input TSV](#input-tsv)
-    - [User ID](#user-ID)
-    - [Folder locations](#folder-locations)
     - [Options](#options)
+    - [Folder locations](#folder-locations)
     - [Interactive mode](#interactive-mode)
 * [TL;DR](#tldr)
 * [Bug reports](#bug-reports)
@@ -81,7 +80,7 @@ The pipeline requires a tsv file containing the sample information and file path
 We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example`.
 
 ```bash
-# To run with the charliecloud profile defined in the custom configuration files in ${HOME}/nextflow-configs/human-pipeline-nextflow you can start the pipeline as follows:
+# To run with the charliecloud profile defined in the custom configuration files in the directory ${HOME}/nextflow-configs/human-pipeline-nextflow you can start the pipeline as follows:
 nextflow run \
 	roland-rad-lab/MoCaSeq \
 	-r human-pipeline-nextflow \
@@ -91,8 +90,9 @@ nextflow run \
 	--input input.full.tsv
 ```
 
-## Available Analyses
-Although most analysis is specified in the input file (a mix of mouse and human samples is fine) it is also possible to specify an alternative workflow using entry.
+### Available Analyses
+Although most analysis is specified in the input file (a mix of mouse and human samples is fine) it is also possible to specify an alternative workflow using the nextflow entry option.
+- PON
 - REMAP
 
 ```bash
@@ -100,7 +100,7 @@ Although most analysis is specified in the input file (a mix of mouse and human 
 nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry REMAP --input input.tsv
 ```
 
-## Input TSV
+### Input TSV
 | Column header    | Details |
 |------------------|---------|
 | Sample_Name      | Unique name for each biological isolate (Must be different for a Tumor/Normal pair) |
@@ -111,9 +111,19 @@ nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry REMAP --in
 | SeqType          | 'wgs' for genome or 'wex' for exome data |
 | Organism         | 'human' or 'mouse' |
 | Type             | 'Normal' or 'Tumor' |
-| R1               | Fastq file for read 1 (or BAM file path if remapping) |
-| R2               | Fastq file for read 2 if paired end (or repeat BAM file path if remapping paired data) |
+| R1               | FASTQ file for read 1 (or BAM file path if remapping) |
+| R2               | FASTQ file for read 2 if paired end (or repeat BAM file path if remapping paired data) |
 | BAM              | BAM file path |
+
+### Options
+| workflow | type      | long               | Details                                                                                                                                                                                           |
+|----------|-----------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|          | tsv file  | --input            | Path to a tab separated file of sample information and data file paths.                                                                                                                           |
+| PON      | bed file  | --pon_bed          | Path to target bed for CNVkit (either capture regions for exome or bins for genome)                                                                                                               |
+|          | dir path  | --pon_dir          | Path to directory containing CNVkit panel of normals                                                                                                                                              |
+| PON      | string    | --pon_sample       | Name of the sample to be used as repesentative to generate the CNVKit target bed file.                                                                                                            |
+| PON      | tsv file  | --pon_tsv          | Path to a tab separated file of normal coverage file paths.                                                                                                                                       |
+
 
 ### Folder locations
 By default, Docker containers cannot access files located on the machine they run on. Therefore, local folders need to be mapped to folders inside the container using
@@ -130,37 +140,6 @@ Importantly, the pipeline requires that: \
 The main working directory needs to be mapped to ``/var/pipeline/``. \
 The reference directory (``ref``, NOT ``ref/GRCm38.p6``) needs to be mapped to ``/var/pipeline/ref/ ``. \
 The temp directory needs to be mapped to ``/var/pipeline/temp/ ``.
-
-### Options
-| short    | long                    | Details                                                                                                                                                                                           |
-|-------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -n    | --name             | Name of the sample.                                                                                                                                                                               |
-| -nf   | --fastq_normal_fw  | Path to first normal Fastq. Do NOT use if running single-sample tumor only.                                                                                                                       |
-| -nr   | --fastq_normal_rev | Path to second normal Fastq. Do NOT use if running single-sample tumor only.                                                                                                                      |
-| -tf   | --fastq_tumor_fw   | Path to first tumor fastq. Do NOT use if running single-sample normal only.                                                                                                                       |
-| -tr   | --fastq_tumor_rev  | Path to second tumor fastq. Do NOT use if running single-sample normal only.                                                                                                                      |
-| -nb   | --bam_normal       | Path to normal BAM. Do NOT use in combination with -nf or -nr. When used, -rb MUST be specified.                                                                                                  |
-| -tb   | --bam_tumor        | Path to tumor BAM. Do NOT use in combination with -tf or -tr. When used, --repeat_mapping MUST be set to ‘yes’ or ‘no’.                                                                           |
-| -rm   | --repeat_mapping   | If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no').                                                           |
-| -st   | --sequencing_type  | Set to 'WES' or 'WGS'.                                                                                                                                                                            |
-| -c    | --config           | Path to configuration file. Optional.                                                                                                                                                             |
-| -qc   | --quality_control  | Determines whether QC is done ('yes') or skipped ('no'). Optional.                                                                                                                                |
-| -t    | --threads          | Number of CPU threads. Optional. Defaults to 8.                                                                                                                                                   |
-| -r    | --RAM              | Amount of Gb RAM. Optional. Defaults to 32.                                                                                                                                                       |
-| -temp | --temp_dir         | Path to temporary directory. Optional. Defaults to current working directory.                                                                                                                     |
-| -art  | --artefact         | Set to 'GT' (oxidation artefact), 'CT' (FFPE artefact) or 'none'. Optional. If set to something other than 'none' AND Mutect2 is 'yes', forces quality_control to 'yes’. Defaults to none.        |
-| -filt | --filtering        | Set to 'all' (AF >= 0.05, , Variant in Tumor >= 2, Variant in Normal <= 1, Coverage >= 5), 'hard' (AF >= 0.1, , Variant in Tumor >= 3, Variant in Normal = 0, Coverage >= 10) or 'none' (no filters). Optional. Defaults to 'hard'.                 |
-| -p    | --phred            | If not set, script will try to automatically extract phred-score. Otherwise, set manually to 'phred33' or 'phred64'. 'phred64' only relevant for Illumina data originating before 2011. Optional. |
-| -mu   | --Mutect2          | Set to 'yes' or 'no'. Needed for LOH analysis and Titan. Greatly increases runtime for WGS. Optional. Defaults to 'yes'.                                                                          |
-| -de   | --Delly            | Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode.                                                       |
-| -ti   | --Titan            | Set to 'yes' or 'no'. Runs TITAN to model subclonal copy number alterations, predict LOH and estimate tumor purity. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode.         |
-| -abs   | --Absolute            | Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'."         |
-| -fac   | --Facets            | Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode.         |
-| -bt   | --BubbleTree            | Set to 'yes' or 'no'. Runs the analysis of tumoral aneuploidy and clonality. Optional. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode.         |
-|       | --test             | If set to 'yes': Will download reference files (if needed) and start a test run.                                                                                                                  |
-|       | --memstats         | If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds.                            |
-|       | --help             | Show this help.                                                                                                                                                                                   |
-
 
 ### Interactive mode
 By default, this Docker image automatically runs the MoCaSeq pipeline, as detailed above. However, all scripts included in the ``repository`` folder can be used separately, to allow adjustment of specific aspects of the pipeline. For this, the image can be started in interactive mode:
