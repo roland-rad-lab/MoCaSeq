@@ -17,7 +17,8 @@ include {
 } from "./modules/local/subworkflow/genome"
 
 include {
-	REMAP as REMAPER
+	MAP as MAPPER
+	REMAP as REMAPPER
 } from "./modules/local/subworkflow/remap"
 
 include {
@@ -126,12 +127,18 @@ if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_ha
 
 ch_input_branched = ch_input_sample.branch {
 	bam: it["normalBAM"] != null || it["tumorBAM"] != null //These are all BAMs
+	map: ( it["normalR1"] != null && it["normalR1"].toString().endsWith (".fastq.gz") ) || ( it["tumorR1"] != null && it["tumorR1"].toString().endsWith (".fastq.gz") ) //Path.endsWith tries to match entire final segment
 	remap: ( it["normalR1"] != null && it["normalR1"].toString().endsWith (".bam") ) || ( it["tumorR1"] != null && it["tumorR1"].toString().endsWith (".bam") ) //Path.endsWith tries to match entire final segment
 }
 
 ch_input_branched_bam_branched = ch_input_branched.bam.branch {
 	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
 	mouse_wex: it["organism"] == "mouse" && it["seqType"] == "wex"
+	other: true
+}
+
+ch_input_branched_map_branched = ch_input_branched.map.branch {
+	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
 	other: true
 }
 
@@ -143,6 +150,7 @@ ch_input_branched_remap_branched = ch_input_branched.remap.branch {
 }
 
 ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input bam:\n${it}" }
+ch_input_branched_map_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input map:\n${it}" }
 ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input remap:\n${it}" }
 
 workflow HUMAN_WGS
@@ -157,13 +165,13 @@ workflow HUMAN_WGS
 	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
 	MUTECT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
 	DELLY (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_bam)
-	CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (params.genome_build.human, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
 
 	if ( params.pon_dir == null )
 	{
+		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cnr, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 	}
@@ -225,20 +233,22 @@ workflow MOUSE_WEX
 	BUBBLE_TREE (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
 }
 
-workflow HUMAN_REMAP {
+workflow HUMAN_MAP {
 	main:
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	REMAPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
+	MAPPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
+	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
 }
 
-workflow MOUSE_REMAP {
+workflow MOUSE_MAP {
 	main:
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
-	REMAPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wgs)
+	MAPPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.mouse_wgs)
+	REMAPPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wgs)
 }
 
 workflow HUMAN_PON {
@@ -339,10 +349,10 @@ workflow {
 	MOUSE_WEX ()
 }
 
-// Run using -entry REMAP
-workflow REMAP {
-	HUMAN_REMAP ()
-	MOUSE_REMAP ()
+// Run using -entry MAP
+workflow MAP {
+	HUMAN_MAP ()
+	MOUSE_MAP ()
 }
 
 // Run using -entry PON

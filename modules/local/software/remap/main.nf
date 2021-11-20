@@ -77,23 +77,23 @@ process trim_paired {
 
 # No idea what this is doing as part of the remapping pipeline
 # it seems to chuck out essentially everything
-#java -Xmx${params.trimmomatic.ram}G -jar ${params.trimmomatic.jar} PE \\
-#	-threads ${params.trimmomatic.threads} \\
-#	-${phred} \\
-#	${fastq_r1} \\
-#	${fastq_r2} \\
-#	${meta.sampleName}.${type}.R1.passed.fastq.gz \\
-#	${meta.sampleName}.${type}.R1.not_passed.fastq.gz \\
-#	${meta.sampleName}.${type}.R2.passed.fastq.gz \\
-#	${meta.sampleName}.${type}.R2.not_passed.fastq.gz \\
-#	LEADING:25 \\
-#	TRAILING:25 \\
-#	MINLEN:50 \\
-#	SLIDINGWINDOW:10:25 \\
-#	ILLUMINACLIP:${params.trimmomatic.dir}/adapters/TruSeq3-PE-2.fa:2:30:10
+java -Xmx${params.trimmomatic.ram}G -jar ${params.trimmomatic.jar} PE \\
+	-threads ${params.trimmomatic.threads} \\
+	-${phred} \\
+	${fastq_r1} \\
+	${fastq_r2} \\
+	${meta.sampleName}.${type}.R1.passed.fastq.gz \\
+	${meta.sampleName}.${type}.R1.not_passed.fastq.gz \\
+	${meta.sampleName}.${type}.R2.passed.fastq.gz \\
+	${meta.sampleName}.${type}.R2.not_passed.fastq.gz \\
+	LEADING:25 \\
+	TRAILING:25 \\
+	MINLEN:50 \\
+	SLIDINGWINDOW:10:25 \\
+	ILLUMINACLIP:${params.trimmomatic.dir}/adapters/TruSeq3-PE-2.fa:2:30:10
 
-cp ${fastq_r1} ${meta.sampleName}.${type}.R1.passed.fastq.gz
-cp ${fastq_r2} ${meta.sampleName}.${type}.R2.passed.fastq.gz
+#cp ${fastq_r1} ${meta.sampleName}.${type}.R1.passed.fastq.gz
+#cp ${fastq_r2} ${meta.sampleName}.${type}.R2.passed.fastq.gz
 
 	"""
 }
