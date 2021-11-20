@@ -139,6 +139,7 @@ ch_input_branched_bam_branched = ch_input_branched.bam.branch {
 
 ch_input_branched_map_branched = ch_input_branched.map.branch {
 	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wgs: it["organism"] == "mouse" && it["seqType"] == "wgs"
 	other: true
 }
 
@@ -197,7 +198,7 @@ workflow HUMAN_WGS
 		{
 			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_FIX.out.cnr)
 			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
-			IGV_TRACK_CNS_hmm_copy (params.genome_build.human, HMM_COPY.out.cns)
+			IGV_TRACK_CNS_hmm_copy (params.genome_build.human, HMM_COPY.out.cnr)
 		}
 		if ( params.track_sv )
 		{

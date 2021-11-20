@@ -32,7 +32,7 @@ workflow MAP
 		}
 		.dump (tag: 'remap input')
 		.branch {
-			paired: it[2].toString ().endsWith (".fastqc.gz") && it[2] == it[3]
+			paired: it[2].toString ().endsWith (".fastq.gz") && it[3].toString ().endsWith (".fastq.gz")
 			other: true
 		}
 
@@ -48,8 +48,8 @@ workflow MAP
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map {
-			it[0][it[0][[it[1].toLowerCase (),"BAM"].join ("")] = it[2]
-			it[0][it[0][[it[1].toLowerCase (),"BAI"].join ("")] = it[3]
+			it[0][it[0][[it[1].toLowerCase (),"BAM"].join ("")]] = it[2]
+			it[0][it[0][[it[1].toLowerCase (),"BAI"].join ("")]] = it[3]
 			it[0]
 		}.reduce ( [:] ) { accumulator, item ->
 			// Group by sample group
@@ -95,9 +95,6 @@ workflow MAP
 
 	emit:
 		result = sample
-}
-
-
 }
 
 workflow REMAP
