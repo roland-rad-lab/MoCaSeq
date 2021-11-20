@@ -190,7 +190,7 @@ workflow HUMAN_WGS
 
 		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_tumor)
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
-		CNV_KIT_SEGMENT (params.genome_build.human, CNV_KIT_FIX.out.result)
+		CNV_KIT_SEGMENT (params.genome_build.human, CNV_KIT_FIX.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_FIX.out.cnr, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
 

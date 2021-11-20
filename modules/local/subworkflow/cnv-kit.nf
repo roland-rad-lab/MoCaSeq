@@ -51,7 +51,7 @@ workflow CNV_KIT_FIX {
 		cnv_kit_fix (genome_build, ch_reference, ch_coverage)
 
 	emit:
-		result = cnv_kit_fix.out.cnr
+		cnr = cnv_kit_fix.out.cnr
 }
 
 workflow CNV_KIT_SEGMENT {
