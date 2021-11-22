@@ -3,13 +3,16 @@
 nextflow.enable.dsl=2
 
 include {
+	parse_stub_json
+} from "./modules/stub"
+
+// Optionally load json map to control the behaviour of stubs (cp vs touch)
+stub_json_map = params.stub_json && ( params.stub_json.toString ().toLowerCase ().endsWith ("js") || params.stub_json.toString ().toLowerCase ().endsWith ("json") ) ? parse_stub_json (params.stub_json) : null
+
+include {
 	extract_data;
 	file_has_extension
 } from "./modules/input"
-
-include {
-	parse_stub_json
-} from "./modules/stub"
 
 include {
 	PREPARE_GENOME;
@@ -23,7 +26,7 @@ include {
 
 include {
 	MANTA
-} from "./modules/local/subworkflow/manta"
+} from "./modules/local/subworkflow/manta" addParams (stub_json_map: stub_json_map)
 
 include {
 	STRELKA
@@ -70,6 +73,7 @@ include {
 include {
 	IGV_TRACK_READ;
 	IGV_TRACK_CNR as IGV_TRACK_CNR_cnv_kit;
+	IGV_TRACK_CNR as IGV_TRACK_CNR_hmm_copy;
 	IGV_TRACK_CNS;
 	IGV_TRACK_CNS as IGV_TRACK_CNS_cnv_kit;
 	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_jabba;
@@ -119,11 +123,6 @@ else if (params.qc_dir)
 	if ( ! ( qc_dir_file.exists () && qc_dir_file.isDirectory () ) ) exit 1, "[MoCaSeq] error: qc_dir directory could not be found or was not a directory. You gave the path: ${params.qc_dir}"
 }
 else exit 1, "[MoCaSeq] error: --input or --pon_tsv file(s) or --qc_dir not supplied or improperly defined, see '--help' flag and documentation under 'running the pipeline' for details."
-
-// Optionally load json map to control the behaviour of stubs (cp vs touch)
-if (params.stub_json && ( file_has_extension (params.stub_json, "js") || file_has_extension (params.stub_json, "json") ) ) {
-	params.stub_json_map = parse_stub_json (params.stub_json)
-}
 
 ch_input_branched = ch_input_sample.branch {
 	bam: it["normalBAM"] != null || it["tumorBAM"] != null //These are all BAMs
@@ -175,6 +174,11 @@ workflow HUMAN_WGS
 		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cnr, HMM_COPY.out.call, BUBBLE_TREE.out.result)
+
+		if ( params.track_cn )
+		{
+			IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.cns)
+		}
 	}
 	else
 	{
@@ -197,8 +201,8 @@ workflow HUMAN_WGS
 		if ( params.track_cn )
 		{
 			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_FIX.out.cnr)
+			IGV_TRACK_CNR_hmm_copy (params.genome_build.human, PREPARE_GENOME.out.interval_bed, HMM_COPY.out.cnr)
 			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
-			IGV_TRACK_CNS_hmm_copy (params.genome_build.human, HMM_COPY.out.cnr)
 		}
 		if ( params.track_sv )
 		{
@@ -210,10 +214,6 @@ workflow HUMAN_WGS
 	if ( params.track_read )
 	{
 		IGV_TRACK_READ (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_bam)
-	}
-	if ( params.track_cn )
-	{
-		IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.cns)
 	}
 }
 

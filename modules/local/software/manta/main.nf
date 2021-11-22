@@ -51,10 +51,13 @@ python2 runWorkflow.py -m local -j ${params.manta.threads}
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p results/variants
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz.tbi results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz.tbi results/variants/
+
+if [[ "${params.stub_json_map?.manta_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/somaticSV.vcf.gz.tbi results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/variants/candidateSmallIndels.vcf.gz.tbi results/variants/
+fi
 
 touch results/variants/somaticSV.vcf.gz
 touch results/variants/somaticSV.vcf.gz.tbi
@@ -99,9 +102,12 @@ java -Xmx${params.annotation.snpeff.ram}g \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz.tbi .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.annotated.vcf .
+
+if [[ "${params.stub_json_map?.manta_matched_post}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Manta/${meta.sampleName}.Manta.annotated.vcf .
+fi
 
 touch ${meta.sampleName}.Manta.vcf.gz
 touch ${meta.sampleName}.Manta.vcf.gz.tbi

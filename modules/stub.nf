@@ -7,8 +7,7 @@ def parse_stub_json (json_file_path)
 	if (!f.exists ()) exit 1, "[MoCaSeq] error: Failed to parse stub json from '${json_file_path}' file does not exist"
 
 	def jsonSlurper = new groovy.json.JsonSlurper ()
-	def m = jsonSlurper.parse (f)
-	println "m: ${m}"
+	jsonSlurper.parse (f)
 }
 
 
