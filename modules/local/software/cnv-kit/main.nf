@@ -60,7 +60,10 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/matched
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+
+if [[ "${params.stub_json_map?.cnv_kit_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+fi
 touch CNVKit/matched/${meta.sampleName}.matched.cns
 	"""
 
@@ -119,7 +122,10 @@ done
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p CNVKit/single
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+
+if [[ "${params.stub_json_map?.cnv_kit_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+fi
 touch CNVKit/single/${meta.sampleName}.${type}.cns
 	"""
 }
@@ -168,10 +174,13 @@ tabio.write(target_arr, "${genome_build}.target.bed", 'bed4')
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.target.bed .
-cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json .
-#touch ${genome_build}.target.bed
-#touch ${genome_build}.resolution.json
+if [[ "${params.stub_json_map?.cnv_kit_target_bed}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.target.bed .
+	cp ${params.stub_dir}/${genome_build}_PON/${genome_build}.resolution.json .
+fi
+
+touch ${genome_build}.target.bed
+touch ${genome_build}.resolution.json
 	"""
 }
 
@@ -236,8 +245,10 @@ cnvkit.py coverage \\
 
 	stub:
 	"""#!/usr/bin/env bash
-cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.coverage.${resolution}.cnn .
-#touch ${meta.sampleName}.${type}.coverage.${resolution}.cnn
+if [[ "${params.stub_json_map?.cnv_kit_coverage}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.coverage.${resolution}.cnn .
+fi
+touch ${meta.sampleName}.${type}.coverage.${resolution}.cnn
 	"""
 }
 
@@ -289,8 +300,11 @@ cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
+if [[ "${params.stub_json_map?.cnv_kit_segment}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
+fi
+
 touch ${meta.sampleName}.${type}.${coverage_source}.cns
 touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
 	"""

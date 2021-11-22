@@ -97,10 +97,6 @@ data <- read.table (file="${cns}",sep="\\t",header=T,stringsAsFactors=F)
 
 data_bed <- switch ("${coverage_source}",
 	{
-		data %>%
-		dplyr::rename (seqnames=Chrom,start=Start,end=End,log2=Mean)
-	},
-	{
 		data
 	}) %>%
 	dplyr::select (chromosome,start,end,log2) %>%

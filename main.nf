@@ -34,7 +34,7 @@ include {
 
 include {
 	MUTECT
-} from "./modules/local/subworkflow/mutect"
+} from "./modules/local/subworkflow/mutect" addParams (stub_json_map: stub_json_map)
 
 include {
 	DELLY
@@ -48,7 +48,7 @@ include {
 	CNV_KIT_FIX;
 	CNV_KIT_SEGMENT;
 	CNV_KIT_PON
-} from "./modules/local/subworkflow/cnv-kit"
+} from "./modules/local/subworkflow/cnv-kit" addParams (stub_json_map: stub_json_map)
 
 include {
 	HMM_COPY

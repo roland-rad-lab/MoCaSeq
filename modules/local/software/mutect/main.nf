@@ -30,8 +30,12 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+
+if [[ "${params.stub_json_map?.mutect_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.vcf .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
+fi
+
 touch ${meta.sampleName}.${type}.m2.${interval}.vcf .
 touch ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
 
@@ -71,8 +75,12 @@ java -Xmx${params.gatk.ram}G -jar ${params.gatk.jar} Mutect2 \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+
+if [[ "${params.stub_json_map?.mutect_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.vcf .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
+fi
+
 touch ${meta.sampleName}.matched.m2.${interval}.vcf .
 touch ${meta.sampleName}.matched.m2.${interval}.f1r2.tar.gz .
 
@@ -120,8 +128,12 @@ echo "\${cmd_learn_read_orientation}"
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+
+if [[ "${params.stub_json_map?.mutect_combine_vcf}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+fi
+
 touch ${meta.sampleName}.${type}.m2.vcf.gz
 touch ${meta.sampleName}.${type}.m2.vcf.gz.tbi
 	"""
