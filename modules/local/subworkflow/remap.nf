@@ -38,12 +38,12 @@ workflow MAP
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching MAP workflow path for input:\n${it}" }
 
-		fastqc_paired_extracted (genome_build, ch_data_branched.paired)
+		fastqc_paired_extracted (genome_build, Channel.value ("MAP_extracted"), ch_data_branched.paired)
 		trim_paired (fastqc_paired_extracted.out.result)
 
 		trim_paired.out.result.set { ch_trim }
 
-		fastqc_paired_trimmed (genome_build, ch_trim)
+		fastqc_paired_trimmed (genome_build, Channel.value ("MAP_trimmed"), ch_trim)
 		bwa_mem_paired (ch_fasta, ch_trim)
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
@@ -126,7 +126,7 @@ workflow REMAP
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching REMAP workflow path for input:\n${it}" }
 
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
-		fastqc_paired_extracted (genome_build, sam_to_fastq_paired.out.result)
+		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
 		bwa_mem_paired (ch_fasta, fastqc_paired_extracted.out.result)
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)

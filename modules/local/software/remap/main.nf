@@ -31,22 +31,23 @@ md5sum ${meta.sampleName}.${type}.R2.fastq.gz > ${meta.sampleName}.${type}.R2.fa
 process fastqc_paired {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/FastQC", mode: "copy", pattern: "QC/*", saveAs: { it.replaceFirst ("^QC/","${fastq_source}/") }
 
 	input:
 		val (genome_build)
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.fastq.gz"), path ("${meta.sampleName}.${type}.fastq.gz")
+		val (fastq_source)
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.R1.fastq.gz"), path ("${meta.sampleName}.${type}.R2.fastq.gz")
 
 	output:
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.fastq.gz"), path ("${meta.sampleName}.${type}.fastq.gz"), env (PHRED), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.R1.fastq.gz"), path ("${meta.sampleName}.${type}.R2.fastq.gz"), env (PHRED), emit: result
 		path ("QC/*"), emit: fastqc
 
 	script:
 	"""#!/usr/bin/env bash
 mkdir QC
 fastqc -t ${params.fastqc.threads} \\
-	${fastq_r1} \\
-	${fastq_r2} \\
+	${meta.sampleName}.${type}.R1.fastq.gz \\
+	${meta.sampleName}.${type}.R2.fastq.gz \\
 	--outdir=QC
 
 illumina_version=\$(unzip -p QC/${meta.sampleName}.${type}.R1_fastqc.zip ${meta.sampleName}.${type}.R1_fastqc/fastqc_data.txt | grep Encoding | awk '{print \$5}')
@@ -114,21 +115,11 @@ bwa mem -t ${params.bwa_mem.threads} \\
 	-v 1 \\
 	${reference} \\
 	${fastq_r1} \\
-	${fastq_r2} > ${meta.sampleName}.sam
-
-java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
+	${fastq_r2} | java -Xmx${params.picard.ram}G -Dpicard.useLegacyParser=false \\
 	-jar ${params.picard.jar} CleanSam \\
-	-I ${meta.sampleName}.sam \\
+	-I /dev/stdin \\
 	-O ${meta.sampleName}.${type}.cleaned.bam \\
 	-VALIDATION_STRINGENCY LENIENT
-
-if [ \$? -eq 0 ]; then
-	echo "CleanSam succeeded"
-	rm ${meta.sampleName}.sam
-else
-	echo "CleanSam failed"
-	exit 1
-fi
 
 	"""
 }
