@@ -35,10 +35,10 @@ process fastqc_paired {
 
 	input:
 		val (genome_build)
-		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2)
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.fastq.gz"), path ("${meta.sampleName}.${type}.fastq.gz")
 
 	output:
-		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2), env (PHRED), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.fastq.gz"), path ("${meta.sampleName}.${type}.fastq.gz"), env (PHRED), emit: result
 		path ("QC/*"), emit: fastqc
 
 	script:
@@ -91,9 +91,6 @@ java -Xmx${params.trimmomatic.ram}G -jar ${params.trimmomatic.jar} PE \\
 	MINLEN:50 \\
 	SLIDINGWINDOW:10:25 \\
 	ILLUMINACLIP:${params.trimmomatic.dir}/adapters/TruSeq3-PE-2.fa:2:30:10
-
-#cp ${fastq_r1} ${meta.sampleName}.${type}.R1.passed.fastq.gz
-#cp ${fastq_r2} ${meta.sampleName}.${type}.R2.passed.fastq.gz
 
 	"""
 }
