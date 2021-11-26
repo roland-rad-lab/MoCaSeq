@@ -166,6 +166,7 @@ process recalibrate {
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.bam"), path ("${meta.sampleName}.${type}.bam.bai"), emit: result
+		path ("QC/*")
 
 	script:
 	"""#!/usr/bin/env bash

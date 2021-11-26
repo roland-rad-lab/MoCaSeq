@@ -91,7 +91,7 @@ temp_file_b=\$(moc_mktemp_file .)
 trap "rm \${temp_file_b}" EXIT
 
 extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
-mkdir -p CNVKit/matched
+mkdir -p CNVKit/single
 cnvkit.py batch \\
 	${bam} \\
 	--normal \\
