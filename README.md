@@ -72,12 +72,33 @@ Most of the code is written as nextflow `modules` but some is imported as librar
 All *bash*, *R* and *python* scripts are directly invokable from `repository`.
 
 ## Input formats
-The standard input format are FASTQ files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
+The standard input format are FASTQ files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM files can be processed as well, giving the user the choice of starting after alignment or re-mapping all the raw data (see below).
 
 ## Usage
 The pipeline requires a tsv file containing the sample information and file paths to the fastq or bam files. We also recommend supplying a custom configuration with details of your computational environment such as genome reference file locations, scheduling system, resource limits etc.
 
-We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example`.
+We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example` and in our [test data](https://github.com/roland-rad-lab/test-datasets/tree/mocaseq-nextflow). The configuration is separated into three files:
+	- mocaseq.config: Containers, resources requirements, task scheduling
+	- genomes.config: Location of reference genomes and associated index files
+	- genome\_annotations.config: Location of annotations on the reference genome, e.g. genes, common variants 
+
+Once you have setup mocaseq.config for your computing environment you can use [genomes.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genomes.config) and [genome\_annotations.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genome_annotations.config) directly to run the test data.
+
+```bash
+# test_config_genome_* can be used with custom_config_* to specify a different location for the genome config files
+nextflow run \
+	roland-rad-lab/MoCaSeq \
+	-r human-pipeline-nextflow \
+	-entry MAP \
+	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--test_config_genome_version mocaseq \
+	--genome_build.human tiny.human \
+	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_remap_design.tsv
+
+```
+
+The following example will look for all three config files in ${HOME}/nextflow-configs/human-pipeline-nextflow/pipeline.
+
 
 ```bash
 # To run with the charliecloud profile defined in the custom configuration files in the directory ${HOME}/nextflow-configs/human-pipeline-nextflow you can start the pipeline as follows:

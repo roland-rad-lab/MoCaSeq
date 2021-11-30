@@ -101,13 +101,18 @@ process bwa_mem_paired {
 
 	input:
 		val (reference)
-		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2)
+		tuple val (meta), val (type), path (fastq_r1), path (fastq_r2), val (phred)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.cleaned.bam"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
+
+if [[ "${phred}" != "phred33" ]]; then
+	echo "Error bwa mem only accepts phred33, you gave '${phred}'"
+	exit 1
+fi
 
 bwa mem -t ${params.bwa_mem.threads} \\
 	-Y \\

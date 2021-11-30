@@ -240,7 +240,7 @@ workflow HUMAN_MAP {
 	GENOME_ANNOTATION (params.genome_build.human)
 
 	MAPPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
-	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
+	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
 }
 
 workflow MOUSE_MAP {
@@ -249,7 +249,7 @@ workflow MOUSE_MAP {
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
 	MAPPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.mouse_wgs)
-	REMAPPER (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.dir, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wgs)
+	REMAPPER (params.genome_build.mouse, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.mouse_wgs)
 }
 
 workflow HUMAN_PON {
@@ -352,14 +352,14 @@ workflow {
 
 // Run using -entry MAP
 workflow MAP {
-	HUMAN_MAP ()
-	MOUSE_MAP ()
+	if ( params.genome_build.human ) { HUMAN_MAP () }
+	if ( params.genome_build.mouse ) { MOUSE_MAP () }
 }
 
 // Run using -entry PON
 workflow PON {
-	HUMAN_PON ()
-	MOUSE_PON ()
+	if ( params.genome_build.human ) { HUMAN_PON () }
+	if ( params.genome_build.mouse ) { MOUSE_PON () }
 }
 
 

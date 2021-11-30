@@ -101,8 +101,8 @@ workflow REMAP
 {
 	take:
 		genome_build
+		ch_bwa_index
 		ch_fasta
-		ch_dir
 		ch_common_vcf
 		ch_data
 
@@ -127,7 +127,7 @@ workflow REMAP
 
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
 		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
-		bwa_mem_paired (ch_fasta, fastqc_paired_extracted.out.result)
+		bwa_mem_paired (ch_bwa_index, fastqc_paired_extracted.out.result)
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }

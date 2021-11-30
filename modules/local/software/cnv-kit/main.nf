@@ -23,6 +23,9 @@ trap "rm \${temp_file_b}" EXIT
 
 extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 mkdir -p CNVKit/matched
+touch ${bai_normal}
+touch ${bai_tumor}
+
 cnvkit.py batch \\
 	${bam_tumor} \\
 	--normal ${bam_normal} \\
@@ -52,7 +55,7 @@ for file in \$(find CNVKit/matched/ -type f -name "*${bam_tumor.baseName}*");
 do
 		file_new=\$(echo \${file} | sed -e "s/${bam_tumor.baseName}/${meta.sampleName}.matched/")
 		echo "Rename '\${file}' to '\${file_new}'"
-		mv \${file} \${file_new}
+		mv \${file} \${file_new} || true
 done
 
 	"""
@@ -92,6 +95,9 @@ trap "rm \${temp_file_b}" EXIT
 
 extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 mkdir -p CNVKit/single
+
+touch ${bai}
+
 cnvkit.py batch \\
 	${bam} \\
 	--normal \\
@@ -114,7 +120,7 @@ for file in \$(find CNVKit/single/ -type f -name "*${bam.baseName}*");
 do
 		file_new=\$(echo \${file} | sed -e "s/${bam.baseName}/${meta.sampleName}.${type}/")
 		echo "Rename '\${file}' to '\${file_new}'"
-		mv \${file} \${file_new}
+		mv \${file} \${file_new} || true
 done
 
 	"""

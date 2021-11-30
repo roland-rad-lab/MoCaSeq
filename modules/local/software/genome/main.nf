@@ -1,4 +1,68 @@
 
+boolean valid_uri (String maybe_url)
+{
+	try {
+		java.net.URI.create (maybe_url);
+		true
+	} catch ( IllegalArgumentException | NullPointerException e ) {
+		false
+	}
+}
+
+void download_uri (Path path, java.net.URI uri)
+{
+	try {
+		java.nio.file.Files.createFile (path)
+		println ("download '${uri}' to '${path}'")
+		path.toFile ().withOutputStream { out -> uri.toURL ().withInputStream { in -> out << in; } }
+	} catch ( java.nio.file.FileAlreadyExistsException e) {
+		println ("skipping '${path}', already exists")
+	} catch ( IOException e) {
+		exit 1, "Failed to download '${uri}'"
+	}
+}
+
+process cache_genome_url {
+
+	input:
+		val (genome_build)
+		val (reference)
+		val (extension_list)
+
+	output:
+		val (path_cached), emit: result
+
+	exec:
+		def reference_local = reference;
+		if ( extension_list.size () == 0 ) { exit 1, "[MoCaSeq] error: At least one file extension is required to append to '${reference_local}'" }
+		if ( valid_uri (reference_local) )
+		{
+			def reference_uri = java.net.URI.create (reference_local)
+			if ( reference_uri.scheme && reference_uri.scheme == "http" ) { exit 1, "[MoCaSeq] error: No support for http downloads use https, url requested was '${reference_local}'" }
+			if ( reference_uri.scheme && reference_uri.scheme == "https" && reference_uri.path )
+			{
+				def cache_dir = workDir.resolve ("${genome_build}_cache");
+				java.nio.file.Files.createDirectories (cache_dir);
+				def file_name_base = reference_uri.path.tokenize ('/')[-1]
+				path_cached = cache_dir.resolve ( [file_name_base, extension_list[0]].findAll { it }.join (".") )
+
+				extension_list.findAll { it != null }.each {
+					def file_name_extended = [file_name_base, it].findAll { jt -> jt != "" }.join (".")
+					if ( !valid_uri ( file_name_extended ) ) { exit 1, "[MoCaSeq] error: The extension '${file_name_extended}' was not a valid URI" }
+					download_uri (cache_dir.resolve (file_name_extended), reference_uri.resolve ( java.net.URI.create (file_name_extended)))
+				}
+			}
+			else
+			{
+				path_cached = reference_local.resolveSibling ( [reference_local.fileName.toString (), extension_list[0]].join (".") )
+			}
+		}
+		else
+		{
+			path_cached = reference_local.resolveSibling ( [reference_local.fileName.toString (), extension_list[0]].join (".") )
+		}
+}
+
 process interval_bed {
 
 	input:
