@@ -78,9 +78,9 @@ The standard input format are FASTQ files produced from modern Illumina sequence
 The pipeline requires a tsv file containing the sample information and file paths to the fastq or bam files. We also recommend supplying a custom configuration with details of your computational environment such as genome reference file locations, scheduling system, resource limits etc.
 
 We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example` and in our [test data](https://github.com/roland-rad-lab/test-datasets/tree/mocaseq-nextflow). The configuration is separated into three files:
-	- mocaseq.config: Containers, resources requirements, task scheduling
-	- genomes.config: Location of reference genomes and associated index files
-	- genome\_annotations.config: Location of annotations on the reference genome, e.g. genes, common variants 
+- mocaseq.config: Containers, resources requirements, task scheduling
+- genomes.config: Location of reference genomes and associated index files
+- genome\_annotations.config: Location of annotations on the reference genome, e.g. genes, common variants 
 
 Once you have setup mocaseq.config for your computing environment you can use [genomes.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genomes.config) and [genome\_annotations.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genome_annotations.config) directly to run the test data.
 
