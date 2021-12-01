@@ -54,12 +54,12 @@ process cache_genome_url {
 			}
 			else
 			{
-				path_cached = reference_local.resolveSibling ( [reference_local.fileName.toString (), extension_list[0]].join (".") )
+				path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") )
 			}
 		}
 		else
 		{
-			path_cached = reference_local.resolveSibling ( [reference_local.fileName.toString (), extension_list[0]].join (".") )
+			path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") )
 		}
 }
 
