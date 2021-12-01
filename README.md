@@ -78,7 +78,7 @@ The standard input format are FASTQ files produced from modern Illumina sequence
 The pipeline requires a tsv file containing the sample information and file paths to the fastq or bam files. We also recommend supplying a custom configuration with details of your computational environment such as genome reference file locations, scheduling system, resource limits etc.
 
 We provide container images containing the complete software used by the analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. You can find example configuration files in `example` and in our [test data](https://github.com/roland-rad-lab/test-datasets/tree/mocaseq-nextflow). The configuration is separated into three files:
-- mocaseq.config: Containers, resources requirements, task scheduling
+- mocaseq.config: Containers, resource requirements, task scheduling
 - genomes.config: Location of reference genomes and associated index files
 - genome\_annotations.config: Location of annotations on the reference genome, e.g. genes, common variants 
 
@@ -114,36 +114,36 @@ nextflow run \
 ### Available Analyses
 Although most analysis is specified in the input file (a mix of mouse and human samples is fine) it is also possible to specify an alternative workflow using the nextflow entry option.
 - PON
-- REMAP
+- MAP
 
 ```bash
-# To run the REMAP workflow
-nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry REMAP --input input.tsv
+# To run the MAP workflow (fastq -> bam or bam -> bam)
+nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry MAP --input input.tsv
 ```
 
 ### Input TSV
-| Column header    | Details |
-|------------------|---------|
-| Sample_Name      | Unique name for each biological isolate (Must be different for a Tumor/Normal pair) |
-| Sample_Group     | Unique name for a group of samples that should be analysed together (i.e. shared by a Tumor/Normal pair) |
-| Library_ID       | Sequencing library id (ignored for now) |
-| Lane             | Sequencing lane (ignored for now) |
-| Colour_Chemistry | Property of sequence data (ignored for now)|
-| SeqType          | 'wgs' for genome or 'wex' for exome data |
-| Organism         | 'human' or 'mouse' |
-| Type             | 'Normal' or 'Tumor' |
-| R1               | FASTQ file for read 1 (or BAM file path if remapping) |
-| R2               | FASTQ file for read 2 if paired end (or repeat BAM file path if remapping paired data) |
-| BAM              | BAM file path |
+| Column header     | Details                                                                                                  |
+|-------------------|----------------------------------------------------------------------------------------------------------|
+| Sample\_Name      | Unique name for each biological isolate (Must be different for a Tumor/Normal pair)                      |
+| Sample\_Group     | Unique name for a group of samples that should be analysed together i.e. shared by Normal and Tumor(s)   |
+| Library\_ID       | Sequencing library id (ignored for now)                                                                  |
+| Lane              | Sequencing lane (ignored for now)                                                                        |
+| Colour\_Chemistry | Property of sequence data (ignored for now)                                                              |
+| SeqType           | 'wgs' for genome or 'wex' for exome data                                                                 |
+| Organism          | 'human' or 'mouse'                                                                                       |
+| Type              | 'Normal' or 'Tumor'                                                                                      |
+| R1                | FASTQ file for read 1 (or BAM file path if remapping)                                                    |
+| R2                | FASTQ file for read 2 if paired end (or repeat BAM file path if remapping paired data)                   |
+| BAM               | BAM file path                                                                                            |
 
 ### Options
 | workflow | type      | long               | Details                                                                                                                                                                                           |
 |----------|-----------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |          | tsv file  | --input            | Path to a tab separated file of sample information and data file paths.                                                                                                                           |
-| PON      | bed file  | --pon_bed          | Path to target bed for CNVkit (either capture regions for exome or bins for genome)                                                                                                               |
-|          | dir path  | --pon_dir          | Path to directory containing CNVkit panel of normals                                                                                                                                              |
-| PON      | string    | --pon_sample       | Name of the sample to be used as repesentative to generate the CNVKit target bed file.                                                                                                            |
-| PON      | tsv file  | --pon_tsv          | Path to a tab separated file of normal coverage file paths.                                                                                                                                       |
+| PON      | bed file  | --pon\_bed         | Path to target bed for CNVkit (either capture regions for exome or bins for genome)                                                                                                               |
+|          | dir path  | --pon\_dir         | Path to directory containing CNVkit panel of normals                                                                                                                                              |
+| PON      | string    | --pon\_sample      | Name of the sample to be used as repesentative to generate the CNVKit target bed file.                                                                                                            |
+| PON      | tsv file  | --pon\_tsv         | Path to a tab separated file of normal coverage file paths.                                                                                                                                       |
 
 
 ### Folder locations
