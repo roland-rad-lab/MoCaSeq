@@ -44,7 +44,7 @@ process cache_genome_url {
 				def cache_dir = workDir.resolve ("${genome_build}_cache");
 				java.nio.file.Files.createDirectories (cache_dir);
 				def file_name_base = reference_uri.path.tokenize ('/')[-1]
-				path_cached = cache_dir.resolve ( [file_name_base, extension_list[0]].findAll { it }.join (".") )
+				path_cached = cache_dir.resolve ( [file_name_base, extension_list[0]].findAll { it }.join (".") ).toString ()
 
 				extension_list.findAll { it != null }.each {
 					def file_name_extended = [file_name_base, it].findAll { jt -> jt != "" }.join (".")
@@ -54,12 +54,12 @@ process cache_genome_url {
 			}
 			else
 			{
-				path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") )
+				path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") ).toString ()
 			}
 		}
 		else
 		{
-			path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") )
+			path_cached = file (reference_local, glob: false).resolveSibling ( [file (reference_local, glob: false).fileName, extension_list[0]].findAll { it }.join (".") ).toString ()
 		}
 }
 
@@ -87,9 +87,9 @@ names (data_dict) <- c("line_type", "sequence_name_raw", "sequence_length_raw", 
 head (data_dict)
 
 data_seq_lengths <- data_dict %>%
-  mutate (sequence_name=stringr::str_split_fixed (sequence_name_raw,":",2)[,2]) %>%
-  mutate (sequence_length=as.numeric (stringr::str_split_fixed (sequence_length_raw,":",2)[,2])) %>%
-  select (sequence_name,sequence_length) %>%
+  dplyr::mutate (sequence_name=stringr::str_split_fixed (sequence_name_raw,":",2)[,2]) %>%
+  dplyr::mutate (sequence_length=as.numeric (stringr::str_split_fixed (sequence_length_raw,":",2)[,2])) %>%
+  dplyr::select (sequence_name,sequence_length) %>%
   data.frame
 
 head (data_seq_lengths)
@@ -98,9 +98,10 @@ data_intervals <- read.table (file=intervals_file_path,sep="\\t",stringsAsFactor
 names (data_intervals) <- c("sequence_name")
 
 data_output <- data_intervals %>%
-	inner_join (data_seq_lengths,by="sequence_name") %>%
-	mutate (start=0) %>%
-	select (sequence_name,start,sequence_length) %>%
+	dplyr::inner_join (data_seq_lengths,by="sequence_name") %>%
+	dplyr::mutate (start="0") %>%
+	dplyr::mutate (sequence_length=format(sequence_length,scientific=F,trim=T)) %>%
+	dplyr::select (sequence_name,start,sequence_length) %>%
 	data.frame
 
 output_bed_file <-pipe (paste ("bgzip -c >",output_bed_file_path), "w")

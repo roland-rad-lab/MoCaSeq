@@ -14,6 +14,9 @@ process bubble_tree_matched {
 		tuple val (meta), path ("${meta.sampleName}.Bubbletree.txt"), emit: result
 		path ("*.pdf")
 
+	when:
+		!params.tiny
+
 	script:
 	"""#!/usr/bin/env Rscript
 

@@ -3,10 +3,15 @@
 include {
 	interval_bed
 	cache_genome_url as cache_genome_url_bwa_index
+	cache_genome_url as cache_genome_url_common_vcf
 	cache_genome_url as cache_genome_url_dict
 	cache_genome_url as cache_genome_url_fasta
 	cache_genome_url as cache_genome_url_fasta_index
-	cache_genome_url as cache_genome_url_common_vcf
+	cache_genome_url as cache_genome_url_gc_wig
+	cache_genome_url as cache_genome_url_gencode_genes_bed
+	cache_genome_url as cache_genome_url_map_wig
+	cache_genome_url as cache_genome_url_micro_satellite
+	cache_genome_url as cache_genome_url_ref_flat
 } from "../software/genome/main"
 include {
 	bash_expand_path as bash_expand_path_gc
@@ -62,7 +67,7 @@ workflow GENOME_ANNOTATION
 
 	main:
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
-		ch_fasta_index_flat = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["fasta_index_flat"] ? Channel.of (params.genomes[genome_name]["fasta_index_flat"]).first () : Channel.empty ()
+		ch_ref_flat = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["ref_flat"] ? Channel.of (params.genome_annotations[genome_name]["ref_flat"]).first () : Channel.empty ()
 		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
@@ -70,19 +75,33 @@ workflow GENOME_ANNOTATION
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]).first () : Channel.empty ()
 		ch_micro_satellite = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["micro_satellite"] ? Channel.of (params.genome_annotations[genome_name]["micro_satellite"]).first () : Channel.empty ()
 
-		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
+		ch_gc_wig_branched = ch_gc_wig.branch {
+			uri: it.startsWith ("https://")
+			other: true
+		}
+		ch_map_wig_branched = ch_map_wig.branch {
+			uri: it.startsWith ("https://")
+			other: true
+		}
 
-		bash_expand_path_gc (ch_gc_wig)
-		bash_expand_path_map (ch_map_wig)
+		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
+		cache_genome_url_gc_wig (genome_name, ch_gc_wig_branched.uri, Channel.value ([""]))
+		cache_genome_url_gencode_genes_bed (genome_name, ch_gencode_genes_bed, Channel.value ([""]))
+		cache_genome_url_map_wig (genome_name, ch_map_wig_branched.uri, Channel.value ([""]))
+		cache_genome_url_micro_satellite (genome_name, ch_micro_satellite, Channel.value ([""]))
+		cache_genome_url_ref_flat (genome_name, ch_ref_flat, Channel.value ([""]))
+
+		bash_expand_path_gc (ch_gc_wig_branched.other)
+		bash_expand_path_map (ch_map_wig_branched.other)
 
 	emit:
-		fasta_index_flat = ch_fasta_index_flat
 		par_interval_bed = ch_par_interval_bed
-		gc_wig = bash_expand_path_gc.out.splitText ()
-		map_wig = bash_expand_path_map.out.splitText ()
 		common_vcf = cache_genome_url_common_vcf.out.result
-		gencode_genes_bed = ch_gencode_genes_bed
-		micro_satellite = ch_micro_satellite
+		gc_wig = bash_expand_path_gc.out.splitText ().mix (cache_genome_url_gc_wig.out.result)
+		gencode_genes_bed = cache_genome_url_gencode_genes_bed.out.result
+		map_wig = bash_expand_path_map.out.splitText ().mix (cache_genome_url_map_wig.out.result)
+		micro_satellite = cache_genome_url_micro_satellite.out.result
+		ref_flat = cache_genome_url_ref_flat.out.result
 }
 
 

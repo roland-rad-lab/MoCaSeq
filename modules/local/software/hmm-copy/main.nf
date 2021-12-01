@@ -109,12 +109,22 @@ rm (map_ranged_subset, map_ranged, map_chr_levels, map_chr_level_info)
 # read in wig files and correct for GC and mappability bias
 normal <- wigsToRangedData("${normal_wig}","intervals.gc.wig","intervals.map.wig")
 normal\$reads <- normal\$reads+1
-normal <- as.data.frame(correctReadcount(normal))
+if ( "${params.tiny}" == "false" )
+{
+	normal <- as.data.frame(correctReadcount(normal))
+} else {
+	normal\$copy <- log2 (normal\$reads)
+}
 normal_copy=GRanges(normal\$chr, IRanges(normal\$start, normal\$end),copy=normal\$copy)
 
 tumor <- wigsToRangedData("${tumor_wig}","intervals.gc.wig","intervals.map.wig")
 tumor\$reads <- tumor\$reads+1
-tumor <- as.data.frame(correctReadcount(tumor))
+if ( "${params.tiny}" == "false" )
+{
+	tumor <- as.data.frame(correctReadcount(tumor))
+} else {
+	tumor\$copy <- log2 (tumor\$reads)
+}
 tumor_copy=GRanges(tumor\$chr, IRanges(tumor\$start, tumor\$end),copy=tumor\$copy)
 
 flankLength=${flank_length}
@@ -128,12 +138,17 @@ filtering=GRanges(filterRegions\$space, IRanges(filterRegions\$start, filterRegi
 hits <- findOverlaps(query = normal_copy, subject = filtering)
 ind <- queryHits(hits)
 message("Removed ", length(ind), " bins near centromeres.")
-normal_copy=(normal_copy[-ind, ])
-
+if ( length (ind) > 0 )
+{
+	normal_copy <- normal_copy[-ind, ]
+}
 hits <- findOverlaps(query = tumor_copy, subject = filtering)
 ind <- queryHits(hits)
 message("Removed ", length(ind), " bins near centromeres.")
-tumor_copy=(tumor_copy[-ind, ])
+if ( length (ind) > 0 )
+{
+	tumor_copy <- tumor_copy[-ind, ]
+}
 
 # computation of the copy number states from the log fold change
 somatic_copy <- tumor_copy

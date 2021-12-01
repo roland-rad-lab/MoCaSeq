@@ -7,7 +7,7 @@ process mutect_single {
 	input:
 		val (genome_build)
 		val (reference)
-		tuple val (meta), val (type), path (bam)
+		tuple val (meta), val (type), path (bam), path (bai)
 		each (interval)
 
 	output:
@@ -50,7 +50,7 @@ process mutect_matched {
 	input:
 		val (genome_build)
 		val (reference)
-		tuple val (meta), path (bam_normal), path (bam_tumor)
+		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 		each (interval)
 
 	output:
