@@ -171,7 +171,7 @@ workflow HUMAN_WGS
 
 	if ( params.pon_dir == null )
 	{
-		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.ref_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
+		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, GENOME_ANNOTATION.out.ref_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
 		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cnr, HMM_COPY.out.call, BUBBLE_TREE.out.result)
 

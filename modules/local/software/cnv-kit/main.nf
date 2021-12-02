@@ -8,7 +8,8 @@ process cnv_kit_matched {
 	input:
 		val (genome_build)
 		val (reference)
-		val (reference_flat)
+		val (reference_index)
+		val (ref_flat)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
@@ -23,6 +24,8 @@ trap "rm \${temp_file_b}" EXIT
 
 extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 mkdir -p CNVKit/matched
+
+touch ${reference_index}
 touch ${bai_normal}
 touch ${bai_tumor}
 
@@ -35,7 +38,7 @@ cnvkit.py batch \\
 	--short-names \\
 	--diagram \\
 	--scatter \\
-	--annotate ${reference_flat} \\
+	--annotate ${ref_flat} \\
 	--access "" \\
 	--targets \${interval_bed_extracted} \\
 	--drop-low-coverage \\
@@ -80,7 +83,8 @@ process cnv_kit_single {
 	input:
 		val (genome_build)
 		val (reference)
-		val (reference_flat)
+		val (reference_index)
+		val (ref_flat)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), val (type), path (bam), path (bai)
 
@@ -96,6 +100,7 @@ trap "rm \${temp_file_b}" EXIT
 extract_if_zip ${interval_bed} interval_bed_extracted \${temp_file_b}
 mkdir -p CNVKit/single
 
+touch ${reference_index}
 touch ${bai}
 
 cnvkit.py batch \\
@@ -107,7 +112,7 @@ cnvkit.py batch \\
 	--short-names \\
 	--diagram \\
 	--scatter \\
-	--annotate ${reference_flat} \\
+	--annotate ${ref_flat} \\
 	--access "" \\
 	--targets \${interval_bed_extracted} \\
 	--drop-low-coverage \\

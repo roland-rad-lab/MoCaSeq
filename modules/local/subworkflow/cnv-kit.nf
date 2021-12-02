@@ -8,6 +8,7 @@ workflow CNV_KIT {
 	take:
 		genome_build
 		ch_fasta
+		ch_fasta_index
 		ch_ref_flat
 		ch_interval_bed
 		ch_gencode_genes_bed
@@ -33,8 +34,8 @@ workflow CNV_KIT {
 		ch_data_expanded_normal = ch_data_branched.normal.map { it -> tuple (it, "Normal", it["normalBAM"], it["normalBAI"]) }
 		ch_data_expanded_tumor = ch_data_branched.tumor.map { it -> tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"]) }
 
-		cnv_kit_matched (genome_build, ch_fasta, ch_ref_flat, ch_interval_bed_intersection, ch_data_expanded)
-		cnv_kit_single (genome_build, ch_fasta, ch_ref_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))
+		cnv_kit_matched (genome_build, ch_fasta, ch_fasta_index, ch_ref_flat, ch_interval_bed_intersection, ch_data_expanded)
+		cnv_kit_single (genome_build, ch_fasta, ch_fasta_index, ch_ref_flat, ch_interval_bed_intersection, ch_data_expanded_normal.mix (ch_data_expanded_tumor))
 
 	emit:
 		cns = cnv_kit_single.out.cns
