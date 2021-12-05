@@ -14,8 +14,8 @@ workflow MAP
 {
 	take:
 		genome_build
+		ch_bwa_index
 		ch_fasta
-		ch_dir
 		ch_common_vcf
 		ch_data
 
@@ -38,13 +38,10 @@ workflow MAP
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching MAP workflow path for input:\n${it}" }
 
-		fastqc_paired_extracted (genome_build, Channel.value ("MAP_extracted"), ch_data_branched.paired)
+		fastqc_paired_extracted (genome_build, Channel.value ("MAP_input"), ch_data_branched.paired)
 		trim_paired (fastqc_paired_extracted.out.result)
-
-		trim_paired.out.result.set { ch_trim }
-
-		fastqc_paired_trimmed (genome_build, Channel.value ("MAP_trimmed"), ch_trim)
-		bwa_mem_paired (ch_fasta, ch_trim)
+		fastqc_paired_trimmed (genome_build, Channel.value ("MAP_trimmed"), trim_paired.out.result)
+		bwa_mem_paired (ch_fasta, fastqc_paired_trimmed.out.result)
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map {
