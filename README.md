@@ -86,6 +86,16 @@ Once you have setup mocaseq.config for your computing environment you can use [g
 
 ```bash
 # test_config_genome_* can be used with custom_config_* to specify a different location for the genome config files
+# fastq -> bam
+nextflow run \
+	roland-rad-lab/MoCaSeq \
+	-r human-pipeline-nextflow \
+	-entry MAP \
+	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--test_config_genome_version mocaseq \
+	--genome_build.human tiny.human \
+	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/fastq/human_map_design.tsv
+# bam -> bam
 nextflow run \
 	roland-rad-lab/MoCaSeq \
 	-r human-pipeline-nextflow \
@@ -94,7 +104,15 @@ nextflow run \
 	--test_config_genome_version mocaseq \
 	--genome_build.human tiny.human \
 	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_remap_design.tsv
-
+# pipeline (skipping steps that fail with little data)
+nextflow run \
+	roland-rad-lab/MoCaSeq \
+	-r human-pipeline-nextflow \
+	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--test_config_genome_version mocaseq \
+	--tiny \
+	--genome_build.human tiny.human \
+	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_design.tsv
 ```
 
 The following example will look for all three config files in ${HOME}/nextflow-configs/human-pipeline-nextflow/pipeline.
