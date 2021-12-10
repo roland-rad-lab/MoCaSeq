@@ -5,6 +5,8 @@ process manta_matched {
 	tag "${meta.sampleName}"
 
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta/variants", mode: "copy", pattern: "results/variants/*.vcf.gz*", saveAs: { it.replaceFirst ("^results/variants/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta/evidence", mode: "copy", pattern: "results/evidence/*", saveAs: { it.replaceFirst ("^results/evidence/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Manta/stats", mode: "copy", pattern: "results/stats/*", saveAs: { it.replaceFirst ("^results/stats/","") }
 
 	input:
 		val (genome_build)
@@ -15,6 +17,8 @@ process manta_matched {
 	output:
 		tuple val (meta), val ("matched"), path ("results/variants/somaticSV.vcf.gz"), path ("results/variants/somaticSV.vcf.gz.tbi"), emit: sv
 		tuple val (meta), val ("matched"), path ("results/variants/candidateSmallIndels.vcf.gz"), path ("results/variants/candidateSmallIndels.vcf.gz.tbi"), emit: indel
+		path ("results/evidence/*"), emit: evidence, optional: true
+		path ("results/stats/*"), emit: stats, optional: true
 
 	script:
 
