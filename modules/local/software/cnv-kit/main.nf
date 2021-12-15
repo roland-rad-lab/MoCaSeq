@@ -299,8 +299,8 @@ process cnv_kit_segment {
 		tuple val (meta), val (type), val (coverage_source), val (resolution), path (coverage_cnr)
 
 	output:
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
-		tuple val (meta), val (type), val ("${coverage_source}-cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
+		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
+		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash

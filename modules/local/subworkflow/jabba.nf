@@ -15,9 +15,15 @@ workflow JABBA
 
 		ch_interval_csv_string = ch_interval.map { it.join (",") }
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
-		ch_coverage_key = ch_coverage.filter { it[1] == "Tumor" }
+		ch_coverage_key = ch_coverage.filter {
+				it[1] == "Tumor" &&
+				( it[2] == "cnv-kit" || ( it[2] == "hmm-copy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () ) )
+			}
 			.map { [it[0]["sampleName"], ["coverage", [it[2], it[4]]], it[0]] }
-		ch_segment_key = ch_segment.filter { it[1] == "Tumor" }
+		ch_segment_key = ch_segment.filter {
+				it[1] == "Tumor" &&
+				( it[2] == "cnv-kit" || ( it[2] == "hmm-copy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () ) )
+			}
 			.map { [it[0]["sampleName"], ["segment", [it[2], it[4]]], it[0]] }
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()

@@ -3,6 +3,7 @@
 include {
 	interval_bed
 	cache_genome_url as cache_genome_url_bwa_index
+	cache_genome_url as cache_genome_url_all_vcf
 	cache_genome_url as cache_genome_url_common_vcf
 	cache_genome_url as cache_genome_url_dict
 	cache_genome_url as cache_genome_url_fasta
@@ -12,6 +13,7 @@ include {
 	cache_genome_url as cache_genome_url_map_wig
 	cache_genome_url as cache_genome_url_micro_satellite
 	cache_genome_url as cache_genome_url_ref_flat
+	cache_genome_url as cache_genome_url_sift_dbsnp
 } from "../software/genome/main"
 include {
 	bash_expand_path as bash_expand_path_gc
@@ -67,6 +69,7 @@ workflow GENOME_ANNOTATION
 
 	main:
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
+		ch_all_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["all_vcf"] ? Channel.of (params.genome_annotations[genome_name]["all_vcf"]).first () : Channel.empty ()
 		ch_ref_flat = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["ref_flat"] ? Channel.of (params.genome_annotations[genome_name]["ref_flat"]).first () : Channel.empty ()
 		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
@@ -74,6 +77,8 @@ workflow GENOME_ANNOTATION
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]).first () : Channel.empty ()
 		ch_micro_satellite = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["micro_satellite"] ? Channel.of (params.genome_annotations[genome_name]["micro_satellite"]).first () : Channel.empty ()
+		ch_sift_dbsnp = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_dbsnp"] ? Channel.of (params.genome_annotations[genome_name]["sift_dbsnp"]).first () : Channel.empty ()
+		ch_sift_fields = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_fields"] ? Channel.of (params.genome_annotations[genome_name]["sift_fields"]).first () : Channel.empty ()
 
 		ch_gc_wig_branched = ch_gc_wig.branch {
 			uri: it.startsWith ("https://")
@@ -84,24 +89,31 @@ workflow GENOME_ANNOTATION
 			other: true
 		}
 
+		cache_genome_url_all_vcf (genome_name, ch_all_vcf, Channel.value (["", "tbi"]))
 		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
 		cache_genome_url_gc_wig (genome_name, ch_gc_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_gencode_genes_bed (genome_name, ch_gencode_genes_bed, Channel.value ([""]))
 		cache_genome_url_map_wig (genome_name, ch_map_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_micro_satellite (genome_name, ch_micro_satellite, Channel.value ([""]))
 		cache_genome_url_ref_flat (genome_name, ch_ref_flat, Channel.value ([""]))
+		cache_genome_url_sift_dbsnp (genome_name, ch_sift_dbsnp, Channel.value ([""]))
 
 		bash_expand_path_gc (ch_gc_wig_branched.other)
 		bash_expand_path_map (ch_map_wig_branched.other)
 
+		ch_sift_sources = cache_genome_url_sift_dbsnp.out.result
+
 	emit:
 		par_interval_bed = ch_par_interval_bed
+		all_vcf = cache_genome_url_all_vcf.out.result
 		common_vcf = cache_genome_url_common_vcf.out.result
 		gc_wig = bash_expand_path_gc.out.splitText ().mix (cache_genome_url_gc_wig.out.result)
 		gencode_genes_bed = cache_genome_url_gencode_genes_bed.out.result
 		map_wig = bash_expand_path_map.out.splitText ().mix (cache_genome_url_map_wig.out.result)
 		micro_satellite = cache_genome_url_micro_satellite.out.result
 		ref_flat = cache_genome_url_ref_flat.out.result
+		sift_fields = ch_sift_fields
+		sift_sources = ch_sift_sources
 }
 
 

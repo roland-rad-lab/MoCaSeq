@@ -9,6 +9,12 @@ include {
 	mutect_combine_vcf as mutect_combine_vcf_single_tumor;
 } from "../software/mutect/main"
 
+include {
+	mutect_filter;
+	mutect_extract;
+	mutect_sift;
+} from "../software/mutect/annotate"
+
 workflow MUTECT
 {
 	take:
@@ -54,5 +60,33 @@ workflow MUTECT
 		mutect_combine_vcf_single_tumor (genome_build, ch_vcf_single_tumor)
 	emit:
 		result = mutect_combine_vcf.out.result.mix (mutect_combine_vcf_single_normal.out.result,mutect_combine_vcf_single_tumor.out.result)
+		full = mutect_combine_vcf.out.full.mix (mutect_combine_vcf_single_normal.out.full,mutect_combine_vcf_single_tumor.out.full)
+}
+
+workflow MUTECT_ANNOTATE
+{
+	take:
+		genome_build
+		ch_fasta
+		ch_data
+		ch_all_vcf
+		ch_common_vcf
+		ch_sift_sources
+		ch_sift_fields
+
+	main:
+		mutect_filter (genome_build, ch_fasta, ch_all_vcf, ch_common_vcf, ch_data.filter { it[1] == "matched" })
+
+		ch_filter_branched = mutect_filter.out.result.branch {
+			human: it[0]["organism"] == "human"
+			mouse: it[0]["organism"] == "mouse"
+			other: true
+		}
+
+		ch_filter_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [human,mouse]." }
+
+		mutect_sift (genome_build, ch_filter_branched.human, ch_sift_sources)
+		mutect_extract (genome_build, ch_filter_branched.mouse.mix (mutect_sift.out.result), ch_sift_fields)
+
 }
 

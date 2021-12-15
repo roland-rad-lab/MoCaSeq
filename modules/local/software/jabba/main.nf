@@ -131,12 +131,21 @@ jab = JaBbA(
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p JaBbA
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
-cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.vcf JaBbA/
-cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.cnv.vcf JaBbA/
-cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.vcf JaBbA/
-cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.cnv.vcf JaBbA/
+
+if [[ "${params.stub_json_map?.jabba_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.rds JaBbA/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.vcf JaBbA/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.cnv.vcf JaBbA/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.vcf JaBbA/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/JaBbA/jabba.simple.cnv.vcf JaBbA/
+fi
+
 touch JaBbA/jabba.rds
+touch JaBbA/jabba.vcf
+touch jabba.cnv.vcf
+touch JaBbA/jabba.simple.vcf
+touch JaBbA/jabba.simple.cnv.vcf
+
 	"""
 }
 
@@ -212,6 +221,7 @@ dev.off ()
 
 	stub:
 	"""#!/usr/bin/env bash
+
 touch ${meta.sampleName}.events.counts.tsv
 touch ${meta.sampleName}.events.json
 touch ${meta.sampleName}.events.pdf

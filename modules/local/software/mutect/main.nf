@@ -99,6 +99,7 @@ process mutect_combine_vcf {
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.m2.vcf.gz"), path ("${meta.sampleName}.${type}.m2.vcf.gz.tbi"), emit: result
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.m2.vcf.gz"), path ("${meta.sampleName}.${type}.m2.vcf.gz.tbi"), path ("${meta.sampleName}.${type}.m2.read-orientation-model.tar.gz"), emit: full
 
 	script:
 	"""#!/usr/bin/env bash
@@ -132,10 +133,13 @@ echo "\${cmd_learn_read_orientation}"
 if [[ "${params.stub_json_map?.mutect_combine_vcf}" == "null" ]]; then
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz .
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.read-orientation-model.tar.gz .
 fi
 
 touch ${meta.sampleName}.${type}.m2.vcf.gz
 touch ${meta.sampleName}.${type}.m2.vcf.gz.tbi
+touch ${meta.sampleName}.${type}.m2.read-orientation-model.tar.gz
+
 	"""
 }
 
