@@ -32,9 +32,11 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a ${name}/results/QC/${name}.
 
 # this will change the "PASS" flag, which is filtered later with SnpSift.jar filter
 if [ $artefact_type = 'no' ]; then
-	# just copy without filtering
-	cp ${name}/results/Mutect2/${name}.${type}.m2.vcf ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf
-
+	# filter but not the artifacts
+	java -jar $GATK_dir/gatk.jar FilterMutectCalls \
+	--variant ${name}/results/Mutect2/${name}.${type}.m2.vcf \
+	--output ${name}/results/Mutect2/${name}.${type}.m2.filt.vcf \
+	--reference $genome_file
 elif [ $artefact_type = 'yes' ]; then
 	# We expect the ob-file to already be available
 	# filter with ob-priors
