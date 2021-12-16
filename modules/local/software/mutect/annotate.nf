@@ -28,7 +28,7 @@ process mutect_filter {
 		val (reference)
 		val (all_snp_file)
 		val (common_snp_file)
-		tuple val (meta), val (type), path (vcf), path (vcf_index), path (model)
+		tuple val (meta), val (type), path (vcf), path (vcf_index), path (stats), path (model)
 
 	output:
 		tuple val (meta), path ("${meta.sampleName}.Mutect2.vcf.gz"), path ("${meta.sampleName}.Mutect2.vcf.gz.tbi"), emit: result
@@ -38,17 +38,11 @@ process mutect_filter {
 	"""#!/usr/bin/env bash
 
 if [[ "${params.mutect.artefact}" == "no" ]]; then
-	# just copy without filtering
 	java -jar ${params.gatk.jar} FilterMutectCalls \\
 	--variant ${vcf} \\
 	--output ${meta.sampleName}.Mutect.filtered.vcf.gz \\
 	--reference ${reference}
-
-	#cp ${vcf} ${meta.sampleName}.Mutect.filtered.vcf.gz
-	#cp ${vcf_index} ${meta.sampleName}.Mutect.filtered.vcf.gz.tbi
 elif [[ "${params.mutect.artefact}" == "yes" ]]; then
-	# We expect the ob-file to already be available
-	# filter artifacts
 	java -jar ${params.gatk.jar} FilterMutectCalls \\
 	--variant ${vcf} \\
 	--output ${meta.sampleName}.Mutect.filtered.vcf.gz \\
