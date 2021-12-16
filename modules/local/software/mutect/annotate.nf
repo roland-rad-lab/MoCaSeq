@@ -39,7 +39,13 @@ process mutect_filter {
 
 if [[ "${params.mutect.artefact}" == "no" ]]; then
 	# just copy without filtering
-	cp ${vcf} ${meta.sampleName}.Mutect.filtered.vcf.gz
+	java -jar ${params.gatk.jar} FilterMutectCalls \\
+	--variant ${vcf} \\
+	--output ${meta.sampleName}.Mutect.filtered.vcf.gz \\
+	--reference ${reference}
+
+	#cp ${vcf} ${meta.sampleName}.Mutect.filtered.vcf.gz
+	#cp ${vcf_index} ${meta.sampleName}.Mutect.filtered.vcf.gz.tbi
 elif [[ "${params.mutect.artefact}" == "yes" ]]; then
 	# We expect the ob-file to already be available
 	# filter artifacts
@@ -97,7 +103,9 @@ elif [[ "${params.mutect.filter}" == "none" ]]; then
 	| bgzip -c > ${meta.sampleName}.m2.postprocessed.snp_removed.vcf.gz
 
 	tabix -p vcf ${meta.sampleName}.m2.postprocessed.snp_removed.vcf.gz
-
+else
+	echo "Please supply a valid value for mutect.filter '${params.mutect.filter}' must be one of soft,hard,none"
+	exit 1
 fi
 
 bcftools norm -m -any -O z \\
