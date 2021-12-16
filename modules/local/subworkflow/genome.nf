@@ -79,6 +79,7 @@ workflow GENOME_ANNOTATION
 		ch_micro_satellite = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["micro_satellite"] ? Channel.of (params.genome_annotations[genome_name]["micro_satellite"]).first () : Channel.empty ()
 		ch_sift_dbsnp = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_dbsnp"] ? Channel.of (params.genome_annotations[genome_name]["sift_dbsnp"]).first () : Channel.empty ()
 		ch_sift_fields = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_fields"] ? Channel.of (params.genome_annotations[genome_name]["sift_fields"]).first () : Channel.empty ()
+		ch_snpeff_version = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["snpeff_version"] ? Channel.of (params.genome_annotations[genome_name]["snpeff_version"]).first () : Channel.empty ()
 
 		ch_gc_wig_branched = ch_gc_wig.branch {
 			uri: it.startsWith ("https://")
@@ -114,6 +115,7 @@ workflow GENOME_ANNOTATION
 		ref_flat = cache_genome_url_ref_flat.out.result
 		sift_fields = ch_sift_fields
 		sift_sources = ch_sift_sources
+		snpeff_version = ch_snpeff_version
 }
 
 

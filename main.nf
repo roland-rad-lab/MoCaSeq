@@ -162,10 +162,10 @@ workflow HUMAN_WGS
 
 	ch_bam = ch_input_branched_bam_branched.human_wgs
 
-	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
+	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
 	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
 	MUTECT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
-	MUTECT_ANNOTATE (params.genome_build.human, PREPARE_GENOME.out.fasta, MUTECT.out.full, GENOME_ANNOTATION.out.all_vcf, GENOME_ANNOTATION.out.common_vcf, GENOME_ANNOTATION.out.sift_sources, GENOME_ANNOTATION.out.sift_fields)
+	MUTECT_ANNOTATE (params.genome_build.human, PREPARE_GENOME.out.fasta, MUTECT.out.full, GENOME_ANNOTATION.out.snpeff_version, GENOME_ANNOTATION.out.all_vcf, GENOME_ANNOTATION.out.common_vcf, GENOME_ANNOTATION.out.sift_sources, GENOME_ANNOTATION.out.sift_fields)
 	DELLY (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_bam)
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
@@ -227,9 +227,10 @@ workflow MOUSE_WEX
 
 	ch_bam = ch_input_branched_bam_branched.mouse_wex
 
-	MANTA (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam)
+	MANTA (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
 	STRELKA (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
 	MUTECT (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
+	MUTECT_ANNOTATE (params.genome_build.human, PREPARE_GENOME.out.fasta, MUTECT.out.full, GENOME_ANNOTATION.out.snpeff_version, GENOME_ANNOTATION.out.all_vcf, GENOME_ANNOTATION.out.common_vcf, GENOME_ANNOTATION.out.sift_sources, GENOME_ANNOTATION.out.sift_fields)
 	HMM_COPY (params.genome_build.mouse, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (params.genome_build.mouse, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, MUTECT.out.result)
 	MSI_SENSOR (params.genome_build.mouse, GENOME_ANNOTATION.out.micro_satellite, ch_bam)

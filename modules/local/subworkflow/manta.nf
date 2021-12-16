@@ -9,6 +9,7 @@ workflow MANTA
 		ch_fasta
 		ch_interval_bed
 		ch_data
+		ch_snpeff_version
 
 	main:
 		ch_data_expanded = ch_data.filter { it["type"] == "Tumor" }.map { it ->
@@ -16,7 +17,7 @@ workflow MANTA
 		}
 
 		manta_matched (genome_build, ch_fasta, ch_interval_bed, ch_data_expanded)
-		manta_matched_post (genome_build, manta_matched.out.sv)
+		manta_matched_post (genome_build, ch_snpeff_version, manta_matched.out.sv)
 
 	emit:
 		result = manta_matched_post.out.result

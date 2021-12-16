@@ -43,17 +43,17 @@ workflow MUTECT
 		ch_vcf = mutect_matched.out.result.map { [[it[1], it[0]["sampleName"]].join ("__"), it] }
 			.groupTuple (size: interval_n.value)
 			.map { it[1] }
-			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] } ] }
+			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] }, it.collect { jt -> jt[4] } ] }
 
 		ch_vcf_single_normal = mutect_single_normal.out.result.map { [[it[1], it[0]["sampleName"]].join ("__"), it] }
 			.groupTuple (size: interval_n.value)
 			.map { it[1] }
-			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] } ] }
+			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] }, it.collect { jt -> jt[4] } ] }
 
 		ch_vcf_single_tumor = mutect_single_tumor.out.result.map { [[it[1], it[0]["sampleName"]].join ("__"), it] }
 			.groupTuple (size: interval_n.value)
 			.map { it[1] }
-			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] } ] }
+			.map { [ it[0][0], it[0][1], it.collect { jt -> jt[2] }, it.collect { jt -> jt[3] }, it.collect { jt -> jt[4] } ] }
 
 		mutect_combine_vcf (genome_build, ch_vcf)
 		mutect_combine_vcf_single_normal (genome_build, ch_vcf_single_normal)
@@ -69,13 +69,14 @@ workflow MUTECT_ANNOTATE
 		genome_build
 		ch_fasta
 		ch_data
+		ch_snpeff_version
 		ch_all_vcf
 		ch_common_vcf
 		ch_sift_sources
 		ch_sift_fields
 
 	main:
-		mutect_filter (genome_build, ch_fasta, ch_all_vcf, ch_common_vcf, ch_data.filter { it[1] == "matched" })
+		mutect_filter (genome_build, ch_fasta, ch_snpeff_version, ch_all_vcf, ch_common_vcf, ch_data.filter { it[1] == "matched" })
 
 		ch_filter_branched = mutect_filter.out.result.branch {
 			human: it[0]["organism"] == "human"
