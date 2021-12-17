@@ -1,4 +1,5 @@
 
+params.snpsift = [:]
 params.strelka = [:]
 
 process strelka_matched {
@@ -75,7 +76,7 @@ process strelka_matched_post {
 	"""#!/usr/bin/env bash
 
 zcat somatic.snvs.vcf \\
-	| java -jar ${params.annotation.snpeff.dir}/SnpSift.jar filter \\
+	| java -jar ${params.snpsift.jar} filter \\
 	" \\
 	( ( ( FILTER = 'PASS' ) & ( ALT = 'T' ) & ( GEN[NORMAL].TU[0] <= 1 ) & ( GEN[TUMOR].TU[0] >= 2 ) & ( GEN[TUMOR].DP >= 5 ) & ( GEN[NORMAL].DP >= 5 ) & ( GEN[TUMOR].DP * 0.05 <= GEN[TUMOR].TU[0] ) ) \\
 	| ( ( FILTER = 'PASS' ) & ( ALT = 'A' ) & ( GEN[NORMAL].AU[0] <= 1 ) & ( GEN[TUMOR].AU[0] >= 2 ) & ( GEN[TUMOR].DP >= 5 ) & ( GEN[NORMAL].DP >= 5 ) & ( GEN[TUMOR].DP * 0.05 <= GEN[TUMOR].AU[0] ) ) \\
@@ -86,7 +87,7 @@ zcat somatic.snvs.vcf \\
 tabix -p vcf ${meta.sampleName}.str.snp.post-processed.vcf.gz
 
 zcat ${somatic_indel_vcf} \\
-	| java -jar ${params.annotation.snpeff.dir}/SnpSift.jar filter \\
+	| java -jar ${params.snpsift.jar} filter \\
 	" \\
 	( ( FILTER = 'PASS' ) & ( GEN[TUMOR].DP >= 5 ) & ( GEN[NORMAL].DP >= 5 ) & ( GEN[NORMAL].TIR[0] <= 1) & \\
 	( GEN[TUMOR].TIR[0] >= 2 ) & ( GEN[TUMOR].DP * 0.05 <= GEN[TUMOR].TIR[0] ) )

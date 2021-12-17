@@ -11,8 +11,8 @@ process mutect_extract {
 
 	input:
 		val (genome_build)
-		tuple val (meta), val(type), path (vcf), path (vcf_index)
 		val (sift_fields)
+		tuple val (meta), val(type), path (vcf), path (vcf_index)
 
 	script:
 	"""#!/usr/bin/env bash
@@ -34,12 +34,10 @@ process mutect_filter {
 	input:
 		val (genome_build)
 		val (reference)
-		val (all_snp_file)
-		val (common_snp_file)
 		tuple val (meta), val (type), path (vcf), path (vcf_index), path (stats), path (model)
 
 	output:
-		tuple val (meta), val(type), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz"), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi"), emit: result
+		tuple val (meta), val(type), path ("${meta.sampleName}.${type}.m2.filtered.vcf.gz"), path ("${meta.sampleName}.${type}.m2.filtered.vcf.gz.tbi"), emit: result
 		path ("${meta.sampleName}.${type}.m2.filtered.summary.txt")
 
 	script:
@@ -61,9 +59,106 @@ fi
 # output filtering statistics
 zcat ${meta.sampleName}.${type}.m2.filtered.vcf.gz | grep "^[^#;]" | cut -f 7 | sort | uniq -c | sort -nr > ${meta.sampleName}.${type}.m2.filtered.summary.txt
 
+	"""
+}
+
+process mutect_post_process_single
+{
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (all_snp_file)
+		val (common_snp_file)
+		tuple val (meta), val (type), path (vcf), path (vcf_index)
+
+	output:
+		tuple val (meta), val(type), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz"), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi"), emit: result
+		path ("${meta.sampleName}.${type}.Mutect2.Positions.txt")
+
+	script:
+	"""#!/usr/bin/env bash
+
+java -jar ${params.snpsift.jar} extractFields \\
+${vcf} \\
+CHROM POS REF ALT "GEN["$type"].AF" "GEN["$type"].AD[0]" \\
+"GEN["$type"].AD[1]" MMQ[1] MBQ[1] \\
+> ${meta.sampleName}.${type}.Mutect2.Positions.txt
+
+java -jar ${params.gatk.jar} SelectVariants --max-indel-size 10 \\
+-V ${vcf} \\
+-output ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz
+
+if [ $filtering = 'soft' ]; then
+	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
+	| java -jar ${params.snpsift.jar} filter \\
+	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.05) & \\
+	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 5) )" \\
+	| bgzip -c > ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
+
+	tabix -p vcf ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
+
+	bcftools isec -C -c none -O z -w 1 \\
+	-o ${meta.sampleName}.${type}.m2.postprocessed.snp_removed.vcf.gz \\
+	${meta.sampleName}.${type}.m2.postprocessed.vcf.gz \\
+	${common_snp_file}
+
+elif [ $filtering = 'hard' ]; then
+	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
+	| java -jar ${params.snpsift.jar} filter \\
+	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.1) & \\
+	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 10) )" \\
+	| bgip -c > ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
+
+	tabix -p vcf ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
+
+	bcftools isec -C -c none -O z -w 1 \\
+	-o ${meta.sampleName}.${type}.m2.postprocessed.snp_removed.vcf.gz \\
+	${meta.sampleName}.${type}.m2.postprocessed.vcf.gz \\
+	${all_snp_file}
+
+elif [ $filtering = 'none' ]; then
+	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
+	| java -jar ${params.snpsift.jar} filter \\
+	"( ( FILTER = 'PASS' ) )" \\
+	| bgzip -c > ${meta.sampleName}.${type}.m2.postprocessed.snp_removed.vcf.gz
+
+else
+	echo "Please supply a valid value for mutect.filter '${params.mutect.filter}' must be one of soft,hard,none"
+	exit 1
+fi
+
+bcftools norm -m -any -O z \\
+	-o ${meta.sampleName}.${type}.Mutect2.vcf.gz \\
+	${meta.sampleName}.${type}.m2.postprocessed.snp_removed.vcf.gz
+
+tabix -p vcf ${meta.sampleName}.${type}.Mutect2.vcf.gz
+
+	"""
+}
+
+process mutect_post_process_matched {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (all_snp_file)
+		val (common_snp_file)
+		tuple val (meta), val (type), path (vcf), path (vcf_index)
+
+	output:
+		tuple val (meta), val(type), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz"), path ("${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi"), emit: result
+
+	script:
+	"""#!/usr/bin/env bash
+
 java -jar ${params.gatk.jar} SelectVariants \\
 	--max-indel-size 10 \\
-	-V ${meta.sampleName}.${type}.m2.filtered.vcf.gz \\
+	-V ${vcf} \\
 	-output ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz
 
 if [[ "${params.mutect.filter}" == "soft" ]]; then
@@ -99,7 +194,7 @@ elif [[ "${params.mutect.filter}" == "hard" ]]; then
 	${all_snp_file}
 
 elif [[ "${params.mutect.filter}" == "none" ]]; then
-	cat ${meta.sampleName}.${type}.m2.filtered.selected.vcf \\
+	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
 	| java -jar ${params.snpsift.jar} filter \\
 	"( ( FILTER = 'PASS' ) )" \\
 	| bgzip -c > ${meta.sampleName}.${type}.m2.postprocessed.snp_removed.vcf.gz
@@ -127,16 +222,20 @@ process mutect_sift {
 
 	input:
 		val (genome_build)
+		val (dbnsfp)
+		val (sift_sources)
 		val (snpeff_version)
 		tuple val (meta), val (type), path (vcf), path (vcf_index)
-		val (sift_sources)
 
 	output:
 		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz"), path ("${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi"), emit: result
 		path ("${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.stats")
 
 	script:
-	"""#!/usr/bin/env bash
+	switch ( meta["organism"] )
+	{
+		case "human":
+			"""#!/usr/bin/env bash
 
 mv ${vcf} input.0.vcf.gz
 ticker=1
@@ -150,6 +249,14 @@ do
 	ticker_prev=\${ticker}
 done
 
+ticker=\$((ticker_prev+1))
+java -Xmx16g -jar ${params.snpsift.jar} \\
+	DbNSFP -db ${dbnsfp} \\
+	-v input.\${ticker_prev}.vcf.gz \\
+	-f MetaLR_pred,MetaSVM_pred,SIFT_pred,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,PROVEAN_pred \\
+	| bgzip -c > input.\${ticker}.vcf.gz
+ticker_prev=\${ticker}
+
 java -Xmx16g -jar ${params.snpeff.jar} ${snpeff_version} -canon \\
 	-csvStats ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.stats \\
 	input.\${ticker_prev}.vcf.gz \\
@@ -157,7 +264,18 @@ java -Xmx16g -jar ${params.snpeff.jar} ${snpeff_version} -canon \\
 
 tabix -p vcf ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
 
-	"""
+			"""
+			break
+		case "mouse":
+			"""#!/usr/bin/env bash
+mv ${vcf} ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
+mv ${vcf_index} ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi
+			"""
+			break
+		default:
+			exit 1, "[MoCaSeq] Error: Unrecogised organism '${meta.organism}' must be one of [human,mouse] in mutect_sift"
+			break
+	}
 }
 
 

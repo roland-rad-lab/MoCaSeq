@@ -11,6 +11,8 @@ include {
 
 include {
 	mutect_filter;
+	mutect_post_process_single;
+	mutect_post_process_matched;
 	mutect_extract;
 	mutect_sift;
 } from "../software/mutect/annotate"
@@ -72,22 +74,25 @@ workflow MUTECT_ANNOTATE
 		ch_snpeff_version
 		ch_all_vcf
 		ch_common_vcf
+		ch_dbnsfp
 		ch_sift_sources
 		ch_sift_fields
 
 	main:
-		mutect_filter (genome_build, ch_fasta, ch_snpeff_version, ch_all_vcf, ch_common_vcf, ch_data.filter { it[1] == "matched" })
+		mutect_filter (genome_build, ch_fasta, ch_data)
 
 		ch_filter_branched = mutect_filter.out.result.branch {
-			human: it[0]["organism"] == "human"
-			mouse: it[0]["organism"] == "mouse"
+			single: it[1] == "Tumor" || it[1] == "Normal"
+			matched: it[1] == "matched"
 			other: true
 		}
 
-		ch_filter_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [human,mouse]." }
+		ch_filter_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [Tumor,Normal,matched]." }
 
-		mutect_sift (genome_build, ch_filter_branched.human, ch_sift_sources)
-		mutect_extract (genome_build, ch_filter_branched.mouse.mix (mutect_sift.out.result), ch_sift_fields)
+		mutect_post_process_single (genome_build, ch_all_vcf, ch_common_vcf, ch_filter_branched.single)
+		mutect_post_process_matched (genome_build, ch_all_vcf, ch_common_vcf, ch_filter_branched.matched)
 
+		mutect_sift (genome_build, ch_dbnsfp, ch_sift_sources, ch_snpeff_version, mutect_post_process_single.out.result.mix (mutect_post_process_matched.out.result))
+		mutect_extract (genome_build, ch_sift_fields, mutect_sift.out.result)
 }
 
