@@ -526,6 +526,14 @@ elif [ $repeat_mapping = "yes" ]; then
 	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
 	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
 
+	# BAM files have to be sorted! We will assume they are (because of runtime) but this would be the code to fix it:
+	# samtools sort $bam_tumor > $temp_dir/${name}.Tumor.raw.sorted.bam
+	# samtools index $temp_dir/${name}.Tumor.raw.sorted.bam
+	# bam_tumor=${name}.Tumor.sorted.bam
+	# samtools sort $bam_normal > $temp_dir/${name}.Normal.raw.sorted.bam
+	# samtools index $temp_dir/${name}.Normal.raw.sorted.bam
+	# bam_normal=${name}.Normal.sorted.bam
+
 	if [ $runmode = 'MS' ]; then
 	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
 	-INPUT $bam_tumor \
@@ -1304,7 +1312,7 @@ if [ $runmode = "MS" ] && [ $BubbleTree = 'yes' ]; then
 	echo '---- Run BubbleTree ----' | tee -a $name/results/QC/$name.report.txt
 	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	Rscript $repository_dir/all_RunBubbleTree.R $name $CNVmethod
+	Rscript $repository_dir/all_RunBubbleTree.R $name $CNVmethod $species
 fi
 
 
