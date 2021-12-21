@@ -88,6 +88,25 @@ if (cnv_method=="Copywriter"){
   seg.dat.fn <- file.path(paste0(name,"/results/BubbleTree/",name,".HMMCopy.20000.segments.txt.fn"))
   
 	cnv = read.delim(seg.dat.fn)
+}  else if (cnv_method=="CNVKit") {
+
+  # check if sample is matched, else 
+  segfileMatched <- paste0(name,"/results/CNVKit/matched/",name,".cns")
+  segfileSingle <- paste0(name,"/results/CNVKit/matched/",name,".cns")
+  
+  if(file.exists(segfileMatched)){
+    segfile <- segfileMatched
+  } else if(file.exists(segfileSingle)){
+    segfile <- segfileSingle
+  } else {
+    stop("CNVKit segment file not found")
+  }
+  
+  segments <- read.delim(segfile)
+  segments <- segments[,c("chromosome","start","end","probes","log2")]
+  names(segments) <- c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
+  write.table(segments, paste0(name,"/results/BubbleTree/",name,".CNVKit.segments.txt.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+  cnv <- segments
 }
 
 cnv.gr <- GenomicRanges::GRanges(cnv$Chromosome, IRanges(cnv$Start, cnv$End), num.mark=cnv$Num_Probes, seg.mean=cnv$Segment_Mean)
