@@ -128,6 +128,8 @@ workflow GENOME_ANNOTATION
 				cache_genome_url_sift_gnomad_exome.out.result,
 				cache_genome_url_sift_gnomad_genome.out.result
 			)
+			.toList ()
+			.map { it.join (" ") }
 
 	emit:
 		par_interval_bed = ch_par_interval_bed

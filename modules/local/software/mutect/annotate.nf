@@ -4,7 +4,33 @@ params.mutect = [:]
 params.snpeff = [:]
 params.snpsift = [:]
 
-process mutect_extract {
+process mutect_extract_single {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (sift_fields)
+		tuple val (meta), val (type), path (vcf), path (vcf_index)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt")
+
+	script:
+	"""#!/usr/bin/env bash
+
+zcat ${vcf} | ${params.snpeff.one_per_line} | bgzip -c > ${meta.sampleName}.${type}.one.vcf.gz
+
+java -jar ${params.snpsift.jar} extractFields \\
+	${meta.sampleName}.${type}.one.vcf.gz \\
+	CHROM POS REF ALT "GEN[${type}].AF" "GEN[${type}].AD[0]" "GEN[${type}].AD[1]" \\
+	${sift_fields} > ${meta.sampleName}.${type}.Mutect2.txt
+
+	"""
+}
+
+process mutect_extract_matched {
 	tag "${meta.sampleName}"
 
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
@@ -14,6 +40,9 @@ process mutect_extract {
 		val (sift_fields)
 		tuple val (meta), val(type), path (vcf), path (vcf_index)
 
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt")
+
 	script:
 	"""#!/usr/bin/env bash
 
@@ -21,10 +50,14 @@ zcat ${vcf} | ${params.snpeff.one_per_line} | bgzip -c > ${meta.sampleName}.${ty
 
 java -jar ${params.snpsift.jar} extractFields \\
 	${meta.sampleName}.${type}.one.vcf.gz \\
+	CHROM POS REF ALT "GEN[Tumor].AF" \\
+	"GEN[Tumor].AD[0]" "GEN[Tumor].AD[1]" \\
+	"GEN[Normal].AD[0]" "GEN[Normal].AD[1]" \\
 	${sift_fields} > ${meta.sampleName}.${type}.Mutect2.txt
 
 	"""
 }
+
 
 process mutect_filter {
 	tag "${meta.sampleName}"
@@ -54,7 +87,11 @@ elif [[ "${params.mutect.artefact}" == "yes" ]]; then
 	--output ${meta.sampleName}.${type}.m2.filtered.vcf.gz \\
 	--reference ${reference} \\
 	--ob-priors ${model}
+else
+	echo "Please supply a valid value for mutect.artefact '${params.mutect.artefact}' must be one of yes,no"
+	exit 1
 fi
+
 
 # output filtering statistics
 zcat ${meta.sampleName}.${type}.m2.filtered.vcf.gz | grep "^[^#;]" | cut -f 7 | sort | uniq -c | sort -nr > ${meta.sampleName}.${type}.m2.filtered.summary.txt
@@ -91,11 +128,11 @@ java -jar ${params.gatk.jar} SelectVariants --max-indel-size 10 \\
 -V ${vcf} \\
 -output ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz
 
-if [ $filtering = 'soft' ]; then
+if [[ "${params.mutect.filter}" = "soft" ]]; then
 	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
 	| java -jar ${params.snpsift.jar} filter \\
-	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.05) & \\
-	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 5) )" \\
+	"( ( FILTER = 'PASS') & (GEN[${type}].AF >= 0.05) & \\
+	(GEN[${type}].AD[1] >= 2) & (GEN[${type}].AD[0] + GEN[${type}].AD[1] >= 5) )" \\
 	| bgzip -c > ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
 
 	tabix -p vcf ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
@@ -105,11 +142,11 @@ if [ $filtering = 'soft' ]; then
 	${meta.sampleName}.${type}.m2.postprocessed.vcf.gz \\
 	${common_snp_file}
 
-elif [ $filtering = 'hard' ]; then
+elif [[ "${params.mutect.filter}" = "hard" ]]; then
 	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
 	| java -jar ${params.snpsift.jar} filter \\
-	"( ( FILTER = 'PASS') & (GEN[$type].AF >= 0.1) & \\
-	(GEN[$type].AD[1] >= 2) & (GEN[$type].AD[0] + GEN[$type].AD[1] >= 10) )" \\
+	"( ( FILTER = 'PASS') & (GEN[${type}].AF >= 0.1) & \\
+	(GEN[${type}].AD[1] >= 2) & (GEN[${type}].AD[0] + GEN[${type}].AD[1] >= 10) )" \\
 	| bgip -c > ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
 
 	tabix -p vcf ${meta.sampleName}.${type}.m2.postprocessed.vcf.gz
@@ -119,7 +156,7 @@ elif [ $filtering = 'hard' ]; then
 	${meta.sampleName}.${type}.m2.postprocessed.vcf.gz \\
 	${all_snp_file}
 
-elif [ $filtering = 'none' ]; then
+elif [[ "${params.mutect.filter}" = "none" ]]; then
 	zcat ${meta.sampleName}.${type}.m2.filtered.selected.vcf.gz \\
 	| java -jar ${params.snpsift.jar} filter \\
 	"( ( FILTER = 'PASS' ) )" \\
@@ -237,7 +274,7 @@ process mutect_sift {
 		case "human":
 			"""#!/usr/bin/env bash
 
-mv ${vcf} input.0.vcf.gz
+ln -s \$(readlink ${vcf}) input.0.vcf.gz
 ticker=1
 ticker_prev=0
 for sift_source in ${sift_sources};
@@ -268,8 +305,8 @@ tabix -p vcf ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
 			break
 		case "mouse":
 			"""#!/usr/bin/env bash
-mv ${vcf} ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
-mv ${vcf_index} ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi
+ln -s \$(readlink ${vcf}) ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
+ln -s \$(readlink ${vcf_index}) ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi
 			"""
 			break
 		default:
