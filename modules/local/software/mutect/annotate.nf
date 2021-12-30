@@ -28,6 +28,18 @@ java -jar ${params.snpsift.jar} extractFields \\
 	${sift_fields} > ${meta.sampleName}.${type}.Mutect2.txt
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_extract_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.txt .
+fi
+
+touch ${meta.sampleName}.${type}.Mutect2.txt
+
+	"""
+
 }
 
 process mutect_extract_matched {
@@ -56,6 +68,18 @@ java -jar ${params.snpsift.jar} extractFields \\
 	${sift_fields} > ${meta.sampleName}.${type}.Mutect2.txt
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_extract_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.txt .
+fi
+
+touch ${meta.sampleName}.${type}.Mutect2.txt
+
+	"""
+
 }
 
 
@@ -97,6 +121,22 @@ fi
 zcat ${meta.sampleName}.${type}.m2.filtered.vcf.gz | grep "^[^#;]" | cut -f 7 | sort | uniq -c | sort -nr > ${meta.sampleName}.${type}.m2.filtered.summary.txt
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_filter}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.filtered.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.filtered.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.m2.filtered.summary.txt .
+fi
+
+touch ${meta.sampleName}.${type}.m2.filtered.vcf.gz
+touch ${meta.sampleName}.${type}.m2.filtered.vcf.gz.tbi
+touch ${meta.sampleName}.${type}.m2.filtered.summary.txt
+
+	"""
+
 }
 
 process mutect_post_process_single
@@ -174,6 +214,22 @@ bcftools norm -m -any -O z \\
 tabix -p vcf ${meta.sampleName}.${type}.Mutect2.vcf.gz
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_post_process_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.Positions.txt .
+fi
+
+touch ${meta.sampleName}.${type}.Mutect2.vcf.gz
+touch ${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi
+touch ${meta.sampleName}.${type}.Mutect2.Positions.txt
+
+	"""
+
 }
 
 process mutect_post_process_matched {
@@ -250,6 +306,19 @@ tabix -p vcf ${meta.sampleName}.${type}.Mutect2.vcf.gz
 
 	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_post_process_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi .
+fi
+
+touch ${meta.sampleName}.${type}.Mutect2.vcf.gz
+touch ${meta.sampleName}.${type}.Mutect2.vcf.gz.tbi
+
+	"""
+
 }
 
 process mutect_sift {
@@ -313,6 +382,21 @@ ln -s \$(readlink ${vcf_index}) ${meta.sampleName}.${type}.Mutect2.annotated.vcf
 			exit 1, "[MoCaSeq] Error: Unrecogised organism '${meta.organism}' must be one of [human,mouse] in mutect_sift"
 			break
 	}
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.mutect_sift}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Mutect2/${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.stats .
+fi
+
+touch ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz
+touch ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.tbi
+touch ${meta.sampleName}.${type}.Mutect2.annotated.vcf.gz.stats
+
+	"""
 }
 
 
