@@ -15,7 +15,7 @@ process mutect_extract_single {
 		tuple val (meta), val (type), path (vcf), path (vcf_index)
 
 	output:
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -53,7 +53,7 @@ process mutect_extract_matched {
 		tuple val (meta), val(type), path (vcf), path (vcf_index)
 
 	output:
-		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.txt"), emit: result
 
 	script:
 	"""#!/usr/bin/env bash
@@ -82,6 +82,107 @@ touch ${meta.sampleName}.${type}.Mutect2.txt
 
 }
 
+process mutect_filter_result_impact {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (cgc_tsv)
+		tuple val (meta), val (type), path (result_tsv)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt")
+
+	script:
+	"""#!/usr/bin/env Rscript
+
+library (dplyr)
+
+data <- read.table (file="${result_tsv}",sep="\\t",header=T,stringsAsFactors=F)
+head (data)
+
+data_cgc <- read.table (file="${cgc_tsv}",sep="\\t",header=T,stringsAsFactors=F)
+head (data_cgc)
+
+data_rare_impact <- data %>%
+	dplyr::filter (ANN....IMPACT %in% c("HIGH", "MODERATE")) %>%
+	data.frame
+
+write.table (data_rare_impact %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.txt",sep="\\t",row.names=F,quote=F)
+
+data_rare_impact_cgc <- data_rare_impact %>%
+	dplyr::left_join (data_cgc %>% dplyr::select (Gene.Symbol) %>% data.frame,by=c("ANN....GENE"="Gene.Symbol")) %>%
+	data.frame
+
+write.table (data_rare_impact_cgc %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt",sep="\\t",row.names=F,quote=F)
+
+	"""
+}
+
+process mutect_filter_result_impact_rare {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
+	input:
+		val (genome_build)
+		val (cgc_tsv)
+		val (tru_sight)
+		tuple val (meta), val (type), path (result_tsv)
+
+	output:
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt")
+		tuple val (meta), val (type), path ("${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.TruSight.txt")
+
+	script:
+	"""#!/usr/bin/env Rscript
+
+library (dplyr)
+
+data <- read.table (file="${result_tsv}",sep="\\t",header=T,stringsAsFactors=F)
+head (data)
+
+data_cgc <- read.table (file="${cgc_tsv}",sep="\\t",header=T,stringsAsFactors=F)
+head (data_cgc)
+
+data_tru_sight <- read.table (file="${tru_sight}",sep="\\t",header=F,stringsAsFactors=F)
+head (data_tru_sight)
+
+data_rare <- data %>%
+	dplyr::mutate (dplyr::across (AF, ~ dplyr::if_else (is.na (.x),0,.x))) %>%
+	dplyr::mutate (dplyr::across (c(AC,AN), ~ dplyr::if_else (is.na (.x),0L,.x))) %>%
+	dplyr::filter (G5=="false",AF < 0.1 & AN < 100 | AF <0.01 & AN >= 100) %>%
+	data.frame
+
+write.table (data_rare %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.txt",sep="\\t",row.names=F,quote=F)
+
+data_rare_impact <- data_rare %>%
+	dplyr::filter (ANN....IMPACT %in% c("HIGH", "MODERATE")) %>%
+	data.frame
+
+write.table (data_rare_impact %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.txt",sep="\\t",row.names=F,quote=F)
+
+data_rare_impact_cgc <- data_rare_impact %>%
+	dplyr::left_join (data_cgc %>% dplyr::select (Gene.Symbol) %>% data.frame,by=c("ANN....GENE"="Gene.Symbol")) %>%
+	data.frame
+
+write.table (data_rare_impact_cgc %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt",sep="\\t",row.names=F,quote=F)
+
+data_rare_impact_cgc_tru_sight <- data_rare_impact_cgc %>%
+	dplyr::left_join (data_tru_sight %>% dplyr::select (V1) %>% data.frame,by=c("ANN....GENE"="V1")) %>%
+	data.frame
+
+write.table (data_rare_impact_cgc_tru_sight %>% dplyr::mutate (dplyr::across (dplyr::everything (),~ ifelse (is.na (.x),"",.x))) %>% data.frame,file="${meta.sampleName}.${type}.Mutect2.NoCommonSNPs.OnlyImpact.CGC.TruSight.txt",sep="\\t",row.names=F,quote=F)
+
+	"""
+
+}
 
 process mutect_filter {
 	tag "${meta.sampleName}"

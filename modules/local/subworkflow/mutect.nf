@@ -11,11 +11,13 @@ include {
 
 include {
 	mutect_filter;
-	mutect_post_process_single;
-	mutect_post_process_matched;
+	mutect_filter_result_impact;
+	mutect_filter_result_impact_rare;
 	mutect_extract_single;
 	mutect_extract_matched;
-	mutect_sift;
+	mutect_post_process_single;
+	mutect_post_process_matched;
+	mutect_sift
 } from "../software/mutect/annotate"
 
 workflow MUTECT
@@ -105,5 +107,33 @@ workflow MUTECT_ANNOTATE
 
 		mutect_extract_single (genome_build, ch_sift_fields, ch_sift_branched.single)
 		mutect_extract_matched (genome_build, ch_sift_fields, ch_sift_branched.matched)
+
+	emit:
+		result = mutect_extract_single.out.result.mix (mutect_extract_matched.out.result)
 }
+
+workflow MUTECT_RESULT_IMPACT
+{
+	take:
+		genome_build
+		ch_data
+		ch_cgc
+	main:
+		mutect_filter_result_impact (genome_build, ch_cgc, ch_data)
+
+}
+
+workflow MUTECT_RESULT_IMPACT_RARE
+{
+
+	take:
+		genome_build
+		ch_data
+		ch_cgc
+		ch_tru_sight
+
+	main:
+		mutect_filter_result_impact_rare (genome_build, ch_cgc, ch_tru_sight, ch_data)
+}
+
 

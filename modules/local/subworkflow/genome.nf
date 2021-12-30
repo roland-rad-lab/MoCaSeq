@@ -4,6 +4,7 @@ include {
 	interval_bed
 	cache_genome_url as cache_genome_url_bwa_index
 	cache_genome_url as cache_genome_url_all_vcf
+	cache_genome_url as cache_genome_url_cgc
 	cache_genome_url as cache_genome_url_common_vcf
 	cache_genome_url as cache_genome_url_dbnsfp
 	cache_genome_url as cache_genome_url_dict
@@ -20,6 +21,7 @@ include {
 	cache_genome_url as cache_genome_url_sift_dbsnp
 	cache_genome_url as cache_genome_url_sift_gnomad_exome
 	cache_genome_url as cache_genome_url_sift_gnomad_genome
+	cache_genome_url as cache_genome_url_tru_sight
 } from "../software/genome/main"
 include {
 	bash_expand_path as bash_expand_path_gc
@@ -80,6 +82,7 @@ workflow GENOME_ANNOTATION
 		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
 		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
+		ch_cgc = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["cgc"] ? Channel.of (params.genome_annotations[genome_name]["cgc"]).first () : Channel.empty ()
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()
 		ch_dbnsfp = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["dbnsfp"] ? Channel.of (params.genome_annotations[genome_name]["dbnsfp"]).first () : Channel.empty ()
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]).first () : Channel.empty ()
@@ -92,6 +95,7 @@ workflow GENOME_ANNOTATION
 		ch_sift_gnomad_genome = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_gnomad_genome"] ? Channel.of (params.genome_annotations[genome_name]["sift_gnomad_genome"]).first () : Channel.empty ()
 		ch_sift_fields = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_fields"] ? Channel.of (params.genome_annotations[genome_name]["sift_fields"]).first () : Channel.empty ()
 		ch_snpeff_version = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["snpeff_version"] ? Channel.of (params.genome_annotations[genome_name]["snpeff_version"]).first () : Channel.empty ()
+		ch_tru_sight = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["tru_sight"] ? Channel.of (params.genome_annotations[genome_name]["tru_sight"]).first () : Channel.empty ()
 
 		ch_gc_wig_branched = ch_gc_wig.branch {
 			uri: it.startsWith ("https://")
@@ -103,6 +107,7 @@ workflow GENOME_ANNOTATION
 		}
 
 		cache_genome_url_all_vcf (genome_name, ch_all_vcf, Channel.value (["", "tbi"]))
+		cache_genome_url_cgc (genome_name, ch_cgc, Channel.value ([""]))
 		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
 		cache_genome_url_dbnsfp (genome_name, ch_dbnsfp, Channel.value (["", "tbi"]))
 		cache_genome_url_gc_wig (genome_name, ch_gc_wig_branched.uri, Channel.value ([""]))
@@ -116,6 +121,7 @@ workflow GENOME_ANNOTATION
 		cache_genome_url_sift_dbsnp (genome_name, ch_sift_dbsnp, Channel.value ([""]))
 		cache_genome_url_sift_gnomad_exome (genome_name, ch_sift_gnomad_exome, Channel.value (["", "tbi"]))
 		cache_genome_url_sift_gnomad_genome (genome_name, ch_sift_gnomad_genome, Channel.value (["", "tbi"]))
+		cache_genome_url_tru_sight (genome_name, ch_tru_sight, Channel.value ([""]))
 
 		bash_expand_path_gc (ch_gc_wig_branched.other)
 		bash_expand_path_map (ch_map_wig_branched.other)
@@ -134,6 +140,7 @@ workflow GENOME_ANNOTATION
 	emit:
 		par_interval_bed = ch_par_interval_bed
 		all_vcf = cache_genome_url_all_vcf.out.result
+		cgc = cache_genome_url_cgc.out.result
 		common_vcf = cache_genome_url_common_vcf.out.result
 		dbnsfp = cache_genome_url_dbnsfp.out.result
 		gc_wig = bash_expand_path_gc.out.splitText ().mix (cache_genome_url_gc_wig.out.result)
@@ -144,6 +151,7 @@ workflow GENOME_ANNOTATION
 		sift_fields = ch_sift_fields
 		sift_sources = ch_sift_sources
 		snpeff_version = ch_snpeff_version
+		tru_sight = cache_genome_url_tru_sight.out.result
 }
 
 
