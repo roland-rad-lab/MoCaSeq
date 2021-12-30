@@ -104,10 +104,14 @@ write.table (data_rare_impact_cgc_tru_sight %>% dplyr::mutate (dplyr::across (dp
 process mutect_signatures_matched {
 	tag "${meta.sampleName}"
 
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
+
 	input:
 		val (genome_build)
 		tuple val (meta), val (type), path (vcf), path (vcf_index)
 
+	output:
+		path ("*.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -133,12 +137,17 @@ BSgenome <- switch ("${meta.organism}",
 		stop ("Error: unrecognised organism '${meta.organism}'")
 	})
 
-system2 ("bcftools",args=c("query","--format","%CHROM\\\\t%POS\\\\t%REF\\\\t%ALT\\\\n","${vcf}"),stdout="${meta.sampleName}.${type}.Mutect2.tsv",wait=T)
-data_sample <- read.table chr(file="${meta.sampleName}.${type}.Mutect2.tsv",sep="\\t",header=F,stringsAsFactors=F)
-names (data_sample) <- c("chromosome", "pos", "ref", "alt")
-head (data_sample)
+system2 ("bcftools",args=c("query","--format","%CHROM\\\\\\\\t%POS\\\\\\\\t%REF\\\\\\\\t%ALT\\\\\\\\n","${vcf}"),stdout="${meta.sampleName}.${type}.Mutect2.tsv",wait=T)
+data <- read.table (file="${meta.sampleName}.${type}.Mutect2.tsv",sep="\\t",header=F,stringsAsFactors=F)
+names (data) <- c("chromosome", "pos", "ref", "alt")
+head (data)
 
-sigs.input <- mut.to.sigs.input(mut.ref=data_sample, sample.id="${meta.sampleName}",chr="chromosome",pos="pos",ref="ref",alt="alt", bsg=BSgenome)
+data_sample <- data %>%
+	dplyr::mutate (sample_name="${meta.sampleName}") %>%
+	dplyr::mutate (chromosome=paste ("chr",chromosome,sep="")) %>%
+	data.frame
+
+sigs.input <- mut.to.sigs.input(mut.ref=data_sample, sample.id="sample_name",chr="chromosome",pos="pos",ref="ref",alt="alt", bsg=BSgenome)
 
 sigs.associated <- c(
 	"Signature.1A",
@@ -164,7 +173,7 @@ sigs.associated <- c(
 	"Signature.21"
 )
 
-sample <- whichSignatures (tumor.ref=sigs.input, signatures.ref=signatures.nature2013, associated=sigs.associataed, sample.id="${meta.sampleName}", contexts.needed=T, tri.counts.method="default", signature.cutoff=0.2)
+sample <- whichSignatures (tumor.ref=sigs.input, signatures.ref=signatures.nature2013, associated=sigs.associated, sample.id="${meta.sampleName}", contexts.needed=T, tri.counts.method="default", signature.cutoff=0.2)
 
 pdf (file="${meta.sampleName}.${type}.Nature_Pie.pdf")
 makePie (sample)
