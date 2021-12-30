@@ -11,14 +11,18 @@ include {
 
 include {
 	mutect_filter;
-	mutect_filter_result_impact;
-	mutect_filter_result_impact_rare;
 	mutect_extract_single;
 	mutect_extract_matched;
 	mutect_post_process_single;
 	mutect_post_process_matched;
 	mutect_sift
 } from "../software/mutect/annotate"
+
+include {
+	mutect_filter_result_impact;
+	mutect_filter_result_impact_rare;
+	mutect_signatures_matched
+} from "../software/mutect/result"
 
 workflow MUTECT
 {
@@ -110,30 +114,34 @@ workflow MUTECT_ANNOTATE
 
 	emit:
 		result = mutect_extract_single.out.result.mix (mutect_extract_matched.out.result)
+		post_process = mutect_post_process_single.out.result.mix (mutect_post_process_matched.out.result)
 }
 
-workflow MUTECT_RESULT_IMPACT
+workflow MUTECT_RESULT
 {
 	take:
 		genome_build
+		ch_data_post_process
 		ch_data
 		ch_cgc
 	main:
 		mutect_filter_result_impact (genome_build, ch_cgc, ch_data)
-
+		mutect_signatures_matched (genome_build, ch_data_post_process.filter { it[1] == "matched" })
 }
 
-workflow MUTECT_RESULT_IMPACT_RARE
+workflow MUTECT_RESULT_RARE
 {
 
 	take:
 		genome_build
+		ch_data_post_process
 		ch_data
 		ch_cgc
 		ch_tru_sight
 
 	main:
 		mutect_filter_result_impact_rare (genome_build, ch_cgc, ch_tru_sight, ch_data)
+		mutect_signatures_matched (genome_build, ch_data_post_process.filter { it[1] == "matched" })
 }
 
 
