@@ -54,8 +54,8 @@ workflow PREPARE_GENOME
 		cache_genome_url_fasta (genome_name, ch_genome_base, ch_ext_fasta)
 		cache_genome_url_fasta_index (genome_name, ch_genome_base, ch_ext_fasta_index)
 
-		ch_interval_list = ch_chrom_names.flatMap ().collectFile (name: 'interval_names.tsv', newLine: true)
-		interval_bed (cache_genome_url_dict.out.result, ch_interval_list)
+		ch_interval_csv_string = ch_chrom_names.map { it.join (",") }
+		interval_bed (cache_genome_url_dict.out.result, ch_interval_csv_string)
 
 	emit:
 		bwa_index        = cache_genome_url_bwa_index.out.result

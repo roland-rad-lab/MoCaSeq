@@ -211,7 +211,7 @@ process loh_matched_plot {
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/LOH", mode: "copy"
 
 	input:
-		genome_build
+		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
 		tuple val (meta), path (loh_tsv)
 
@@ -232,20 +232,31 @@ head (data_interval)
 data <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 head (data)
 
-pdf (file="${meta.sampleName}.LOH.adjusted.genome.pdf",width=9,height=6)
+data_interval_plot <- data_interval %>%
+	dplyr::mutate (End=as.numeric (End)) %>%
+	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
+	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	data.frame
 
-ggplot (data_ratio_plot) +
-	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio)) +
-	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
+data_plot <- data %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
+	dplyr::mutate (Start.Genome=Pos+CumulativeStart) %>%
+	data.frame
+
+pdf (file="${meta.sampleName}.LOH.adjusted.genome.pdf",width=12,height=4)
+
+ggplot (data_plot) +
+	geom_point (aes(x=Start.Genome,y=Plot_Freq),shape=".") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2,label=Chrom)) +
-	ylim (-2,2) +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
+	coord_cartesian (ylim=c(0,1),clip="off") +
 	theme_bw () +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
 		axis.ticks.x=element_blank (),
-		axis.text.x=element_blank ()
+		axis.text.x=element_blank (),
+		plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
 	)
 
 dev.off ()
@@ -253,13 +264,11 @@ dev.off ()
 chromosomes <- data_interval %>% pull (Chrom)
 plot_list <- vector ("list",length (chromosomes))
 
-
 for ( i in seq_along (chromosomes) )
 {
-	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
-		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio)) +
-		geom_segment (data=data_segments_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame,aes(x=Start,y=Mean,xend=End,yend=Mean),colour="red") +
-		ylim (-2,2) +
+	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
+		geom_point (aes(x=Pos,y=Plot_Freq),shape=".") +
+		ylim (0,1) +
 		labs (title=chromosomes[[i]]) +
 		theme_bw () +
 		theme (
