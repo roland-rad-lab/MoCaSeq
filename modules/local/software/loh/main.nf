@@ -196,8 +196,10 @@ with open ("${meta.sampleName}.VariantsForLOH.txt", "w") as output_file:
 
 	stub:
 	"""#!/usr/bin/env bash
+if [[ "${params.stub_json_map?.loh_matched_assign_alleles}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
+fi
 
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/LOH/${meta.sampleName}.VariantsForLOH.txt .
 touch ${meta.sampleName}.VariantsForLOH.txt
 	"""
 

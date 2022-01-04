@@ -164,7 +164,11 @@ ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btre
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
+
+if [[ "${params.stub_json_map?.bubble_tree_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
+fi
+
 touch ${meta.sampleName}.Bubbletree.txt
 touch ${meta.sampleName}.Bubbletree.adjusted.pdf
 touch ${meta.sampleName}.Bubbletree.adjustmentshift.pdf

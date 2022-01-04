@@ -22,6 +22,7 @@ delly call \\
 
 	stub:
 	"""#!/usr/bin/env bash
+
 #cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf .
 #cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.pre.bcf.csi .
 touch ${meta.sampleName}.pre.bcf
@@ -60,8 +61,12 @@ tabix -p vcf ${meta.sampleName}.delly.vcf.gz
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
+
+if [[ "${params.stub_json_map?.delly_matched_filter}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Delly/${meta.sampleName}.delly.vcf.gz.tbi .
+fi
+
 touch ${meta.sampleName}.delly.vcf.gz
 touch ${meta.sampleName}.delly.vcf.gz.tbi
 	"""

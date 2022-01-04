@@ -21,7 +21,10 @@ ${params.hmm_copy.dir}/bin/readCounter -w ${resolution} -q20 -c ${intervals} ${b
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
+
+if [[ "${params.stub_json_map?.hmm_copy_wig}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.${type}.${resolution}.wig .
+fi
 touch ${meta.sampleName}.${type}.${resolution}.wig
 	"""
 }
@@ -173,8 +176,11 @@ write.table(cnv_segments,"${meta.sampleName}.HMMCopy.${resolution}.segments.txt"
 	stub:
 	"""#!/usr/bin/env bash
 
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
+if [[ "${params.stub_json_map?.hmm_copy_tsv}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/HMMCopy/${meta.sampleName}.HMMCopy.${resolution}.segments.txt .
+fi
+
 touch ${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt
 touch ${meta.sampleName}.HMMCopy.${resolution}.segments.txt
 	"""

@@ -48,10 +48,13 @@ python2 Strelka/runWorkflow.py -m local -j ${params.strelka.threads}
 	stub:
 	"""#!/usr/bin/env bash
 mkdir -p Strelka/results/variants
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz Strelka/results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz.tbi Strelka/results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz Strelka/results/variants/
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz.tbi Strelka/results/variants/
+
+if [[ "${params.stub_json_map?.strelka_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz Strelka/results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.snvs.vcf.gz.tbi Strelka/results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz Strelka/results/variants/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/results/variants/somatic.indels.vcf.gz.tbi Strelka/results/variants/
+fi
 
 touch Strelka/results/variants/somatic.snvs.vcf.gz
 touch Strelka/results/variants/somatic.snvs.vcf.gz.tbi
@@ -102,10 +105,13 @@ java -jar ${params.gatk.jar} SelectVariants \\
 
 	stub:
 	"""#!/usr/bin/env bash
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz .
-#cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi .
+
+if [[ "${params.stub_json_map?.strelka_matched_post}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/Strelka/Strelka/${meta.sampleName}.str.indel.post-processed.vcf.gz.tbi .
+fi
 
 touch ${meta.sampleName}.str.snp.post-processed.vcf.gz
 touch ${meta.sampleName}.str.snp.post-processed.vcf.gz.tbi
