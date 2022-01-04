@@ -216,7 +216,7 @@ process loh_matched_plot {
 		tuple val (meta), path (loh_tsv)
 
 	output:
-		path ("*.pdf")
+		path ("${meta.sampleName}.*.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -243,13 +243,13 @@ data_plot <- data %>%
 	dplyr::mutate (Start.Genome=Pos+CumulativeStart) %>%
 	data.frame
 
-pdf (file="${meta.sampleName}.LOH.adjusted.genome.pdf",width=12,height=4)
+pdf (file="${meta.sampleName}.LOH.adjusted.genome.pdf",width=16,height=4)
 
 ggplot (data_plot) +
-	geom_point (aes(x=Start.Genome,y=Plot_Freq),shape=".") +
+	geom_point (aes(x=Start.Genome,y=Plot_Freq),shape=".",colour="#ff80c3") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
 	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
-	coord_cartesian (ylim=c(0,1),clip="off") +
+	coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
 	theme_bw () +
 	theme (
 		panel.grid.major.x=element_blank (),
@@ -267,7 +267,7 @@ plot_list <- vector ("list",length (chromosomes))
 for ( i in seq_along (chromosomes) )
 {
 	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
-		geom_point (aes(x=Pos,y=Plot_Freq),shape=".") +
+		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="#ff80c3") +
 		ylim (0,1) +
 		labs (title=chromosomes[[i]]) +
 		theme_bw () +
