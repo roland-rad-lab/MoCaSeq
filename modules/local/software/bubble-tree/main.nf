@@ -81,14 +81,7 @@ gr_cnv <- switch ("${cn_source}",
 			data_cnv %>%
 			dplyr::rename (seqnames=Chrom,start=Start,end=End,seg.mean=Mean)
 		},
-		"dryclean-cnv-kit"={
-			data_cnv %>%
-			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
-		},
-		"cnv-kit-pon"={
-			data_cnv
-		},
-		"cnv-kit-pon-cnv-kit"={
+		"cnv-kit"={
 			data_cnv %>%
 			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
 		},
