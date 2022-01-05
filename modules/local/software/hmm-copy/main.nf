@@ -241,7 +241,7 @@ head (data_segments_plot)
 pdf (file="${meta.sampleName}.HMMCopy.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
-	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio)) +
+	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio),colour="#636363") +
 	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
 	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
@@ -264,7 +264,7 @@ plot_list <- vector ("list",length (chromosomes))
 for ( i in seq_along (chromosomes) )
 {
 	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
-		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio)) +
+		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio),colour="#636363") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame,aes(x=Start,y=Mean,xend=End,yend=Mean),colour="red") +
 		ylim (-2,2) +
 		labs (title=chromosomes[[i]]) +

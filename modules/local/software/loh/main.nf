@@ -243,50 +243,52 @@ data_plot <- data %>%
 	dplyr::mutate (Start.Genome=Pos+CumulativeStart) %>%
 	data.frame
 
-pdf (file="${meta.sampleName}.LOH.adjusted.genome.pdf",width=16,height=4)
+plot_types <- setNames (c("Plot_Freq","Tumor_Freq","Normal_Freq"),c("adjusted","raw","germline"))
 
-ggplot (data_plot) +
-	geom_point (aes(x=Start.Genome,y=Plot_Freq),shape=".",colour="#ff80c3") +
-	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
-	coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
-	theme_bw () +
-	theme (
-		panel.grid.major.x=element_blank (),
-		panel.grid.minor.x=element_blank (),
-		axis.ticks.x=element_blank (),
-		axis.text.x=element_blank (),
-		plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
-	)
-
-dev.off ()
-
-chromosomes <- data_interval %>% pull (Chrom)
-plot_list <- vector ("list",length (chromosomes))
-
-for ( i in seq_along (chromosomes) )
+for ( i in seq_along (plot_types) )
 {
-	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
-		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="#ff80c3") +
-		ylim (0,1) +
-		labs (title=chromosomes[[i]]) +
+	g <- ggplot (data_plot) +
+		geom_point (aes_string(x="Start.Genome",y=plot_types[i]),shape=".",colour="#ff80c3") +
+		geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
+		geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
+		coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
 			panel.grid.minor.x=element_blank (),
-			#axis.ticks.x=element_blank (),
+			axis.ticks.x=element_blank (),
 			axis.text.x=element_blank (),
-			#plot.margin = unit(c(4,1,1,1), "cm")
+			plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
 		)
+	pdf (file=paste ("${meta.sampleName}.LOH.",names (plot_types)[i],".genome.pdf",sep=""),width=16,height=4)
+	print (g)
+	dev.off ()
+
+	chromosomes <- data_interval %>% pull (Chrom)
+	plot_list <- vector ("list",length (chromosomes))
+
+	for ( j in seq_along (chromosomes) )
+	{
+		plot_list[[j]] <- ggplot (data_plot %>% filter (Chrom==!!chromosomes[[j]]) %>% data.frame) +
+			geom_point (aes_string(x="Pos",y=plot_types[i]),shape=".",colour="#ff80c3") +
+			ylim (0,1) +
+			labs (title=chromosomes[[i]]) +
+			theme_bw () +
+			theme (
+				panel.grid.major.x=element_blank (),
+				panel.grid.minor.x=element_blank (),
+				axis.text.x=element_blank ()
+			)
+	}
+
+	# Need to do this outside of pdf call to prevent blank first page
+	p <- marrangeGrob (plot_list,nrow=1,ncol=1)
+
+	pdf (file=paste ("${meta.sampleName}.LOH.",names (plot_types)[i],".chromosomes.pdf",sep=""),width=9)
+	print (p)
+	dev.off ()
+
 }
-
-# Need to do this outside of pdf call to prevent blank first page
-p <- marrangeGrob (plot_list,nrow=1,ncol=1)
-
-pdf (file="${meta.sampleName}.LOH.adjusted.chromosomes.pdf",width=9)
-p
-dev.off ()
-
 
 	"""
 
