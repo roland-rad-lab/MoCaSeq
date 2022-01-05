@@ -217,40 +217,42 @@ data_segments <- read.table (file="${segments_file}",sep="\\t",header=T,stringsA
 head (data_segments)
 
 data_interval_plot <- data_interval %>%
-	mutate (CumulativeStart=cumsum (End)-End) %>%
-	mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	dplyr::mutate (End=as.numeric (End)) %>%
+	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
+	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
 	data.frame
 
- data_ratio_plot <- data_ratio %>%
-filter (!is.na (log2Ratio)) %>%
-inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
-data.frame
+data_ratio_plot <- data_ratio %>%
+	dplyr::filter (!is.na (log2Ratio)) %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
+	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+	data.frame
 
 data_segments_plot <- data_segments %>%
-inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
-data.frame
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
+	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+	data.frame
 
 head (data_interval_plot)
 head (data_ratio_plot)
 head (data_segments_plot)
 
 
-pdf (file="${meta.sampleName}.HMMCopy.${resolution}.genome.pdf",width=9,height=6)
+pdf (file="${meta.sampleName}.HMMCopy.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
 	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio)) +
 	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
-	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2,label=Chrom)) +
-	ylim (-2,2) +
+	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
+	coord_cartesian (ylim=c(-2,2),expand=F,clip="off") +
 	theme_bw () +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
 		axis.ticks.x=element_blank (),
-		axis.text.x=element_blank ()
+		axis.text.x=element_blank (),
+		plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
 	)
 
 dev.off ()

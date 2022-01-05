@@ -290,6 +290,12 @@ dev.off ()
 
 	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+touch ${meta.sampleName}.LOH.adjusted.chromosomes.pdf
+touch ${meta.sampleName}.LOH.adjusted.genome.pdf
+	"""
+
 }
 
 
