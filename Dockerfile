@@ -125,6 +125,9 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
 	pysam \
 	fisher
 
+RUN	apt-get update \
+	&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+
 RUN apt install -y --no-install-recommends python3.7 \
 	&& wget -nv https://bootstrap.pypa.io/get-pip.py \
 	&& python3.7 get-pip.py \
@@ -132,7 +135,6 @@ RUN apt install -y --no-install-recommends python3.7 \
 	&& rm get-pip.py
 
 RUN	apt-get update \
-	&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
 	&& add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
 	&& apt update \
 	&& apt install -y --no-install-recommends \
