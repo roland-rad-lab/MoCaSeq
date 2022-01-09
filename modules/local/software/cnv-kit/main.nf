@@ -14,7 +14,9 @@ process cnv_kit_matched {
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-		tuple val (meta), val ("matched"), path ("CNVKit/matched/${meta.sampleName}.matched.cns"), emit: cns
+		tuple val (meta), val ("matched"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cnr"), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: result
+		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cns"), emit: cns
+		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
@@ -61,6 +63,9 @@ do
 		mv \${file} \${file_new} || true
 done
 
+RESOLUTION=\$(cat CNVKit/matched/${meta.sampleName}.${type}.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
+echo "RESOLUTION: '\${RESOLUTION}'"
+
 	"""
 
 	stub:
@@ -69,8 +74,12 @@ mkdir -p CNVKit/matched
 
 if [[ "${params.stub_json_map?.cnv_kit_matched}" == "null" ]]; then
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.call.cns CNVKit/matched/
 fi
 touch CNVKit/matched/${meta.sampleName}.matched.cns
+touch CNVKit/matched/${meta.sampleName}.matched.call.cns
+RESOLUTION=1000
+
 	"""
 
 }
@@ -89,7 +98,9 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
+		tuple val (meta), val ("matched"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.matched.cnr"), path ("CNVKit/single/${meta.sampleName}.matched.call.cns"), emit: result
+		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
+		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
@@ -128,6 +139,9 @@ do
 		mv \${file} \${file_new} || true
 done
 
+RESOLUTION=\$(cat CNVKit/single/${meta.sampleName}.${type}.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
+echo "RESOLUTION: '\${RESOLUTION}'"
+
 	"""
 
 	stub:
@@ -136,8 +150,12 @@ mkdir -p CNVKit/single
 
 if [[ "${params.stub_json_map?.cnv_kit_single}" == "null" ]]; then
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.call.cns CNVKit/single/
 fi
 touch CNVKit/single/${meta.sampleName}.${type}.cns
+touch CNVKit/single/${meta.sampleName}.${type}.call.cns
+RESOLUTION=1000
+
 	"""
 }
 
@@ -299,6 +317,7 @@ process cnv_kit_segment {
 		tuple val (meta), val (type), val (coverage_source), val (resolution), path (coverage_cnr)
 
 	output:
+		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path (coverage_cnr), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: result
 		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
 		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
 
@@ -318,6 +337,110 @@ fi
 
 touch ${meta.sampleName}.${type}.${coverage_source}.cns
 touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
+	"""
+}
+
+process cnv_kit_plot {
+	tag "${meta.sampleName}"
+
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy"
+
+	input:
+		val (genome_build)
+		tuple path (interval_bed), path (interval_bed_index)
+		tuple val (meta), val (type), val (coverage_source), val (resolution), path (cns)
+
+	output:
+		path ("${meta.sampleName}.*.pdf")
+
+	script:
+	"""#!/usr/bin/env Rscript
+
+library (dplyr)
+library (ggplot2)
+library (gridExtra)
+
+interval_file <- gzfile ("${interval_bed}", 'rt')
+data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
+names (data_interval) <- c("Chrom", "Start", "End")
+head (data_interval)
+
+data_ratio <- read.table (file="${log2_file}",sep="\\t",header=T,stringsAsFactors=F)
+head (data_ratio)
+
+data_segments <- read.table (file="${segments_file}",sep="\\t",header=T,stringsAsFactors=F)
+head (data_segments)
+
+data_interval_plot <- data_interval %>%
+	dplyr::mutate (End=as.numeric (End)) %>%
+	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
+	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	data.frame
+
+data_ratio_plot <- data_ratio %>%
+	dplyr::filter (!is.na (log2Ratio)) %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
+	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+	data.frame
+
+data_segments_plot <- data_segments %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
+	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+	data.frame
+
+head (data_interval_plot)
+head (data_ratio_plot)
+head (data_segments_plot)
+
+
+pdf (file="${meta.sampleName}.CNVKit.${resolution}.genome.pdf",width=16,height=4)
+
+ggplot (data_ratio_plot) +
+	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio),colour="#636363") +
+	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
+	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
+	coord_cartesian (ylim=c(-2,2),expand=F,clip="off") +
+	theme_bw () +
+	theme (
+		panel.grid.major.x=element_blank (),
+		panel.grid.minor.x=element_blank (),
+		axis.ticks.x=element_blank (),
+		axis.text.x=element_blank (),
+		plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
+	)
+
+dev.off ()
+
+chromosomes <- data_interval %>% pull (Chrom)
+plot_list <- vector ("list",length (chromosomes))
+
+
+for ( i in seq_along (chromosomes) )
+{
+	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
+		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio),colour="#636363") +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame,aes(x=Start,y=Mean,xend=End,yend=Mean),colour="red") +
+		ylim (-2,2) +
+		labs (title=chromosomes[[i]]) +
+		theme_bw () +
+		theme (
+			panel.grid.major.x=element_blank (),
+			panel.grid.minor.x=element_blank (),
+			#axis.ticks.x=element_blank (),
+			axis.text.x=element_blank (),
+			#plot.margin = unit(c(4,1,1,1), "cm")
+		)
+}
+
+# Need to do this outside of pdf call to prevent blank first page
+p <- marrangeGrob (plot_list,nrow=1,ncol=1)
+
+pdf (file="${meta.sampleName}.CNVKit.${resolution}.chromosomes.pdf",width=9)
+p
+dev.off ()
+
+
 	"""
 }
 
