@@ -91,6 +91,11 @@ tar -xzf "ref/"$VersionMouse"/VEP/mus_musculus_vep_96_GRCm38.tar.gz"
 mv mus_musculus "ref/"$VersionMouse"/VEP/"
 rm "ref/"$VersionMouse"/VEP/mus_musculus_vep_96_GRCm38.tar.gz"
 
+wget -nv -P "ref/"$VersionMouse"/VEP" ftp://ftp.ensembl.org/pub/release-102/variation/indexed_vep_cache/mus_musculus_vep_102_GRCm38.tar.gz
+tar -xzf "ref/"$VersionMouse"/VEP/mus_musculus_vep_102_GRCm38.tar.gz"
+mv mus_musculus "ref/"$VersionMouse"/VEP/"
+rm "ref/"$VersionMouse"/VEP/mus_musculus_vep_102_GRCm38.tar.gz"
+
 echo '---- Generate customized Sanger DB ----' | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionMouse"/GetReferenceData.txt"
 
