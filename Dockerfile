@@ -125,10 +125,9 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
 	pysam \
 	fisher
 
-RUN	apt-get update \
-	&& apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-
-RUN apt install -y --no-install-recommends python3.7 \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+	&& apt-get update \
+	&& apt install -y --no-install-recommends python3.7 \
 	&& wget -nv https://bootstrap.pypa.io/get-pip.py \
 	&& python3.7 get-pip.py \
 	&& pip3.7 install multiqc \
@@ -168,7 +167,7 @@ RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRang
 
 RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)' # package ff is updated in biocmanager, but we need this version
 
-RUN apt install python3.7 \
+RUN apt install python3.7 -y --no-install-recommends \
 	&& curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
 	&& python3.7 get-pip.py \
 	&& pip3.7 install multiqc \
