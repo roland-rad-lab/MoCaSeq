@@ -3,8 +3,8 @@ FROM ubuntu:18.04
 LABEL org.label-schema.name="MoCaSeq"
 LABEL org.label-schema.vcs-url="https://github.com/roland-rad-lab/MoCaSeq"
 
-LABEL author="mathias.friedrich [@] tum.de"
-LABEL maintainer="sebastian.lange [@] tum.de"
+LABEL author="niklas.andrade-kraetzig [@] tum.de"
+LABEL maintainer="niklas.andrade-kraetzig [@] tum.de"
 LABEL org.label-schema.url="https://www.imo.med.tum.de"
 
 ENV TARGET_DIR /var/pipeline
@@ -109,7 +109,7 @@ RUN	apt update \
 	&& apt-get install git-lfs \
 	&& git lfs install
 
-RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
+RUN 	curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
 	&& python2 get-pip.py \
 	&& rm get-pip.py \
 	&& pip2 install numpy \
@@ -125,15 +125,8 @@ RUN curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
 	pysam \
 	fisher
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+RUN	apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 \
 	&& apt-get update \
-	&& apt install -y --no-install-recommends python3.7 \
-	&& wget -nv https://bootstrap.pypa.io/get-pip.py \
-	&& python3.7 get-pip.py \
-	&& pip3.7 install multiqc \
-	&& rm get-pip.py
-
-RUN	apt-get update \
 	&& add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
 	&& apt update \
 	&& apt install -y --no-install-recommends \
@@ -167,24 +160,21 @@ RUN R -e 'BiocManager::install(pkgs=c("tidyverse","splitstackshape","GenomicRang
 
 RUN R -e 'install.packages("https://cran.r-project.org/src/contrib/Archive/ff/ff_2.2-14.tar.gz",repos=NULL)' # package ff is updated in biocmanager, but we need this version
 
-RUN apt install python3.7 -y --no-install-recommends \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+	&& apt-get update \
+	&& apt install -y --no-install-recommends python3.7 python3-pip
+
+RUN apt-get install -y --no-install-recommends python-numpy python-scipy python-matplotlib python-reportlab python-pandas
+RUN apt-get install -y --no-install-recommends python3.7-dev
+
+RUN apt install -y --no-install-recommends python3.7 \
 	&& curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
 	&& python3.7 get-pip.py \
-	&& pip3.7 install multiqc \
 	&& rm get-pip.py
 
-#RUN cd ${TEMP_DIR} \
-	#&& wget https://bootstrap.pypa.io/get-pip.py \
-	#&& python3.6 get-pip.py \
-	#&& pip3.6 install Cython \
-	#&& pip3.6 install wheel nose cython numpy scipy networkx \
-	#&& apt-get update \
-	#&& apt-get install -y python-dev \
-	#&& apt-get install -y python3-dev
-	#&& pip3.6 install --no-cache-dir pomegranate \
-	#&& pip3.6 install cnvkit
-
-RUN pip3.7 install cnvkit
+RUN pip3.7 install multiqc
+RUN pip3.7 install pomegranate==0.14.5 # only this version works for cnvkit
+RUN pip3.7 install cnvkit==0.9.9
 
 RUN apt-get install -y --no-install-recommends python-tk \
 	&& python3.7 -m pip install seaborn \
@@ -199,7 +189,7 @@ RUN apt-get install -y --no-install-recommends python-tk \
 
 # SAMBLASTER
 RUN cd ${TEMP_DIR} \
-	&& git clone git://github.com/GregoryFaust/samblaster.git \
+	&& git clone https://github.com/GregoryFaust/samblaster.git \
 	&& cd samblaster \
 	&& git checkout 'v.0.1.26' \
 	&& make \
@@ -459,7 +449,7 @@ RUN apt-get install libjsoncpp-dev
 
 # BAMTOOLS GetBaseCounts v.1.2.2 (https://github.com/zengzheng123/GetBaseCountsMultiSample.git)
 RUN	cd ${TEMP_DIR} \
-	&& git clone git://github.com/pezmaster31/bamtools.git \
+	&& git clone https://github.com/pezmaster31/bamtools.git \
 	&& cd bamtools/ \
 	&& mkdir -p build \
 	&& cd build/ \
