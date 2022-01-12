@@ -4,6 +4,8 @@ include {
 	interval_bed
 	cache_genome_url as cache_genome_url_bwa_index
 	cache_genome_url as cache_genome_url_all_vcf
+	cache_genome_url as cache_genome_url_alt_haplotype
+	cache_genome_url as cache_genome_url_centromere
 	cache_genome_url as cache_genome_url_cgc
 	cache_genome_url as cache_genome_url_common_vcf
 	cache_genome_url as cache_genome_url_dbnsfp
@@ -12,6 +14,7 @@ include {
 	cache_genome_url as cache_genome_url_fasta_index
 	cache_genome_url as cache_genome_url_gc_wig
 	cache_genome_url as cache_genome_url_gencode_genes_bed
+	cache_genome_url as cache_genome_url_mappability
 	cache_genome_url as cache_genome_url_map_wig
 	cache_genome_url as cache_genome_url_micro_satellite
 	cache_genome_url as cache_genome_url_ref_flat
@@ -78,15 +81,18 @@ workflow GENOME_ANNOTATION
 	main:
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_all_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["all_vcf"] ? Channel.of (params.genome_annotations[genome_name]["all_vcf"]).first () : Channel.empty ()
-		ch_ref_flat = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["ref_flat"] ? Channel.of (params.genome_annotations[genome_name]["ref_flat"]).first () : Channel.empty ()
-		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
-		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
-		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
+		ch_alt_haplotype = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["alt_haplotype"] ? Channel.of (params.genome_annotations[genome_name]["alt_haplotype"]).first () : Channel.empty ()
+		ch_centromere = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["centromere"] ? Channel.of (params.genome_annotations[genome_name]["centromere"]).first () : Channel.empty ()
 		ch_cgc = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["cgc"] ? Channel.of (params.genome_annotations[genome_name]["cgc"]).first () : Channel.empty ()
 		ch_common_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["common_vcf"] ? Channel.of (params.genome_annotations[genome_name]["common_vcf"]).first () : Channel.empty ()
 		ch_dbnsfp = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["dbnsfp"] ? Channel.of (params.genome_annotations[genome_name]["dbnsfp"]).first () : Channel.empty ()
+		ch_gc_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gc_wig"] ? Channel.of (params.genome_annotations[genome_name]["gc_wig"]) : Channel.empty ()
 		ch_gencode_genes_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["gencode_genes_bed"] ? Channel.of (params.genome_annotations[genome_name]["gencode_genes_bed"]).first () : Channel.empty ()
+		ch_mappability = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["mappability"] ? Channel.of (params.genome_annotations[genome_name]["mappability"]) : Channel.empty ()
+		ch_map_wig = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["map_wig"] ? Channel.of (params.genome_annotations[genome_name]["map_wig"]) : Channel.empty ()
 		ch_micro_satellite = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["micro_satellite"] ? Channel.of (params.genome_annotations[genome_name]["micro_satellite"]).first () : Channel.empty ()
+		ch_par_interval_bed = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["par_bed"] ? Channel.of (params.genome_annotations[genome_name]["par_bed"]).first () : Channel.empty ()
+		ch_ref_flat = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["ref_flat"] ? Channel.of (params.genome_annotations[genome_name]["ref_flat"]).first () : Channel.empty ()
 		ch_sift_clinvar = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_clinvar"] ? Channel.of (params.genome_annotations[genome_name]["sift_clinvar"]).first () : Channel.empty ()
 		ch_sift_cosmic_coding = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_cosmic_coding"] ? Channel.of (params.genome_annotations[genome_name]["sift_cosmic_coding"]).first () : Channel.empty ()
 		ch_sift_cosmic_noncoding = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["sift_cosmic_noncoding"] ? Channel.of (params.genome_annotations[genome_name]["sift_cosmic_noncoding"]).first () : Channel.empty ()
@@ -107,11 +113,14 @@ workflow GENOME_ANNOTATION
 		}
 
 		cache_genome_url_all_vcf (genome_name, ch_all_vcf, Channel.value (["", "tbi"]))
+		cache_genome_url_alt_haplotype (genome_name, ch_alt_haplotype, Channel.value ([""]))
+		cache_genome_url_centromere (genome_name, ch_centromere, Channel.value ([""]))
 		cache_genome_url_cgc (genome_name, ch_cgc, Channel.value ([""]))
 		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
 		cache_genome_url_dbnsfp (genome_name, ch_dbnsfp, Channel.value (["", "tbi"]))
 		cache_genome_url_gc_wig (genome_name, ch_gc_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_gencode_genes_bed (genome_name, ch_gencode_genes_bed, Channel.value ([""]))
+		cache_genome_url_mappability (genome_name, ch_mappability, Channel.value ([""]))
 		cache_genome_url_map_wig (genome_name, ch_map_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_micro_satellite (genome_name, ch_micro_satellite, Channel.value ([""]))
 		cache_genome_url_ref_flat (genome_name, ch_ref_flat, Channel.value ([""]))
@@ -140,11 +149,14 @@ workflow GENOME_ANNOTATION
 	emit:
 		par_interval_bed = ch_par_interval_bed
 		all_vcf = cache_genome_url_all_vcf.out.result
+		alt_haplotype = cache_genome_url_alt_haplotype.out.result
+		centromere = cache_genome_url_centromere.out.result
 		cgc = cache_genome_url_cgc.out.result
 		common_vcf = cache_genome_url_common_vcf.out.result
 		dbnsfp = cache_genome_url_dbnsfp.out.result
 		gc_wig = bash_expand_path_gc.out.splitText ().mix (cache_genome_url_gc_wig.out.result)
 		gencode_genes_bed = cache_genome_url_gencode_genes_bed.out.result
+		mappability = cache_genome_url_mappability.out.result
 		map_wig = bash_expand_path_map.out.splitText ().mix (cache_genome_url_map_wig.out.result)
 		micro_satellite = cache_genome_url_micro_satellite.out.result
 		ref_flat = cache_genome_url_ref_flat.out.result

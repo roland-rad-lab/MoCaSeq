@@ -14,7 +14,7 @@ process cnv_kit_matched {
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-		tuple val (meta), val ("matched"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cnr"), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: result
+		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cnr"), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: result
 		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cns"), emit: cns
 		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: call
 
@@ -73,9 +73,11 @@ echo "RESOLUTION: '\${RESOLUTION}'"
 mkdir -p CNVKit/matched
 
 if [[ "${params.stub_json_map?.cnv_kit_matched}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cnr CNVKit/matched/
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.call.cns CNVKit/matched/
 fi
+touch CNVKit/matched/${meta.sampleName}.matched.cnr
 touch CNVKit/matched/${meta.sampleName}.matched.cns
 touch CNVKit/matched/${meta.sampleName}.matched.call.cns
 RESOLUTION=1000
@@ -98,7 +100,7 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val ("matched"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.matched.cnr"), path ("CNVKit/single/${meta.sampleName}.matched.call.cns"), emit: result
+		tuple val (meta), val (type), val ("cnk-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.cnr"), path ("CNVKit/single/${meta.sampleName}.${type}.call.cns"), emit: result
 		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
 		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.call.cns"), emit: call
 
@@ -149,9 +151,11 @@ echo "RESOLUTION: '\${RESOLUTION}'"
 mkdir -p CNVKit/single
 
 if [[ "${params.stub_json_map?.cnv_kit_single}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cnr CNVKit/single/
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
 	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.call.cns CNVKit/single/
 fi
+touch CNVKit/single/${meta.sampleName}.${type}.cnr
 touch CNVKit/single/${meta.sampleName}.${type}.cns
 touch CNVKit/single/${meta.sampleName}.${type}.call.cns
 RESOLUTION=1000
@@ -348,7 +352,7 @@ process cnv_kit_plot {
 	input:
 		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
-		tuple val (meta), val (type), val (coverage_source), val (resolution), path (cns)
+		tuple val (meta), val (type), val (coverage_source), val (resolution), path (cnr_file), path (call_file)
 
 	output:
 		path ("${meta.sampleName}.*.pdf")
@@ -362,44 +366,44 @@ library (gridExtra)
 
 interval_file <- gzfile ("${interval_bed}", 'rt')
 data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
-names (data_interval) <- c("Chrom", "Start", "End")
+names (data_interval) <- c("chromosome", "start", "end")
 head (data_interval)
 
-data_ratio <- read.table (file="${log2_file}",sep="\\t",header=T,stringsAsFactors=F)
+data_ratio <- read.table (file="${cnr_file}",sep="\\t",header=T,stringsAsFactors=F)
 head (data_ratio)
 
-data_segments <- read.table (file="${segments_file}",sep="\\t",header=T,stringsAsFactors=F)
-head (data_segments)
+data_call <- read.table (file="${call_file}",sep="\\t",header=T,stringsAsFactors=F)
+head (data_call)
 
 data_interval_plot <- data_interval %>%
-	dplyr::mutate (End=as.numeric (End)) %>%
-	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
-	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	dplyr::mutate (end=as.numeric (end)) %>%
+	dplyr::mutate (CumulativeStart=cumsum (end)-end) %>%
+	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((start+end)/2)) %>%
 	data.frame
 
 data_ratio_plot <- data_ratio %>%
-	dplyr::filter (!is.na (log2Ratio)) %>%
-	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+	dplyr::filter (!is.na (log2)) %>%
+	dplyr::inner_join (data_interval_plot,by="chromosome",suffix=c("",".chromosome")) %>%
+	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
 
-data_segments_plot <- data_segments %>%
-	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Start.Genome=Start+CumulativeStart,End.Genome=End+CumulativeStart) %>%
+data_call_plot <- data_call %>%
+	dplyr::inner_join (data_interval_plot,by="chromosome",suffix=c("",".chromosome")) %>%
+	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
 
 head (data_interval_plot)
 head (data_ratio_plot)
-head (data_segments_plot)
+head (data_call_plot)
 
 
 pdf (file="${meta.sampleName}.CNVKit.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
-	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio),colour="#636363") +
-	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
+	geom_segment (aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="#636363") +
+	geom_segment (data=data_call_plot,aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="red") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=chromosome),size=2) +
 	coord_cartesian (ylim=c(-2,2),expand=F,clip="off") +
 	theme_bw () +
 	theme (
@@ -412,15 +416,15 @@ ggplot (data_ratio_plot) +
 
 dev.off ()
 
-chromosomes <- data_interval %>% pull (Chrom)
+chromosomes <- data_interval %>% pull (chromosome)
 plot_list <- vector ("list",length (chromosomes))
 
 
 for ( i in seq_along (chromosomes) )
 {
-	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
-		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio),colour="#636363") +
-		geom_segment (data=data_segments_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame,aes(x=Start,y=Mean,xend=End,yend=Mean),colour="red") +
+	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame) +
+		geom_segment (aes(x=start,y=log2,xend=end,yend=log2),colour="#636363") +
+		geom_segment (data=data_call_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame,aes(x=start,y=log2,xend=end,yend=log2),colour="red") +
 		ylim (-2,2) +
 		labs (title=chromosomes[[i]]) +
 		theme_bw () +
