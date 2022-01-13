@@ -219,7 +219,8 @@ head (data_segments)
 data_interval_plot <- data_interval %>%
 	dplyr::mutate (End=as.numeric (End)) %>%
 	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
-	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
+	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%
 	data.frame
 
 data_ratio_plot <- data_ratio %>%
@@ -245,8 +246,9 @@ ggplot (data_ratio_plot) +
 	geom_segment (data=data_segments_plot,aes(x=Start.Genome,y=Mean,xend=End.Genome,yend=Mean),colour="red") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
 	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
-	coord_cartesian (ylim=c(-2,2),expand=F,clip="off") +
+	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(-2,2),expand=F,clip="off") +
 	theme_bw () +
+	xlab ("Genome") +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
@@ -266,15 +268,14 @@ for ( i in seq_along (chromosomes) )
 	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame) +
 		geom_segment (aes(x=Start,y=log2Ratio,xend=End,yend=log2Ratio),colour="#636363") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% data.frame,aes(x=Start,y=Mean,xend=End,yend=Mean),colour="red") +
-		ylim (-2,2) +
+		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% pull (End)),ylim=c(-2,2)) +
 		labs (title=chromosomes[[i]]) +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
 			panel.grid.minor.x=element_blank (),
-			#axis.ticks.x=element_blank (),
-			axis.text.x=element_blank (),
-			#plot.margin = unit(c(4,1,1,1), "cm")
+			plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
 		)
 }
 
