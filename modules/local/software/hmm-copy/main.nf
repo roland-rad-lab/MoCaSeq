@@ -217,7 +217,7 @@ data_segments <- read.table (file="${segments_file}",sep="\\t",header=T,stringsA
 head (data_segments)
 
 data_interval_plot <- data_interval %>%
-	dplyr::mutate (End=as.numeric (End)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom),End=as.numeric (End)) %>%
 	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
 	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
 	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%

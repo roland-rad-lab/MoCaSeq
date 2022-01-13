@@ -233,7 +233,7 @@ data <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
 head (data)
 
 data_interval_plot <- data_interval %>%
-	dplyr::mutate (End=as.numeric (End)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom), End=as.numeric (End)) %>%
 	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
 	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
 	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%

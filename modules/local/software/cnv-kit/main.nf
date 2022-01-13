@@ -366,7 +366,7 @@ library (gridExtra)
 
 interval_file <- gzfile ("${interval_bed}", 'rt')
 data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
-names (data_interval) <- c("chromosome", "start", "end")
+names (data_interval) <- c("Chrom", "Start", "End")
 head (data_interval)
 
 data_ratio <- read.table (file="${cnr_file}",sep="\\t",header=T,stringsAsFactors=F)
@@ -376,19 +376,20 @@ data_call <- read.table (file="${call_file}",sep="\\t",header=T,stringsAsFactors
 head (data_call)
 
 data_interval_plot <- data_interval %>%
-	dplyr::mutate (end=as.numeric (end)) %>%
-	dplyr::mutate (CumulativeStart=cumsum (end)-end) %>%
-	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((start+end)/2)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom),End=as.numeric (End)) %>%
+	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
+	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
+	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%
 	data.frame
 
 data_ratio_plot <- data_ratio %>%
 	dplyr::filter (!is.na (log2)) %>%
-	dplyr::inner_join (data_interval_plot,by="chromosome",suffix=c("",".chromosome")) %>%
+	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
 
 data_call_plot <- data_call %>%
-	dplyr::inner_join (data_interval_plot,by="chromosome",suffix=c("",".chromosome")) %>%
+	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
 
@@ -396,15 +397,15 @@ head (data_interval_plot)
 head (data_ratio_plot)
 head (data_call_plot)
 
-
 pdf (file="${meta.sampleName}.CNVKit.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
 	geom_segment (aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="#636363") +
 	geom_segment (data=data_call_plot,aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="red") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=chromosome),size=2) +
-	coord_cartesian (ylim=c(-2,2),expand=F,clip="off") +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
+	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()), ylim=c(-2,2),expand=F,clip="off") +
+	xlab ("Genome") +
 	theme_bw () +
 	theme (
 		panel.grid.major.x=element_blank (),
@@ -416,7 +417,7 @@ ggplot (data_ratio_plot) +
 
 dev.off ()
 
-chromosomes <- data_interval %>% pull (chromosome)
+chromosomes <- data_interval %>% pull (Chrom)
 plot_list <- vector ("list",length (chromosomes))
 
 
@@ -425,15 +426,14 @@ for ( i in seq_along (chromosomes) )
 	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame) +
 		geom_segment (aes(x=start,y=log2,xend=end,yend=log2),colour="#636363") +
 		geom_segment (data=data_call_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame,aes(x=start,y=log2,xend=end,yend=log2),colour="red") +
-		ylim (-2,2) +
+		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% pull (End)),ylim=c(-2,2)) +
 		labs (title=chromosomes[[i]]) +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
 			panel.grid.minor.x=element_blank (),
-			#axis.ticks.x=element_blank (),
-			axis.text.x=element_blank (),
-			#plot.margin = unit(c(4,1,1,1), "cm")
+			plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
 		)
 }
 
@@ -444,6 +444,14 @@ pdf (file="${meta.sampleName}.CNVKit.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 
+
+	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+touch ${meta.sampleName}.CNVKit.${resolution}.chromosomes.pdf
+touch ${meta.sampleName}.CNVKit.${resolution}.genome.pdf
 
 	"""
 }
