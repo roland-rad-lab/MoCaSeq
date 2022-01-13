@@ -235,12 +235,13 @@ head (data)
 data_interval_plot <- data_interval %>%
 	dplyr::mutate (End=as.numeric (End)) %>%
 	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
-	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
+	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%
 	data.frame
 
 data_plot <- data %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Start.Genome=Pos+CumulativeStart) %>%
+	dplyr::mutate (Pos.Genome=Pos+CumulativeStart) %>%
 	data.frame
 
 plot_types <- setNames (c("Plot_Freq","Tumor_Freq","Normal_Freq"),c("adjusted","raw","germline"))
@@ -248,10 +249,11 @@ plot_types <- setNames (c("Plot_Freq","Tumor_Freq","Normal_Freq"),c("adjusted","
 for ( i in seq_along (plot_types) )
 {
 	g <- ggplot (data_plot) +
-		geom_point (aes_string(x="Start.Genome",y=plot_types[i]),shape=".",colour="#ff80c3") +
+		geom_point (aes_string(x="Pos.Genome",y=plot_types[i]),shape=".",colour="#ffa8d7") +
 		geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-		geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
-		coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
+		geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.05,label=Chrom),size=2) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(0,1),expand=F,clip="off") +
+		xlab ("Genome") +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
@@ -270,14 +272,15 @@ for ( i in seq_along (plot_types) )
 	for ( j in seq_along (chromosomes) )
 	{
 		plot_list[[j]] <- ggplot (data_plot %>% filter (Chrom==!!chromosomes[[j]]) %>% data.frame) +
-			geom_point (aes_string(x="Pos",y=plot_types[i]),shape=".",colour="#ff80c3") +
-			ylim (0,1) +
-			labs (title=chromosomes[[i]]) +
+			geom_point (aes_string(x="Pos",y=plot_types[i]),shape=".",colour="#ffa8d7") +
+			scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+			coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!chromosomes[[j]]) %>% pull (End)),ylim=c(0,1)) +
+			labs (title=chromosomes[[j]]) +
 			theme_bw () +
 			theme (
 				panel.grid.major.x=element_blank (),
 				panel.grid.minor.x=element_blank (),
-				axis.text.x=element_blank ()
+				plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
 			)
 	}
 
@@ -296,6 +299,11 @@ for ( i in seq_along (plot_types) )
 	"""#!/usr/bin/env bash
 touch ${meta.sampleName}.LOH.adjusted.chromosomes.pdf
 touch ${meta.sampleName}.LOH.adjusted.genome.pdf
+touch ${meta.sampleName}.LOH.germline.chromosomes.pdf
+touch ${meta.sampleName}.LOH.germline.genome.pdf
+touch ${meta.sampleName}.LOH.raw.chromosomes.pdf
+touch ${meta.sampleName}.LOH.raw.genome.pdf
+
 	"""
 
 }
@@ -461,7 +469,10 @@ process loh_seg_plot {
 		val (genome_build)
 		val (intervals)
 		tuple path (interval_bed), path (interval_bed_index)
-		tuple val (meta), path (loh_snp), path (log_seg)
+		tuple val (meta), path (loh_snp), path (loh_seg)
+
+	output:
+		path ("${meta.sampleName}.*.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -478,7 +489,7 @@ data_interval <- read.table (file=interval_file,sep="\t",header=F,stringsAsFacto
 names (data_interval) <- c("Chrom", "Start", "End")
 head (data_interval)
 
-data <- read.table (file="${log_snp}",sep="\t",header=T,stringsAsFactors=F)
+data <- read.table (file="${loh_snp}",sep="\t",header=T,stringsAsFactors=F)
 head (data)
 
 data_seg <- read.table (file="${loh_seg}",sep="\t",header=T,stringsAsFactors=F)
@@ -487,7 +498,9 @@ head (data_seg)
 data_interval_plot <- data_interval %>%
 	dplyr::mutate (Chrom=as.character (Chrom),End=as.numeric (End)) %>%
 	dplyr::mutate (CumulativeStart=cumsum (End)-End) %>%
-	dplyr::mutate (CumulativeMidpoint=CumulativeStart+((Start+End)/2)) %>%
+	dplyr::mutate (CumulativeEnd=cumsum (End)) %>%
+	dplyr::mutate (CumulativeMidpoint=(CumulativeStart+CumulativeEnd)/2) %>%
+	dplyr::filter (Chrom %in% !!intervals) %>%
 	data.frame
 
 data_plot <- data %>%
@@ -509,20 +522,21 @@ data_segments_plot <- data_seg %>%
 pdf (file="${meta.sampleName}.LOH.segments.genome.pdf",width=16,height=4)
 
 ggplot (data_plot %>% filter (LOH_Filter=="PASS") %>% data.frame) +
-	geom_point (aes (x=Pos.Genome,y=Plot_Freq),shape=".",colour="#ff80c3") +
+	geom_point (aes (x=Pos.Genome,y=Plot_Freq),shape=".",colour="#ffa8d7") +
 	geom_segment (data=data_segments_plot %>% dplyr::filter (Seg_Filter=="PASS") %>% data.frame,aes(x=Start.Genome,y=upSeg,xend=End.Genome,yend=upSeg),colour="red") +
 	geom_segment (data=data_segments_plot %>% dplyr::filter (Seg_Filter=="PASS") %>% data.frame,aes(x=Start.Genome,y=lowSeg,xend=End.Genome,yend=lowSeg),colour="red") +
 	geom_hline (yintercept=0.5, color="darkgrey", alpha=0.5) +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +
-	coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.05,label=Chrom),size=2) +
+	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(0,1),expand=F,clip="off") +
 	theme_bw () +
+	xlab ("Genome") +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
 		axis.ticks.x=element_blank (),
 		axis.text.x=element_blank (),
-		plot.margin = unit(c(1,0.5,0.5,0.5), "cm")
+		plot.margin=unit (c(1,0.5,0.5,0.5), "cm")
 	)
 
 dev.off ()
@@ -533,17 +547,17 @@ plot_list <- vector ("list",length (intervals))
 for ( i in seq_along (intervals) )
 {
 	plot_list[[i]] <- ggplot (data_plot %>% filter (chromosome==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
-		geom_point (aes(x=pos,y=Plot_Freq),shape=".",colour="#ff80c3") +
+		geom_point (aes(x=pos,y=Plot_Freq),shape=".",colour="#ffa8d7") +
 		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
 		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
-		ylim (0,1) +
-		labs (title=chromosomes[[i]]) +
+		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
+		labs (title=intervals[[i]]) +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
 			panel.grid.minor.x=element_blank (),
-			axis.text.x=element_blank ()
-
+			plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
 		)
 }
 
@@ -555,11 +569,10 @@ p
 dev.off ()
 
 # Plot again and include filtered snps and segments
-loh_filter_colours <- setNames (rep ("#636363",length (levels (data_plot %>% pull (LOH_Filter)))), levels (data_plot %>% pull (LOH_Filter)))
-loh_filter_colours[which (names (loh_filter_colours)=="PASS")] <- "#ff80c3"
-print ("loh_filter_colours")
-print (loh_filter_colours)
-seg_filter_colours <- setNames (rep ("#636363",length (levels (data_segments_plot %>% pull (Seg_Filter)))),levels (data_segments_plot %>% pull (Seg_Filter)))
+loh_filter_colours <- setNames (rep ("#dedede",length (levels (data_plot %>% pull (LOH_Filter)))), levels (data_plot %>% pull (LOH_Filter)))
+loh_filter_colours[which (names (loh_filter_colours)=="PASS")] <- "#ffedf7"
+
+seg_filter_colours <- setNames (rep ("blue",length (levels (data_segments_plot %>% pull (Seg_Filter)))),levels (data_segments_plot %>% pull (Seg_Filter)))
 seg_filter_colours[which (names (seg_filter_colours)=="PASS")] <- "red"
 
 pdf (file="${meta.sampleName}.LOH.segments.genome.full.pdf",width=16,height=4)
@@ -573,9 +586,10 @@ ggplot (data_plot) +
 	scale_colour_manual (values=seg_filter_colours) +
 	geom_hline (yintercept=0.5, color="darkgrey", alpha=0.5) +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
-	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.1,label=Chrom),size=2) +	
-	coord_cartesian (ylim=c(0,1),expand=F,clip="off") +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.05,label=Chrom),size=2) +
+	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(0,1),expand=F,clip="off") +
 	theme_bw () +
+	xlab ("Genome") +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
@@ -595,16 +609,17 @@ for ( i in seq_along (intervals) )
 		geom_point (aes(x=pos,y=Plot_Freq,colour=LOH_Filter),shape=".",show.legend=F) +
 		scale_colour_manual (values=loh_filter_colours) +
 		ggnewscale::new_scale_color () +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg,colour=Seg_Filter)) +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg,colour=Seg_Filter)) +
-		ylim (0,1) +
+		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg,colour=Seg_Filter),show.legend=F) +
+		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg,colour=Seg_Filter),show.legend=F) +
+		scale_colour_manual (values=seg_filter_colours) +
+		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
 			panel.grid.minor.x=element_blank (),
-			axis.text.x=element_blank ()
-
+			plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
 		)
 }
 
@@ -615,7 +630,15 @@ pdf (file="${meta.sampleName}.LOH.segments.chromosomes.full.pdf",width=9)
 p
 dev.off ()
 
+	"""
 
+	stub:
+	"""#!/usr/bin/env bash
+
+touch ${meta.sampleName}.LOH.segments.chromosomes.pdf
+touch ${meta.sampleName}.LOH.segments.chromosomes.full.pdf
+touch ${meta.sampleName}.LOH.segments.genome.pdf
+touch ${meta.sampleName}.LOH.segments.genome.full.pdf
 	"""
 }
 
