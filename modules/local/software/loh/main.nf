@@ -323,67 +323,330 @@ process loh_matched_segment {
 		tuple val (meta), path (loh_tsv)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.LOH.snp_filter.tsv"), path ("${meta.sampleName}.LOH.segs.tsv"), emit: result
+		tuple val (meta), path ("${meta.sampleName}_LOH_SNPs.tsv"), path ("${meta.sampleName}_LOH_Segments.tsv"), emit: result
 
 	script:
 	"""#!/usr/bin/env Rscript
-
+library (data.table)
 library (dplyr)
 library (GenomicRanges)
 library (PSCBS)
+library (zoo)
 
 # Following method by NikdAK
 
-getLOHSegments <- function (data_gr)
+ConvertGenomicCords = function(dat,chrom.sizes,Start,CopyNumber,Chromosome)
 {
-	data_points <- as.data.frame (data_gr) %>%
-		dplyr::rename (chromosome=seqnames,x=start,y=Plot_Freq) %>%
-		dplyr::select (chromosome,x,y) %>%
-		data.frame
-
-	#print ("data_points")
-	#print (head (data_points))
-
-	data_points_dup <- data_points %>%
-		dplyr::mutate (y=abs(y)) %>%
-		dplyr::mutate (chromosome=as.character (chromosome)) %>%
-		data.frame
-
-	#print (head (data_points_dup))
-
-	gaps <- PSCBS::findLargeGaps (data_points_dup, minLength = 2e+06) # smallest centromere is 2100000
-	knownSegments <- PSCBS::gapsToSegments (gaps)
-	fit <- PSCBS::segmentByCBS (data_points_dup, knownSegments = knownSegments, verbose = -10)
-
-	#print ("fit")
-	#print (fit)
-
-	fit_gr <- as.data.frame (fit) %>%
-		dplyr::filter (!is.na(mean)) %>%
-		dplyr::mutate (mid=(start+end)/2) %>%
-		makeGRangesFromDataFrame (keep.extra.columns=T)
-
-	#print (fit_gr)
-
-	fit_gr_data_gr.hits <- GenomicRanges::findOverlaps (fit_gr,data_gr)
-	fit_gr_data_gr.hits_data <- cbind (data.frame (fit_gr_data_gr.hits), data.frame (LOHscore=mcols (data_gr)[subjectHits (fit_gr_data_gr.hits),"Plot_Freq"])) %>%
-		dplyr::group_by (queryHits) %>%
-		dplyr::summarise (mode=abs(density (LOHscore)\$x[which.max(density(LOHscore)\$y)])) %>%
-		data.frame
-
-	#print (head (fit_gr_data_gr.hits_data))
-	mcols (fit_gr)[,"Seg_Filter"] <- "PASS"
-	mcols (fit_gr)[,"mode"] <- NA_real_
-	mcols (fit_gr)[fit_gr_data_gr.hits_data[,"queryHits"],"mode"] <- fit_gr_data_gr.hits_data[,"mode"]
-
-	return (fit_gr)
+  Outlist = list()
+  cn <- data.frame()
+  borders <- c()
+  ChromBorders = c()
+  FirstPosition = c()
+  last = 0
+  for(i in names(chrom.sizes))
+  {
+    cur <- dat[dat[,Chromosome]==i,c(Start,CopyNumber)]
+    cn <- rbind(cn,data.frame(Chromosome = i,position=cur[,Start]+last,copy=cur[,CopyNumber]))
+    borders <- c(borders,last)
+    last = last + chrom.sizes[i]
+    ChromBorders = c(ChromBorders,last)
+    FirstPosition = c(FirstPosition,min(dat[dat[,Chromosome]==i,Start]))
+  }
+  names(ChromBorders) = names(chrom.sizes)
+  Outlist[["CN"]]=cn
+  Outlist[["ChromosomeBorders"]] = ChromBorders
+  Outlist[["FirstChromPosition"]] = FirstPosition
+  Outlist[["NonProcessed"]] = dat
+  return(Outlist)
 }
 
-intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
+ProcessCountData2 = function(countdata="",chrom.sizes=chrom.sizes,method=""){
+  Outlist = list()
+  countdata = fread(countdata,header=T,sep="\t")
+  SetVariableNames(method)
+  countdata <- data.frame(countdata)
+  Outlist = ConvertGenomicCords(countdata,chrom.sizes,Start,CopyNumber,Chromosome)
+  return(Outlist)
+}
+
+MirrorAndDuplicate <- function(lohDT){
+  # first we will "mirror&duplicate" all points:
+  # - points can be categorized in up or below 0.5
+  # - now all values below 0.5 will be copied to the upper but keeping the same distance to 0.5 as it was before (mirroring)
+  # - the same happens for the above group so in the end the data points will be doubled
+
+  upperDT <- copy(lohDT)
+  upperDT[, LOHscore := Plot_Freq]
+  upperDT[Plot_Freq <= 0.5, LOHscore := 0.5+(0.5-Plot_Freq)] # move all values from below 0.5 up
+  lowerDT <- copy(upperDT) # now copy the entire set back down (duplicating the data points)
+  lowerDT[, LOHscore := 1-LOHscore]
+
+  dupDT <- rbind(upperDT,lowerDT) # the duplicated lohDT
+  return(dupDT)
+}
+
+AssignSNPids <- function(lohSegs,lohDT){
+  lohSegsGR <- makeGRangesFromDataFrame(lohSegs[, .(chr=Chrom, start,end)])
+  lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
+  hits <- findOverlaps(lohSegsGR, lohGR)
+  lohDT[subjectHits(hits), segID := lohSegs[queryHits(hits), segID]]
+  lohDT[, snpID := .I] # also SNP ID
+
+  return(lohDT)
+}
+
+
+# CBS segmentation algorithm
+GetSegments <- function(dupDT){
+  # run segmentation
+  data <- data.frame(dupDT[LOHscore >= 0.5, .(chromosome=as.character(Chrom), x=Pos, y=LOHscore)])
+  data <- data[, c("chromosome", "x", "y")]
+  rownames(data) <- paste0("SEG", 1:nrow(data))
+  gaps <- findLargeGaps(data, minLength = 2e+06) # smallest centromere is 2100000
+  knownSegments <- gapsToSegments(gaps)
+  fit <- segmentByCBS(data, knownSegments = knownSegments, verbose = -10, seed=T)
+
+  lohSegs <- as.data.table(fit)
+  setnames(lohSegs, "chromosome", "Chrom")
+  lohSegs[, Chrom := as.character(Chrom)]
+  lohSegs <- lohSegs[!is.na(mean)]
+  lohSegs[, width := round(end-start)]
+  lohSegs[, segID := sequence(.N), by = Chrom] # segment ID
+  lohSegs[, mid := start+((end-start)/2), by=segID] # center for plot labels
+
+  # assign (mirror&duplicated) SNPs to segments
+  lohSegsGR <- makeGRangesFromDataFrame(lohSegs[, .(chr=Chrom, start,end)])
+  dupGR <- makeGRangesFromDataFrame(dupDT[, .(chr=Chrom, start=Pos, end=Pos)])
+  hits <- findOverlaps(lohSegsGR, dupGR)
+  dupDT[subjectHits(hits), segID := lohSegs[queryHits(hits), segID]]
+
+  # calculate the mode value for this segment
+  modeVals <- dupDT[, density(LOHscore)\$x[which.max(density(LOHscore)\$y)], by=.(Chrom, segID)]
+  names(modeVals) <- c("Chrom","segID", "mode")
+  #modeVals[, Chrom := as.integer(Chrom)]
+
+  lohSegs <- merge(lohSegs, modeVals, by=c("Chrom", "segID")) # assign the calculcated mode values for each segment
+
+  lohSegs[, mean := NULL] # this is meaningless
+
+  # assign the new mode segment values to the upper and lower region
+  lohSegs[, upSeg := (0.5-mode)+0.5]
+  lohSegs[, lowSeg := 1-upSeg]
+  lohSegs[lowSeg > upSeg, c("upSeg", "lowSeg") := .(lowSeg, upSeg)]
+
+  return(lohSegs)
+}
+
+#Get_LOH_segments <- function(name,seqType,species,filterBAF=T,denovoBAF=F,minLOHsegdif=0.03,customData=NULL,MinDifToMerge=0.05,minSegSize=100000)
+Get_LOH_segments <- function(name,seqType,species,data,data_gr,chrom.sizes,filterBAF=T,denovoBAF=F,minLOHsegdif=0.03,customData=NULL,MinDifToMerge=0.05,minSegSize=100000)
+{
+
+  # denovoBAF: take SNP BAFs from table or recalculate
+  # filterBAF: apply snp filtering (centromeres, haplotypes, mappability) --> currently only for human
+  # minLOHsegdif: up/low segment with differences smaller than this will be set to 0.5
+  # MinDifToMerge: 0.05 # distance (BAF difference) used to merge neighbouring segments
+  # minSegSize <- 100000 # minimal length of called segments
+
+  # minimal number of total SNPs and SNPs per megabase
+  if(seqType == "WES"){
+    minSNPsMB <- 3
+    minSNPs <- 5
+  } else if(seqType == "WGS") {
+    minSNPs <- 100
+    minSNPsMB <- 100
+  }
+
+####
+#  chrom.sizes = DefineChromSizes(species)
+#  if (species=="human"){
+#    chromosomes=21
+#    nXbreaks <- 10 # number of breaks on x-axis
+#
+#    # data calculated in: "/home/rad/Documents/small_scripts/MoCaSeq_DevCode/Cohort_GenerateOverlay_FilterNoise.R"
+#    load("/media/rad/SSD2/MoCaSeq_runs/AGRad_test/loh_seg/hg38_cents-haplo-mappability.RData")
+#  } else if (species=="Mouse"){
+#    chromosomes=19
+#    nXbreaks <- 10 # number of breaks on x-axis
+#    load("/media/rad/HDD1/Lookups/mm10_cents-haplo-mappability.RData")
+#  }
+#
+#
+#  if(!denovoBAF){
+#    # OLD
+#    data=paste0(name,"/results/LOH/",name,".VariantsForLOH.txt")
+#    LOHDat = ProcessCountData2(data,chrom.sizes,"LOH")
+#    lohDT <- data.table(LOHDat[[4]])
+#    lohDT <- lohDT[!Chrom %in% c("X", "Y")]
+#    lohDT[, Chrom := as.numeric(Chrom)]
+#  } else {
+#
+#    # NEW, this takes a long time
+#    tumorBAM <- paste(name,"/results/bam/",name,".Tumor.bam", sep="")
+#    tumor <- fread(paste(name,"/results/Mutect2/",name,".Tumor.Mutect2.Positions.txt", sep=""), header=T, sep="\t",
+#                   col.names=c("Chrom", "Pos", "Ref", "Alt", "Tumor_Freq", "Tumor_RefCount", "Tumor_AltCount", "MapQ", "BaseQ"))
+#    normal <- fread(paste(name,"/results/Mutect2/",name,".Normal.Mutect2.Positions.txt", sep=""), header=T, sep="\t",
+#                    col.names=c("Chrom", "Pos", "Ref", "Alt", "Normal_Freq", "Normal_RefCount", "Normal_AltCount", "MapQ", "BaseQ"))
+#
+#    # filter normal (keep tumor as it is)
+#    normal <- normal[Chrom %in% c(1:22)]
+#    normal <- normal[nchar(paste0(Ref, Alt)) == 2]
+#    normal <- normal[MapQ >= 60]
+#    normal <- normal[(Normal_RefCount + Normal_AltCount) >= 10]
+#    normal <- normal[Normal_Freq %between% c(0.3, 0.7)]
+#    normal[, id := paste0(Chrom, ":", Pos, "-", Pos)]
+#    normal[, UniquePos := paste(Chrom, Pos, Pos, sep="_")]
+#    tumor[, UniquePos := paste(Chrom, Pos, Pos, sep="_")]
+#
+#    # Scan the tumor bam file for coverage
+#    library(Rsamtools)
+#    which <- GRanges(seqnames = normal\$Chrom, ranges = IRanges(normal\$Pos,normal\$Pos))
+#    what <- c("mapq")
+#    param <- ScanBamParam(which = which, what = what)
+#    tumorList <- scanBam(tumorBAM, param=param)
+#    tumorList <- lapply(tumorList, unlist)
+#    tumorList <- lapply(tumorList, function(x) length(x[x >= 60])) # apply MAPQ filtering
+#    tumorRaw <- data.table(TumorCounts=tumorList)
+#    tumorRaw[, id := names(tumorList)]
+#
+#    variants <- merge(normal, tumorRaw, by="id", all.x=T)
+#    variants <- merge(variants, tumor[, .(UniquePos, Tumor_Freq)], all.x=T, by="UniquePos")
+#    variants[, Chrom := as.numeric(Chrom)]
+#    #saveRDS(variants, "/home/rad/Downloads/temp6/DS36_variants_unfiltered.rds")
+#    #variants <- readRDS("/home/rad/Downloads/temp6/DS36_variants_unfiltered.rds")
+#    variants <- variants[TumorCounts >= 10]
+#    variants[is.na(Tumor_Freq), Tumor_Freq := 0]
+#
+#    #ggplot(variants[Chrom == 6], aes(Pos, Tumor_Freq)) + geom_point()
+#    variants[, Dif_Freq := Tumor_Freq-Normal_Freq]
+#    variants[, Tumor_Freq := Dif_Freq]
+#    lohDT <- copy(variants)
+#  }
+#
+####
+
+  lohDT = data.table (data)
+
+  # reset the "mouse correction procedure" for human
+  if ( species=="human" )
+  {
+    lohDT[, Plot_Freq := Tumor_Freq]
+  }
+
+  # generate a copy with all SNPs (and merge it back to keep removed SNPs but with a lighter color)
+  lohDT.all <- copy(lohDT)
+
+  lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
+
+  # filter SNPS for centromeres, low mappability regions and alternative haplotypes
+  if(filterBAF){
+    # filter variants coming from "bad regions"
+
+####
+#    filter.gr <- append(cents.gr, haplo.gr)
+#    hits <- findOverlaps(lohGR, filter.gr)
+#    lohDT[queryHits(hits), remove := "yes"]
+#
+#    hits <- findOverlaps(lohGR, mappab.gr)
+#    BAFmappa <- cbind(lohDT[queryHits(hits)], mappab[subjectHits(hits), score])
+#    BAFmappa <- BAFmappa[, mean(V2), by=UniquePos]
+#    setnames(BAFmappa, "V1", "mappability")
+#    lohDT <- merge(lohDT, BAFmappa, by="UniquePos", all.x=T, sort=F)
+#    lohDT[is.na(mappability), mappability := 0]
+#
+#    lohDT <- lohDT[is.na(remove)]
+#    lohDT <- lohDT[mappability > 0.5]
+####
+    lohDT <- lohDT[mcols (data_gr)[mcols(data_gr)[,"LOH_Filter"]=="PASS" & !is.na (mcols(data_gr)[,"score"]) & mcols(data_gr)[,"score"] > 0.5,"row_index"]]
+    lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
+  }
+
+  dupDT <- MirrorAndDuplicate(lohDT)
+  lohSegs <- GetSegments(dupDT)
+
+  # if segments and dots are removed at the start/end of the chromosome, the points in the middle would shift and look like the start of the chromosome
+  # here we generate dummy data to keep the lengths as they were before
+  startDummy <- data.table(Chrom = names(chrom.sizes), Pos = 0, Plot_Freq=0)
+  endDummy <- data.table(Chrom = names(chrom.sizes), Pos = chrom.sizes, Plot_Freq=0)
+  chromDummy <- rbind(startDummy, endDummy)
+
+  # very small focal segments: remove all overlapping SNPs and rerun segmentation
+  removeSegs <- lohSegs[width < minSegSize]
+  if(nrow(removeSegs) > 0){
+    removeSegs.gr <- makeGRangesFromDataFrame(removeSegs[, .(chr=Chrom, start, end)])
+    hits <- findOverlaps(lohGR, removeSegs.gr)
+    lohDT <- lohDT[!queryHits(hits)]
+
+    dupDT <- MirrorAndDuplicate(lohDT)
+  }
+
+  lohSegs <- GetSegments(dupDT)
+
+  if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint A (change the parameter \\"minSegSize\\")");quit ('no')}
+
+  # re-assign segID to the SNPs
+  lohDT <- AssignSNPids(lohSegs, lohDT)
+
+  # remove segments supported only by few SNP, as well as the corresponding SNPs
+  snpcountDT <- lohDT[, .N, by=.(Chrom, segID)]
+  lohSegs <- merge(lohSegs, snpcountDT[, .(Chrom, segID, nSNPs=N)], by=c("Chrom", "segID")) # also add it to segments
+  removeSegs <- snpcountDT[N <= minSNPs, paste(Chrom, segID, sep="+")]
+  removeSNPs <- lohDT[paste(Chrom, segID,sep="+") %in% removeSegs, snpID]
+
+  lohSegs <- lohSegs[!paste(Chrom, segID, sep="+") %in% removeSegs]
+  lohDT <- lohDT[!snpID %in% removeSNPs]
+
+  if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint B (change the parameter \\"minSNPs\\")");quit ('no')}
+
+  # merge similar neighboring segments
+  lohSegs[, DifNextSeg := abs(upSeg - data.table::shift(upSeg)), by = Chrom]
+  lohSegs[, DistNextSeg := abs(start - data.table::shift(end)), by = Chrom]
+  lohSegs[, mergeID := as.numeric(.I)]
+  lohSegs[DifNextSeg < MinDifToMerge & DistNextSeg < 10000000, mergeID := NA]
+  lohSegs[, mergeID := na.locf(mergeID)]
+
+  lohSegs <- unique(lohSegs[, .(Chrom, segID=as.integer(mean(segID)),
+                                start=min(start), end=max(end), mid=mean(mid), mode=mean(mode),
+                                upSeg=mean(upSeg), lowSeg=mean(lowSeg), width=sum(width), nSNPs=sum(nSNPs)), by=mergeID])
+  lohSegs[, mergeID := NULL]
+
+  # reassign segment IDs
+  lohSegs[, segID := sequence(.N), by = Chrom]
+
+  # re-assign segID to the SNPs
+  lohDT <- AssignSNPids(lohSegs, lohDT)
+
+  # now finally remove all segments with a very low number of SNPs per MB
+  lohSegs[, nSNPperMB := nSNPs / width * 1000000]
+  removeSegs <- lohSegs[nSNPperMB < minSNPsMB, paste(Chrom, segID, sep="+")]
+  removeSNPs <- lohDT[paste(Chrom, segID,sep="+") %in% removeSegs, snpID]
+  lohSegs <- lohSegs[!paste(Chrom, segID, sep="+") %in% removeSegs]
+  lohDT <- lohDT[!snpID %in% removeSNPs]
+
+  if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint C (change the parameter \\"minSNPsMB\\")");quit ('no')}
+
+  # reassign segment IDs
+  lohSegs[, segID := sequence(.N), by = Chrom]
+
+  # re-assign segID to the SNPs
+  lohDT <- AssignSNPids(lohSegs, lohDT)
+
+  # add removed SNPs back but mark them
+  lohDT.removed <- lohDT.all[!UniquePos %in%lohDT\$UniquePos]
+
+  lohSegs[, segDif := upSeg-lowSeg]
+  lohSegs[segDif < minLOHsegdif, `:=` (upSeg=0.5, lowSeg=0.5)]
+
+  return(list(lohDT=lohDT, lohSegs=lohSegs))
+}
+
+#intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
+intervals <- c("21","22")
 
 interval_file <- gzfile ("${interval_bed}", 'rt')
-data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F)
-names (data_interval) <- c("Chrom", "Chrom.Start", "Chrom.End")
+data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F) %>%
+	dplyr::rename (Chrom=V1,Chrom.Start=V2,Chrom.End=V3) %>%
+	dplyr::mutate (Chrom=as.character (Chrom)) %>%
+	data.frame
 head (data_interval)
 
 data <- read.table (file="${loh_tsv}",sep="\\t",header=T,stringsAsFactors=F)
@@ -402,8 +665,8 @@ mappability_gr <- read.table (file="${mappability}",sep="\\t",header=T,stringsAs
 	makeGRangesFromDataFrame (seqinfo=seq_info,keep.extra.columns=T)
 
 data_gr <- data %>%
-	dplyr::mutate (LOH_Filter="PASS") %>%
-	dplyr::select (Chrom,Pos,Plot_Freq,LOH_Filter) %>%
+	dplyr::mutate (row_index=row_number (),LOH_Filter="PASS") %>%
+	dplyr::select (Chrom,Pos,Tumor_Freq,Plot_Freq,LOH_Filter,row_index) %>%
 	makeGRangesFromDataFrame (seqinfo=seq_info,start.field="Pos",end.field="Pos",keep.extra.columns=T) %>%
 	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
@@ -425,37 +688,12 @@ mcols (data_gr)[,"score"] <- NA_real_
 mcols (data_gr)[data_gr_mappability_gr.hits_data[,"queryHits"],"score"] <- data_gr_mappability_gr.hits_data[,"score"]
 print (data_gr)
 
-mcols (data_gr)[which (mcols(data_gr)[,"LOH_Filter"] == "PASS" & (is.na (mcols (data_gr)[,"score"]) | mcols (data_gr)[,"score"] < 0.5)),"LOH_Filter"] <- "mappability"
-print (data_gr)
+chrom.sizes <- setNames (data_interval %>% dplyr::filter (Chrom %in% intervals) %>% pull (Chrom.End), data_interval %>% filter (Chrom %in% intervals) %>% pull (Chrom))
 
-seg_one_gr <- getLOHSegments (data_gr[which (mcols (data_gr)[,"LOH_Filter"] == "PASS")])
-print ("seg_one_gr")
-print (seg_one_gr)
+result <- Get_LOH_segments ("${meta.sampleName}",toupper ("${meta.seqType}"), "${meta.organism}",data,data_gr,chrom.sizes)
 
-# very small focal segments: remove all overlapping snps and rerun segmentation
-minSegSize <- 10000000
-data_gr_min_seg_gr.hits <- GenomicRanges::findOverlaps (data_gr,seg_one_gr[width (seg_one_gr)<minSegSize])
-mcols (data_gr)[queryHits (data_gr_min_seg_gr.hits),"LOH_Filter"] <- "min_seg_size"
-
-seg_two_gr <- getLOHSegments (data_gr[which (mcols (data_gr)[,"LOH_Filter"] == "PASS")])
-
-print ("seg_two_gr")
-print (seg_two_gr)
-
-minSNPs <- 100
-
-mcols (seg_two_gr)[which (mcols(seg_two_gr)[,"nbrOfLoci"]<minSNPs), "Seg_Filter"] <- "n_snps"
-
-# merge similar neighboring segments
-
-# now finally remove all segments with a very low number of SNPs per MB
-minSNPsMB <- 100
-mcols (seg_two_gr)[which (mcols (seg_two_gr)[,"Seg_Filter"] == "PASS" & ((mcols (seg_two_gr)[,"nbrOfLoci"] / width (seg_two_gr) * 1000000) < minSNPsMB)),"Seg_Filter"] <- "n_snps_mb"
-
-write.table (as.data.frame (data_gr) %>% dplyr::rename (chromosome=seqnames,pos=start) %>% dplyr::select (chromosome,pos,Plot_Freq,LOH_Filter) %>% data.frame,file="${meta.sampleName}.LOH.snp_filter.tsv",sep="\\t",row.names=F,quote=F)
-write.table (as.data.frame (seg_two_gr),file="${meta.sampleName}.LOH.segs.tsv",sep="\\t",row.names=F,quote=F)
-
-
+write.table (result[["lohDT"]],file="${meta.sampleName}_LOH_SNPs.tsv",sep="\\t",row.names=F,quote=F)
+write.table (result[["lohSegs"]],file="${meta.sampleName}_LOH_Segments.tsv",sep="\\t",row.names=F,quote=F)
 
 	"""
 }
@@ -504,18 +742,18 @@ data_interval_plot <- data_interval %>%
 	data.frame
 
 data_plot <- data %>%
-	dplyr::mutate (chromosome=as.character (chromosome)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom)) %>%
 	dplyr::filter (!is.na (Plot_Freq)) %>%
 	dplyr::mutate (LOH_Filter=factor (LOH_Filter)) %>%
-	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Pos.Genome=pos+CumulativeStart) %>%
 	data.frame
 
 data_segments_plot <- data_seg %>%
-	dplyr::mutate (chromosome=as.character (seqnames),Seg_Filter=factor (Seg_Filter)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter)) %>%
 	dplyr::mutate (upSeg=(0.5-mode)+0.5) %>%
 	dplyr::mutate (lowSeg=1-upSeg) %>%
-	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
+	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
 
@@ -546,7 +784,7 @@ plot_list <- vector ("list",length (intervals))
 
 for ( i in seq_along (intervals) )
 {
-	plot_list[[i]] <- ggplot (data_plot %>% filter (chromosome==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
+	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
 		geom_point (aes(x=pos,y=Plot_Freq),shape=".",colour="#ffa8d7") +
 		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
 		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
