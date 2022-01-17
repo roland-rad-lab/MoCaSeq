@@ -639,8 +639,7 @@ Get_LOH_segments <- function(name,seqType,species,data,data_gr,chrom.sizes,filte
   return(list(lohDT=lohDT, lohSegs=lohSegs))
 }
 
-#intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
-intervals <- c("21","22")
+intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
 interval_file <- gzfile ("${interval_bed}", 'rt')
 data_interval <- read.table (file=interval_file,sep="\\t",header=F,stringsAsFactors=F) %>%
@@ -744,12 +743,14 @@ data_interval_plot <- data_interval %>%
 data_plot <- data %>%
 	dplyr::mutate (Chrom=as.character (Chrom)) %>%
 	dplyr::filter (!is.na (Plot_Freq)) %>%
+	dplyr::mutate (LOH_Filter="PASS") %>%
 	dplyr::mutate (LOH_Filter=factor (LOH_Filter)) %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Pos.Genome=pos+CumulativeStart) %>%
+	dplyr::mutate (Pos.Genome=Pos+CumulativeStart) %>%
 	data.frame
 
 data_segments_plot <- data_seg %>%
+	dplyr::mutate (Seg_Filter="PASS") %>%
 	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter)) %>%
 	dplyr::mutate (upSeg=(0.5-mode)+0.5) %>%
 	dplyr::mutate (lowSeg=1-upSeg) %>%
@@ -785,9 +786,9 @@ plot_list <- vector ("list",length (intervals))
 for ( i in seq_along (intervals) )
 {
 	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
-		geom_point (aes(x=pos,y=Plot_Freq),shape=".",colour="#ffa8d7") +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
+		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="#ffa8d7") +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +
@@ -843,12 +844,12 @@ plot_list <- vector ("list",length (intervals))
 
 for ( i in seq_along (intervals) )
 {
-	plot_list[[i]] <- ggplot (data_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame) +
-		geom_point (aes(x=pos,y=Plot_Freq,colour=LOH_Filter),shape=".",show.legend=F) +
+	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!intervals[[i]]) %>% data.frame) +
+		geom_point (aes(x=Pos,y=Plot_Freq,colour=LOH_Filter),shape=".",show.legend=F) +
 		scale_colour_manual (values=loh_filter_colours) +
 		ggnewscale::new_scale_color () +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg,colour=Seg_Filter),show.legend=F) +
-		geom_segment (data=data_segments_plot %>% filter (chromosome==!!intervals[[i]]) %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg,colour=Seg_Filter),show.legend=F) +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]]) %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg,colour=Seg_Filter),show.legend=F) +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]]) %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg,colour=Seg_Filter),show.legend=F) +
 		scale_colour_manual (values=seg_filter_colours) +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
