@@ -72,7 +72,7 @@ workflow HMM_COPY {
 			}
 		ch_hmm_copy_wig_resolution = ch_wig_resolution.cross (ch_hmm_copy_wig)
 			.map {
-				tuple ( it[0][0], it[0][1], it[0][2], it[1][1]["meta"], it[1][1]["wig"], it[1][1]["wigNormal"] )
+				tuple ( it[0][0], it[0][1], it[0][2], it[1][1]["meta"], it[1][1]["wigNormal"], it[1][1]["wig"] )
 			}.dump (tag: 'hmm-copy wr')
 
 		hmm_copy_tsv (genome_build, ch_interval_csv_string, ch_hmm_copy_wig_resolution)
