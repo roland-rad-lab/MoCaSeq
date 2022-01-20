@@ -695,6 +695,19 @@ write.table (result[["lohDT"]],file="${meta.sampleName}_LOH_SNPs.tsv",sep="\\t",
 write.table (result[["lohSegs"]],file="${meta.sampleName}_LOH_Segments.tsv",sep="\\t",row.names=F,quote=F)
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.loh_matched_segment}" == "null" ]]; then
+        cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/LOH/${meta.sampleName}_LOH_SNPs.tsv .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/LOH/${meta.sampleName}_LOH_Segments.tsv .
+fi
+
+touch ${meta.sampleName}_LOH_SNPs.tsv
+touch ${meta.sampleName}_LOH_Segments.tsv
+
+	"""
 }
 
 process loh_seg_plot {
@@ -753,8 +766,6 @@ data_plot <- data %>%
 data_segments_plot <- data_seg %>%
 	dplyr::mutate (Seg_Filter="PASS") %>%
 	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter)) %>%
-	dplyr::mutate (upSeg=(0.5-mode)+0.5) %>%
-	dplyr::mutate (lowSeg=1-upSeg) %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame
@@ -769,8 +780,9 @@ ggplot (data_plot %>% filter (LOH_Filter=="PASS") %>% data.frame) +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
 	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.05,label=Chrom),size=2) +
 	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(0,1),expand=F,clip="off") +
-	theme_bw () +
 	xlab ("Genome") +
+	ylab ("BAF") +
+	theme_bw () +
 	theme (
 		panel.grid.major.x=element_blank (),
 		panel.grid.minor.x=element_blank (),
@@ -793,6 +805,7 @@ for ( i in seq_along (intervals) )
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +
+		ylab ("BAF") +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
@@ -818,10 +831,12 @@ for ( i in seq_along (intervals) )
 		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="black") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
-		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(mid, upSeg, label=segID),nudge_y = 0.1) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",upSeg<0.8) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=0.1,size=3) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",upSeg>0.8) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=-0.1,size=3) +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +
+		ylab ("BAF") +
 		theme_bw () +
 		theme (
 			panel.grid.major.x=element_blank (),
@@ -833,7 +848,7 @@ for ( i in seq_along (intervals) )
 # Need to do this outside of pdf call to prevent blank first page
 p <- marrangeGrob (plot_list,nrow=1,ncol=1)
 
-pdf (file="${meta.sampleName}.LOH.segments.chromosomes.labeled.pdf",width=9)
+pdf (file="${meta.sampleName}.LOH.segments.chromosomes.labelled.pdf",width=9)
 p
 dev.off ()
 
@@ -907,7 +922,7 @@ dev.off ()
 
 touch ${meta.sampleName}.LOH.segments.chromosomes.pdf
 touch ${meta.sampleName}.LOH.segments.chromosomes.full.pdf
-touch ${meta.sampleName}.LOH.segments.chromosomes.labeled.pdf
+touch ${meta.sampleName}.LOH.segments.chromosomes.labelled.pdf
 touch ${meta.sampleName}.LOH.segments.genome.pdf
 touch ${meta.sampleName}.LOH.segments.genome.full.pdf
 	"""
