@@ -717,6 +717,7 @@ process loh_seg_plot {
 library (dplyr)
 library (ggnewscale)
 library (ggplot2)
+library (ggrepel)
 library (gridExtra)
 
 intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
@@ -807,6 +808,36 @@ pdf (file="${meta.sampleName}.LOH.segments.chromosomes.pdf",width=9)
 p
 dev.off ()
 
+# This time we include labels for interesting segments
+plot_list <- vector ("list",length (intervals))
+
+
+for ( i in seq_along (intervals) )
+{
+	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
+		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="black") +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
+		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(mid, upSeg, label=segID),nudge_y = 0.1) +
+		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
+		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
+		labs (title=intervals[[i]]) +
+		theme_bw () +
+		theme (
+			panel.grid.major.x=element_blank (),
+			panel.grid.minor.x=element_blank (),
+			plot.margin=unit (c(5.5,25.5,5.5,5.5),"pt")
+		)
+}
+
+# Need to do this outside of pdf call to prevent blank first page
+p <- marrangeGrob (plot_list,nrow=1,ncol=1)
+
+pdf (file="${meta.sampleName}.LOH.segments.chromosomes.labeled.pdf",width=9)
+p
+dev.off ()
+
+
 # Plot again and include filtered snps and segments
 loh_filter_colours <- setNames (rep ("#dedede",length (levels (data_plot %>% pull (LOH_Filter)))), levels (data_plot %>% pull (LOH_Filter)))
 loh_filter_colours[which (names (loh_filter_colours)=="PASS")] <- "#ffedf7"
@@ -876,6 +907,7 @@ dev.off ()
 
 touch ${meta.sampleName}.LOH.segments.chromosomes.pdf
 touch ${meta.sampleName}.LOH.segments.chromosomes.full.pdf
+touch ${meta.sampleName}.LOH.segments.chromosomes.labeled.pdf
 touch ${meta.sampleName}.LOH.segments.genome.pdf
 touch ${meta.sampleName}.LOH.segments.genome.full.pdf
 	"""
