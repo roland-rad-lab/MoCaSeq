@@ -102,7 +102,7 @@ data_bed <- switch ("${coverage_source}",
 	dplyr::select (chromosome,start,end,log2) %>%
 	data.frame
 
-write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGraph",sep="\\t",quote=F,row.names=F)
+write.table (data_bed,file="${meta.sampleName}.${type}.${coverage_source}.bedGraph",sep="\\t",quote=F,row.names=F,col.names=F)
 
 	"""
 }
