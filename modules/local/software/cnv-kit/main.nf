@@ -3,7 +3,7 @@
 process cnv_kit_matched {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/matched/${meta.sampleName}.matched.cns", saveAs: { it.replaceFirst ("^CNVKit/matched/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/matched/${meta.sampleName}.matched.CNVKit.*", saveAs: { it.replaceFirst ("^CNVKit/matched/","") }
 
 	input:
 		val (genome_build)
@@ -14,9 +14,9 @@ process cnv_kit_matched {
 		tuple val (meta), path (bam_normal), path (bai_normal), path (bam_tumor), path (bai_tumor)
 
 	output:
-		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cnr"), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: result
-		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.cns"), emit: cns
-		tuple val (meta), val ("matched"), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.call.cns"), emit: call
+		tuple val (meta), val ("matched"), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.CNVKit.cnr"), path ("CNVKit/matched/${meta.sampleName}.matched.CNVKit.call.cns"), emit: result
+		tuple val (meta), val ("matched"), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.CNVKit.cns"), emit: cns
+		tuple val (meta), val ("matched"), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/matched/${meta.sampleName}.matched.CNVKit.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
@@ -51,19 +51,19 @@ cnvkit.py batch \\
 # .baseName ~ A nextflow groovy file extension
 for file in \$(find CNVKit/matched/ -type f -name "*${bam_normal.baseName}*");
 do
-		file_new=\$(echo \${file} | sed -e "s/${bam_normal.baseName}/${meta.sampleName}.matched.Normal/")
+		file_new=\$(echo \${file} | sed -e "s/${bam_normal.baseName}/${meta.sampleName}.matched.CNVKit.Normal/")
 		echo "Rename '\${file}' to '\${file_new}'"
 		mv \${file} \${file_new}
 done
 
 for file in \$(find CNVKit/matched/ -type f -name "*${bam_tumor.baseName}*");
 do
-		file_new=\$(echo \${file} | sed -e "s/${bam_tumor.baseName}/${meta.sampleName}.matched/")
+		file_new=\$(echo \${file} | sed -e "s/${bam_tumor.baseName}/${meta.sampleName}.matched.CNVKit/")
 		echo "Rename '\${file}' to '\${file_new}'"
 		mv \${file} \${file_new} || true
 done
 
-RESOLUTION=\$(cat CNVKit/matched/${meta.sampleName}.${type}.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
+RESOLUTION=\$(cat CNVKit/matched/${meta.sampleName}.matched.CNVKit.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
 echo "RESOLUTION: '\${RESOLUTION}'"
 
 	"""
@@ -73,13 +73,13 @@ echo "RESOLUTION: '\${RESOLUTION}'"
 mkdir -p CNVKit/matched
 
 if [[ "${params.stub_json_map?.cnv_kit_matched}" == "null" ]]; then
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cnr CNVKit/matched/
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.cns CNVKit/matched/
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.call.cns CNVKit/matched/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.CNVKit.cnr CNVKit/matched/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.CNVKit.cns CNVKit/matched/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.matched.CNVKit.call.cns CNVKit/matched/
 fi
-touch CNVKit/matched/${meta.sampleName}.matched.cnr
-touch CNVKit/matched/${meta.sampleName}.matched.cns
-touch CNVKit/matched/${meta.sampleName}.matched.call.cns
+touch CNVKit/matched/${meta.sampleName}.matched.CNVKit.cnr
+touch CNVKit/matched/${meta.sampleName}.matched.CNVKit.cns
+touch CNVKit/matched/${meta.sampleName}.matched.CNVKit.call.cns
 RESOLUTION=1000
 
 	"""
@@ -89,7 +89,7 @@ RESOLUTION=1000
 process cnv_kit_single {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.cns", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "CNVKit/single/${meta.sampleName}.${type}.CNVKit.*", saveAs: { it.replaceFirst ("^CNVKit/single/","") }
 
 	input:
 		val (genome_build)
@@ -100,9 +100,9 @@ process cnv_kit_single {
 		tuple val (meta), val (type), path (bam), path (bai)
 
 	output:
-		tuple val (meta), val (type), val ("cnk-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.cnr"), path ("CNVKit/single/${meta.sampleName}.${type}.call.cns"), emit: result
-		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.cns"), emit: cns
-		tuple val (meta), val (type), val ("cnv-kit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.call.cns"), emit: call
+		tuple val (meta), val (type), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.CNVKit.cnr"), path ("CNVKit/single/${meta.sampleName}.${type}.CNVKit.call.cns"), emit: result
+		tuple val (meta), val (type), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.CNVKit.cns"), emit: cns
+		tuple val (meta), val (type), val ("CNVKit"), env (RESOLUTION), path ("CNVKit/single/${meta.sampleName}.${type}.CNVKit.call.cns"), emit: call
 
 	script:
 	"""#!/usr/bin/env bash
@@ -136,12 +136,12 @@ cnvkit.py batch \\
 # .baseName ~ A nextflow groovy file extension
 for file in \$(find CNVKit/single/ -type f -name "*${bam.baseName}*");
 do
-		file_new=\$(echo \${file} | sed -e "s/${bam.baseName}/${meta.sampleName}.${type}/")
+		file_new=\$(echo \${file} | sed -e "s/${bam.baseName}/${meta.sampleName}.${type}.CNVKit/")
 		echo "Rename '\${file}' to '\${file_new}'"
 		mv \${file} \${file_new} || true
 done
 
-RESOLUTION=\$(cat CNVKit/single/${meta.sampleName}.${type}.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
+RESOLUTION=\$(cat CNVKit/single/${meta.sampleName}.${type}.CNVKit.targetcoverage.cnn | sed -e '1d;' | awk 'BEGIN{FS=OFS="\\t";total=0;}{total=total+\$3-\$2;}END{print int(total/NR);}')
 echo "RESOLUTION: '\${RESOLUTION}'"
 
 	"""
@@ -151,13 +151,13 @@ echo "RESOLUTION: '\${RESOLUTION}'"
 mkdir -p CNVKit/single
 
 if [[ "${params.stub_json_map?.cnv_kit_single}" == "null" ]]; then
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cnr CNVKit/single/
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.cns CNVKit/single/
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.call.cns CNVKit/single/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.cnr CNVKit/single/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.cns CNVKit/single/
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.call.cns CNVKit/single/
 fi
-touch CNVKit/single/${meta.sampleName}.${type}.cnr
-touch CNVKit/single/${meta.sampleName}.${type}.cns
-touch CNVKit/single/${meta.sampleName}.${type}.call.cns
+touch CNVKit/single/${meta.sampleName}.${type}.CNVKit.cnr
+touch CNVKit/single/${meta.sampleName}.${type}.CNVKit.cns
+touch CNVKit/single/${meta.sampleName}.${type}.CNVKit.call.cns
 RESOLUTION=1000
 
 	"""
@@ -404,8 +404,9 @@ data_interval_plot <- data_interval %>%
 
 data_ratio_plot <- data_ratio %>%
 	dplyr::filter (!is.na (log2)) %>%
+	dplyr::mutate (midpoint=(start+end)/2) %>%
 	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
+	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart,Midpoint.Genome=midpoint+CumulativeStart) %>%
 	data.frame
 
 data_call_plot <- data_call %>%
@@ -417,10 +418,11 @@ head (data_interval_plot)
 head (data_ratio_plot)
 head (data_call_plot)
 
-pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf",width=16,height=4)
+pdf (file="${meta.sampleName}.${type}.${coverage_source}.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
-	geom_segment (aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="#636363") +
+	#geom_segment (aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="#636363") +
+	geom_point (aes(x=Midpoint.Genome,y=log2),shape=".",colour="#c7c7c7") +
 	geom_segment (data=data_call_plot,aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="red") +
 	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart),colour="#D3D3D3") +
 	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=2.1,label=Chrom),size=2) +
@@ -444,7 +446,8 @@ plot_list <- vector ("list",length (chromosomes))
 for ( i in seq_along (chromosomes) )
 {
 	plot_list[[i]] <- ggplot (data_ratio_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame) +
-		geom_segment (aes(x=start,y=log2,xend=end,yend=log2),colour="#636363") +
+		#geom_segment (aes(x=start,y=log2,xend=end,yend=log2),colour="#636363") +
+		geom_point (aes(x=midpoint,y=log2),shape=".",colour="#c7c7c7") +
 		geom_segment (data=data_call_plot %>% filter (chromosome==!!chromosomes[[i]]) %>% data.frame,aes(x=start,y=log2,xend=end,yend=log2),colour="red") +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!chromosomes[[i]]) %>% pull (End)),ylim=c(-2,2)) +
@@ -460,7 +463,7 @@ for ( i in seq_along (chromosomes) )
 # Need to do this outside of pdf call to prevent blank first page
 p <- marrangeGrob (plot_list,nrow=1,ncol=1)
 
-pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf",width=9)
+pdf (file="${meta.sampleName}.${type}.${coverage_source}.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 
@@ -470,8 +473,8 @@ dev.off ()
 	stub:
 	"""#!/usr/bin/env bash
 
-touch ${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf
-touch ${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf
+touch ${meta.sampleName}.${type}.${coverage_source}.${resolution}.chromosomes.pdf
+touch ${meta.sampleName}.${type}.${coverage_source}.${resolution}.genome.pdf
 
 	"""
 }

@@ -40,7 +40,7 @@ workflow CNV_KIT {
 		cnv_kit_plot (genome_build, ch_interval_bed, cnv_kit_matched.out.result.mix (cnv_kit_single.out.result))
 
 	emit:
-		cns = cnv_kit_single.out.cns
+		call = cnv_kit_matched.out.call.mix (cnv_kit_single.out.call)
 }
 
 workflow CNV_KIT_FIX {

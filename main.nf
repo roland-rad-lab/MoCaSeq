@@ -182,7 +182,7 @@ workflow HUMAN_WGS
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.cns)
+			IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.call)
 		}
 	}
 	else
