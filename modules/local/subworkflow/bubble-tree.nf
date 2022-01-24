@@ -17,7 +17,10 @@ workflow BUBBLE_TREE {
 		ch_loh_key = ch_loh.map { [it[0]["sampleName"], ["loh", [it[1]]], it[0]] }
 		ch_ratio_key = ch_ratio.filter {
 				it[1] == "Tumor" &&
-				( it[2] == "cnv-kit" || ( it[2] == "hmm-copy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () ) )
+				(
+					( it[2].startsWith ("CNVKit") && it[2].endsWith ("${params.cnv_kit.centre}".tokenize (",").find { true } || "") ) ||
+					( it[2] == "HMMCopy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () )
+				)
 			}
 			.map { [it[0]["sampleName"], ["ratio", [it[2], it[4]]], it[0]] }
 

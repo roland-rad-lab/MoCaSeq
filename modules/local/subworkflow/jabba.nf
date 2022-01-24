@@ -7,24 +7,22 @@ workflow JABBA
 		genome_build
 		ch_interval
 		ch_manta
-		ch_coverage
-		ch_segment
+		ch_coverage_and_segment
 		ch_bubble
 
 	main:
 
 		ch_interval_csv_string = ch_interval.map { it.join (",") }
 		ch_manta_key = ch_manta.map { [it[0]["sampleName"], ["manta", [it[1]]], it[0]] }
-		ch_coverage_key = ch_coverage.filter {
+		ch_coverage_and_segment_key = ch_coverage_and_segment.filter {
 				it[1] == "Tumor" &&
-				( it[2] == "cnv-kit" || ( it[2] == "hmm-copy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () ) )
+				(
+					( it[2].startsWith ("CNVKit") && it[2].endsWith ("${params.cnv_kit.centre}".tokenize (",").find { true } || "") ) ||
+					( it[2] == "HMMCopy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () )
+				)
 			}
-			.map { [it[0]["sampleName"], ["coverage", [it[2], it[4]]], it[0]] }
-		ch_segment_key = ch_segment.filter {
-				it[1] == "Tumor" &&
-				( it[2] == "cnv-kit" || ( it[2] == "hmm-copy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () ) )
-			}
-			.map { [it[0]["sampleName"], ["segment", [it[2], it[4]]], it[0]] }
+			.map { [it[0]["sampleName"], ["coverage_and_segment", [it[2], it[4], it[5]]], it[0]] }
+
 		ch_bubble_key = ch_bubble.map {
 				def bubble_tree_output = it[1].getText ()
 				def m_bubble_tree_output = bubble_tree_output =~ /\s*(\w+):\s+?([0-9\.,\s]+);?/
@@ -35,7 +33,7 @@ workflow JABBA
 				[it[0]["sampleName"], ["bubble", [result["Purity"], result["Ploidy"]]], it[0]]
 			}
 
-		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_coverage_key,ch_segment_key,ch_bubble_key)
+		ch_manta_and_ratio_and_bubble = ch_manta_key.mix (ch_coverage_and_segment_key,ch_bubble_key)
 			.dump (tag: 'jabba before groupTuple')
 			.groupTuple (size: 4)
 			.map {
@@ -43,7 +41,7 @@ workflow JABBA
 					accumulator[item[0]] = item[1]
 					accumulator
 				}
-				[it[2][0]] + m["manta"] + m["coverage"] + m["segment"] + m["bubble"]
+				[it[2][0]] + m["manta"] + m["coverage_and_segment"] + m["bubble"]
 			}
 			.dump (tag: 'manta_ratio_and_bubble')
 

@@ -767,7 +767,7 @@ data_segments_plot <- data_seg %>%
 	dplyr::mutate (Seg_Filter="PASS") %>%
 	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter)) %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
-	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
+	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart,Mid.Genome=((start+end)/2)+CumulativeStart) %>%
 	data.frame
 
 pdf (file="${meta.sampleName}.LOH.segments.genome.pdf",width=16,height=4)
@@ -822,17 +822,44 @@ p
 dev.off ()
 
 # This time we include labels for interesting segments
+pdf (file="${meta.sampleName}.LOH.segments.genome.labelled.pdf",width=16,height=4)
+
+ggplot (data_plot %>% filter (LOH_Filter=="PASS") %>% data.frame) +
+	geom_point (aes (x=Pos.Genome,y=Plot_Freq),shape=".") +
+	geom_segment (data=data_segments_plot %>% dplyr::filter (Seg_Filter=="PASS") %>% data.frame,aes(x=Start.Genome,y=upSeg,xend=End.Genome,yend=upSeg),colour="red") +
+	geom_segment (data=data_segments_plot %>% dplyr::filter (Seg_Filter=="PASS") %>% data.frame,aes(x=Start.Genome,y=lowSeg,xend=End.Genome,yend=lowSeg),colour="red") +
+	geom_hline (yintercept=0.5, color="darkgrey", alpha=0.5) +
+	geom_vline (data=data_interval_plot,aes(xintercept=CumulativeStart)) +
+	geom_text (data=data_interval_plot,aes(x=CumulativeMidpoint,y=1.05,label=Chrom),size=2) +
+	geom_label_repel (data=data_segments_plot %>% filter (Seg_Filter=="PASS",segID %% 2 == 1) %>% data.frame,aes(Mid.Genome, upSeg, label=segID),nudge_y=0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
+	geom_label_repel (data=data_segments_plot %>% filter (Seg_Filter=="PASS",segID %% 2 == 0) %>% data.frame,aes(Mid.Genome, upSeg, label=segID),nudge_y=-0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
+	coord_cartesian (xlim=c(0,data_interval_plot %>% pull (CumulativeEnd) %>% max ()),ylim=c(0,1),expand=F,clip="off") +
+	xlab ("Genome") +
+	ylab ("BAF") +
+	theme_bw () +
+	theme (
+		panel.grid.major.x=element_blank (),
+		panel.grid.minor.x=element_blank (),
+		axis.ticks.x=element_blank (),
+		axis.text.x=element_blank (),
+		plot.margin=unit (c(1,0.5,0.5,0.5), "cm")
+	)
+
+dev.off ()
+
+
+
 plot_list <- vector ("list",length (intervals))
 
 
 for ( i in seq_along (intervals) )
 {
 	plot_list[[i]] <- ggplot (data_plot %>% filter (Chrom==!!intervals[[i]],LOH_Filter=="PASS") %>% data.frame) +
-		geom_point (aes(x=Pos,y=Plot_Freq),shape=".",colour="black") +
+		geom_point (aes(x=Pos,y=Plot_Freq),shape=".") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
-		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",upSeg<0.8) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=0.1,size=3) +
-		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",upSeg>0.8) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=-0.1,size=3) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 1) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 0) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=-0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +

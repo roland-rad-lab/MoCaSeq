@@ -318,29 +318,49 @@ process cnv_kit_segment {
 
 	input:
 		val (genome_build)
+		each (centre)
 		tuple val (meta), val (type), val (coverage_source), val (resolution), path (coverage_cnr)
 
 	output:
-		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path (coverage_cnr), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: result
-		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.cns"), emit: cns
-		tuple val (meta), val (type), val ("cnv-kit"), val (resolution), path ("${meta.sampleName}.${type}.${coverage_source}.mode.call.cns"), emit: call
+		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr"), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns"), emit: result
+		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr"), emit: cnr
+		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns"), emit: call
+		path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns")
 
 	script:
 	"""#!/usr/bin/env bash
 
-cnvkit.py segment -o ${meta.sampleName}.${type}.${coverage_source}.cns ${coverage_cnr}
-cnvkit.py call -o ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns --center mode ${meta.sampleName}.${type}.${coverage_source}.cns
+cnvkit.py segment \\
+	-p ${params.cnv_kit.threads} \\
+	--drop-low-coverage \\
+	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns \\
+	${coverage_cnr}
+
+cnvkit.py call \\
+	-m none \\
+	--center ${centre} \\
+	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns \\
+	${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns
+
+cnvkit.py call \\
+	-m none \\
+	--center ${centre} \\
+	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr
+	${coverage_cnr}
+
 	"""
 
 	stub:
 	"""#!/usr/bin/env bash
 if [[ "${params.stub_json_map?.cnv_kit_segment}" == "null" ]]; then
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.cns .
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.${coverage_source}.mode.call.cns .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns .
 fi
 
-touch ${meta.sampleName}.${type}.${coverage_source}.cns
-touch ${meta.sampleName}.${type}.${coverage_source}.mode.call.cns
+touch ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr
+touch ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns
+touch ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns
 	"""
 }
 
@@ -397,7 +417,7 @@ head (data_interval_plot)
 head (data_ratio_plot)
 head (data_call_plot)
 
-pdf (file="${meta.sampleName}.CNVKit.${resolution}.genome.pdf",width=16,height=4)
+pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
 	geom_segment (aes(x=Start.Genome,y=log2,xend=End.Genome,yend=log2),colour="#636363") +
@@ -440,7 +460,7 @@ for ( i in seq_along (chromosomes) )
 # Need to do this outside of pdf call to prevent blank first page
 p <- marrangeGrob (plot_list,nrow=1,ncol=1)
 
-pdf (file="${meta.sampleName}.CNVKit.${resolution}.chromosomes.pdf",width=9)
+pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 
@@ -450,8 +470,8 @@ dev.off ()
 	stub:
 	"""#!/usr/bin/env bash
 
-touch ${meta.sampleName}.CNVKit.${resolution}.chromosomes.pdf
-touch ${meta.sampleName}.CNVKit.${resolution}.genome.pdf
+touch ${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf
+touch ${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf
 
 	"""
 }

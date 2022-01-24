@@ -178,7 +178,7 @@ workflow HUMAN_WGS
 	{
 		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, GENOME_ANNOTATION.out.ref_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.cnr, HMM_COPY.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.result, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
@@ -197,17 +197,19 @@ workflow HUMAN_WGS
 			tuple ( it[0], data["target_avg_size"], data["wgs_depth"] )
 		}.first ()
 
+		ch_centre = params.cnv_kit && params.cnv_kit.centre ? Channel.value (params.cnv_kit.centre.tokenize (",")) : Channel.empty ()
+
 		CNV_KIT_COVERAGE (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_target_bed, ch_bam_tumor)
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
-		CNV_KIT_SEGMENT (params.genome_build.human, PREPARE_GENOME.out.interval_bed, CNV_KIT_FIX.out.cnr)
+		CNV_KIT_SEGMENT (params.genome_build.human, PREPARE_GENOME.out.interval_bed, ch_centre, CNV_KIT_FIX.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_FIX.out.cnr, CNV_KIT_SEGMENT.out.call, BUBBLE_TREE.out.result)
+		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_SEGMENT.out.result, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_FIX.out.cnr)
+			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_SEGMENT.out.cnr)
 			IGV_TRACK_CNR_hmm_copy (params.genome_build.human, PREPARE_GENOME.out.interval_bed, HMM_COPY.out.cnr)
-			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.cns)
+			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.call)
 		}
 		if ( params.track_sv )
 		{

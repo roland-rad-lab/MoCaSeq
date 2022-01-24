@@ -62,7 +62,8 @@ add_num_probes <- function (data)
 	}
 }
 
-cat ("Running BubbleTree using copy number data from ${cn_source}\\n")
+cn_source_prefix <- strsplit ("${cn_source}",".",fixed=T)[[1]][1]
+cat (paste ("Running BubbleTree using copy number data from ${cn_source} called by ",cn_source_prefix,"\\n",sep=""))
 intervals <- strsplit ("${intervals}", ",", fixed=T)[[1]]
 
 min_num_markers <- 10
@@ -76,12 +77,12 @@ gr_loh <- data_loh %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
 	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 
-gr_cnv <- switch ("${cn_source}",
-		"hmm-copy"={
+gr_cnv <- switch (cn_source_prefix,
+		"HMMCopy"={
 			data_cnv %>%
 			dplyr::rename (seqnames=Chrom,start=Start,end=End,seg.mean=Mean)
 		},
-		"cnv-kit"={
+		"CNVKit"={
 			data_cnv %>%
 			dplyr::rename (seqnames=chromosome,num.mark=probes,seg.mean=log2)
 		},

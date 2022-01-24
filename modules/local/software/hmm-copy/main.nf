@@ -40,9 +40,9 @@ process hmm_copy_tsv {
 		tuple val (resolution), val (gc_wig), val (map_wig), val (meta), path (normal_wig), path (tumor_wig)
 
 	output:
-		tuple val (meta), val ("matched"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
-		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), emit: cnr
-		tuple val (meta), val ("Tumor"), val ("hmm-copy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: call
+		tuple val (meta), val ("matched"), val ("HMMCopy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: result
+		tuple val (meta), val ("Tumor"), val ("HMMCopy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.log2RR.txt"), emit: cnr
+		tuple val (meta), val ("Tumor"), val ("HMMCopy"), val (resolution), path ("${meta.sampleName}.HMMCopy.${resolution}.segments.txt"), emit: call
 
 	script:
 
@@ -194,10 +194,10 @@ process hmm_copy_plot {
 	input:
 		val (genome_build)
 		tuple path (interval_bed), path (interval_bed_index)
-		tuple val (meta), val (type), val (resolution), path (log2_file), path (segments_file)
+		tuple val (meta), val (type), val (coverage_source), val (resolution), path (log2_file), path (segments_file)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.HMMCopy.${resolution}.genome.pdf"), path ("${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf")
+		tuple val (meta), path ("${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf"), path ("${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf")
 
 	script:
 	"""#!/usr/bin/env Rscript
@@ -239,7 +239,7 @@ head (data_ratio_plot)
 head (data_segments_plot)
 
 
-pdf (file="${meta.sampleName}.HMMCopy.${resolution}.genome.pdf",width=16,height=4)
+pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf",width=16,height=4)
 
 ggplot (data_ratio_plot) +
 	geom_segment (aes(x=Start.Genome,y=log2Ratio,xend=End.Genome,yend=log2Ratio),colour="#636363") +
@@ -282,7 +282,7 @@ for ( i in seq_along (chromosomes) )
 # Need to do this outside of pdf call to prevent blank first page
 p <- marrangeGrob (plot_list,nrow=1,ncol=1)
 
-pdf (file="${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf",width=9)
+pdf (file="${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf",width=9)
 p
 dev.off ()
 
@@ -290,8 +290,8 @@ dev.off ()
 
 	stub:
 	"""#!/usr/bin/env bash
-touch ${meta.sampleName}.HMMCopy.${resolution}.genome.pdf
-touch ${meta.sampleName}.HMMCopy.${resolution}.chromosomes.pdf
+touch ${meta.sampleName}.${coverage_source}.${resolution}.genome.pdf
+touch ${meta.sampleName}.${coverage_source}.${resolution}.chromosomes.pdf
 	"""
 }
 

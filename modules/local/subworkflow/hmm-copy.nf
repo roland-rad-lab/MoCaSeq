@@ -79,6 +79,7 @@ workflow HMM_COPY {
 		hmm_copy_plot (genome_build, ch_interval_bed, hmm_copy_tsv.out.result)
 
 	emit:
+		result = hmm_copy_tsv.out.result
 		cnr = hmm_copy_tsv.out.cnr
 		call = hmm_copy_tsv.out.call
 }

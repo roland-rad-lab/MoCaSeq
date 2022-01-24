@@ -62,13 +62,15 @@ workflow CNV_KIT_SEGMENT {
 	take:
 		genome_build
 		ch_interval_bed
+		ch_centre
 		ch_coverage
 	main:
-		cnv_kit_segment (genome_build, ch_coverage)
+		cnv_kit_segment (genome_build, ch_centre, ch_coverage)
 		cnv_kit_plot (genome_build, ch_interval_bed, cnv_kit_segment.out.result)
 
 	emit:
-		cns = cnv_kit_segment.out.cns
+		result = cnv_kit_segment.out.result
+		cnr = cnv_kit_segment.out.cnr
 		call = cnv_kit_segment.out.call
 }
 
