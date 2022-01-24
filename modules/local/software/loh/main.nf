@@ -765,7 +765,7 @@ data_plot <- data %>%
 
 data_segments_plot <- data_seg %>%
 	dplyr::mutate (Seg_Filter="PASS") %>%
-	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter)) %>%
+	dplyr::mutate (Chrom=as.character (Chrom),Seg_Filter=factor (Seg_Filter),mid_real=(start+end)/2) %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart,Mid.Genome=((start+end)/2)+CumulativeStart) %>%
 	data.frame
@@ -858,8 +858,8 @@ for ( i in seq_along (intervals) )
 		geom_point (aes(x=Pos,y=Plot_Freq),shape=".") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=upSeg,xend=end,yend=upSeg),colour="red") +
 		geom_segment (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS") %>% data.frame,aes(x=start,y=lowSeg,xend=end,yend=lowSeg),colour="red") +
-		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 1) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
-		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 0) %>% data.frame,aes(mid, upSeg, label=segID),nudge_y=-0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 1) %>% data.frame,aes(mid_real, upSeg, label=segID),nudge_y=0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
+		geom_label_repel (data=data_segments_plot %>% filter (Chrom==!!intervals[[i]],Seg_Filter=="PASS",segID %% 2 == 0) %>% data.frame,aes(mid_real, upSeg, label=segID),nudge_y=-0.02,size=2,min.segment.length=100,direction="y",label.padding=0.1,box.padding=0.2,point.padding=0.02) +
 		scale_x_continuous (labels=scales::number_format (big.mark=",",scale=1e-06,suffix=" Mb",accuracy=0.1)) +
 		coord_cartesian (xlim=c(0,data_interval_plot %>% filter (Chrom==!!intervals[[i]]) %>% pull (End)),ylim=c(0,1)) +
 		labs (title=intervals[[i]]) +
