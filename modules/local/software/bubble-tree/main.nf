@@ -92,7 +92,7 @@ gr_cnv <- switch (cn_source_prefix,
 	) %>%
 	dplyr::select (seqnames,start,end,num.mark,seg.mean) %>%
 	dplyr::filter (num.mark>=!!min_num_markers) %>%
-	dplyr::mutate (seg.sig=abs(seg.mean)>0.68) %>%
+	dplyr::mutate (seg.sig=(end-start)>1e6) %>%
 	GenomicRanges::makeGRangesFromDataFrame (keep.extra.columns=T) %>%
 	GenomeInfoDb::keepSeqlevels (intervals,pruning.mode="tidy")
 

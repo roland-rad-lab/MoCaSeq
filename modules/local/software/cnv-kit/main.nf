@@ -309,6 +309,16 @@ cnvkit.py fix \\
 	${reference_cnn}
 
 	"""
+
+	stub:
+	"""#!/usr/bin/env bash
+
+if [[ "${params.stub_json_map?.cnv_kit_fix}" == "null" ]]; then
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/CNVKit/${meta.sampleName}.${type}.ratio.${resolution}.cnr .
+fi
+touch ${meta.sampleName}.${type}.ratio.${resolution}.cnr
+
+	"""
 }
 
 process cnv_kit_segment {
@@ -345,7 +355,7 @@ cnvkit.py call \\
 cnvkit.py call \\
 	-m none \\
 	--center ${centre} \\
-	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr
+	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr \\
 	${coverage_cnr}
 
 	"""

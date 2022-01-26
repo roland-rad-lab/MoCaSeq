@@ -18,7 +18,7 @@ workflow BUBBLE_TREE {
 		ch_ratio_key = ch_ratio.filter {
 				it[1] == "Tumor" &&
 				(
-					( it[2].startsWith ("CNVKit") && it[2].endsWith ("${params.cnv_kit.centre}".tokenize (",").find { true } || "") ) ||
+					( it[2].startsWith ("CNVKit") && it[2].endsWith ("${params.cnv_kit.centre}".tokenize (",").find { true }) ) ||
 					( it[2] == "HMMCopy" && it[3] as int == "${params.hmm_copy.resolution}".tokenize (",").collect { it as int }.min () )
 				)
 			}
