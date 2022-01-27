@@ -1174,6 +1174,8 @@ if [ $CNVKit = 'yes' ]; then
 	sh $repository_dir/CNV_RunCNVKit.sh $name $runmode $sequencing_type $config_file $species $threads "$types"
 
 	Rscript $repository_dir/CNV_PlotCNVKit.R $name $species $repository_dir "$types"
+
+	rm ${temp_dir}/access-CNVKit.bed # remove tmp files
 fi
 
 

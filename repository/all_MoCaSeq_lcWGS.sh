@@ -126,8 +126,10 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_tumor_1 ]; then
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
-MAX_RECORDS_IN_RAM=$(expr $RAM \* 250000)
-HASH_TABLE_SIZE=$((RAM*1000000000/500))
+# this can not be more than 30GB
+tmpRAM=30
+MAX_RECORDS_IN_RAM=$(expr $tmpRAM \* 250000)
+HASH_TABLE_SIZE=$((tmpRAM*1000000000/500))
 
 echo '---- Starting Mouse Cancer Genome Analysis ----' | tee -a $name/results/QC/$name.report.txt
 echo Starting lcWGS pipeline using these settings: | tee -a $name/results/QC/$name.report.txt
