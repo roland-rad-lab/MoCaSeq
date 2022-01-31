@@ -99,6 +99,9 @@ do
 	# echo "0 $method mutations found in $name.Strelka.$method.vcf"
 	# continue
 	# fi
+    
+
+	if [ $species = 'homo_sapiens' ]; then
 
 	$vep_dir/./vep --cache --species $species \
 	-i $name/results/Strelka/$name.Strelka.$method.vcf \
@@ -113,6 +116,24 @@ do
 	--pick_order canonical,tsl,biotype,rank,ccds,length --format vcf \
 	--fork 4 --cache_version $chacheVersion --polyphen b --af --af_1kg --af_esp \
 	--af_gnomad --force_overwrite --dir $vepdata_dir
+
+	elif [ $species = 'mus_musculus' ]; then
+
+	$vep_dir/./vep --cache --species $species \
+	-i $name/results/Strelka/$name.Strelka.$method.vcf \
+	-o $name/results/Strelka/$name.Strelka.$method.vep.vcf \
+	--fasta $genome_file --assembly $assembly \
+	--offline --no_progress --no_stats \
+	--buffer_size 5000 --sift b --ccds --uniprot --hgvs \
+	--symbol --numbers --domains --gene_phenotype --canonical \
+	--protein --biotype --uniprot --tsl --pubmed --variant_class \
+	--shift_hgvs 1 --check_existing --total_length --allele_number \
+	--no_escape --xref_refseq --failed 1 --vcf --flag_pick_allele \
+	--pick_order canonical,tsl,biotype,rank,ccds,length --format vcf \
+	--fork 4 --cache_version $chacheVersion --af --af_1kg --af_esp \
+	--force_overwrite --dir $vepdata_dir
+	
+    fi
 
 	# --> adding cache_version 96 and --dir fixes the issues!
 
