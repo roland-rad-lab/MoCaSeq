@@ -22,7 +22,6 @@ manta_dir=/opt/manta-1.6.0
 bammatcher_dir=/opt/bam-matcher
 vcf2maf_dir=/opt/vcf2maf-1.6.17
 vep_dir=/opt/vep-96
-vepdata_dir=$genome_dir/VEP
 discvrseq_dir=/opt/DISCVRSeq-1.07
 
 if [ $species = 'Mouse' ]; then
@@ -48,6 +47,7 @@ if [ $species = 'Mouse' ]; then
 	genecode_file_exons=$genome_dir/GRCm38.Genecode_M20_Exons.rds
 	genecode_file_genes=$genome_dir/GRCm38.Genecode_M20_Genes.rds
 	genecode_file_genes_bed=$genome_dir/GRCm38.Genecode_M20_Genes.bed
+	vepdata_dir=$genome_dir/VEP
 
 	FileList="$snp_file $alternate_snp_file $genome_file $genomeindex_dir.sa $interval_file $bammatcher_file $microsatellite_file $callregions_file $CGC_file $gcWig_file $mapWig_file $exons_file $varregions_file $genecode_file_exons $genecode_file_genes $vepdata_dir/mus_musculus/96_GRCm38/info.txt"
 fi
@@ -87,6 +87,8 @@ if [ $species = 'Human' ]; then
 	clinvar_file=$genome_dir/GRCh38.clinvar.vcf.gz
 	gnomadexome_file=$genome_dir/gnomad.exomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz
 	gnomadgenome_file=$genome_dir/gnomad.genomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz
+
+	vepdata_dir=$genome_dir/VEP
 
 	# for CNVKit
 	RefFlat=$genome_dir/GRCh38.p12.RefFlat
