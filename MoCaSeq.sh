@@ -33,9 +33,9 @@ usage()
 	echo "	-ck, --CNVKit            Set to 'yes' or 'no'. Needed for LOH analysis. Optional. Defaults to 'yes'."
 	echo "	-de, --Delly             Set to 'yes' or 'no'. Needed for chromothripsis inference. Do not use for WES. Optional. Defaults to 'no'. Only use in matched-sample mode."
 	echo "	-ti, --Titan             Set to 'yes' or 'no'. Runs TITAN to model subclonal copy number alterations, predict LOH and estimate tumor purity. Greatly increases runtime for WGS. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
-	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'."
+	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'. Defaults to 'yes' for WES and WGS."
 	echo "	-fac, --Facets           Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
-	echo "	-bt, --BubbleTree             Set to 'yes' or 'no'. Runs the analysis of tumoral aneuploidy and clonality. Optional. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
+	echo "	-bt, --BubbleTree             Set to 'yes' or 'no'. Runs the analysis of tumoral aneuploidy and clonality. Optional. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and WGS. Only use in matched-sample mode."
 	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1', '4.1.7.0' or '4.2.0.0', determining which GATK version is used. Optional. Defaults to 4.2.0.0 (high recommended to identify all mutations)"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run. All other parameters will be ignored"
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
@@ -63,10 +63,6 @@ filtering=soft
 phred=
 Mutect2=yes
 CNVKit=yes
-Titan=no
-Absolute=no
-Facets=no
-BubbleTree=no
 Delly=no
 runmode=MS
 GATK=4.2.0.0
@@ -75,6 +71,9 @@ memstats=0
 config_file=
 species=Mouse
 para=
+# Titan and Facets will be set below
+BubbleTree=yes
+Absolute=yes
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -199,36 +198,36 @@ elif [ -z $fastq_normal_1 ] && [ -z $fastq_normal_2 ] && [ -z $fastq_tumor_1 ] &
 else echo 'Invalid combination of input files. Either use -tf/-tr/-nf/-nr OR -tb/-nb'; #exit 1
 fi
 
-# CHECK IF ALL NEEDED FILE EXIST
-if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
-echo "ERROR, File not found: $fastq_normal_1"
-exit 1
-fi
-
-if [ "$fastq_normal_2" != "" ] && [ ! -f "$fastq_normal_2" ]; then
-echo "ERROR, File not found: $fastq_normal_2"
-exit 1
-fi
-
-if [ "$fastq_tumor_1" != "" ] && [ ! -f "$fastq_tumor_1" ]; then
-echo "ERROR, File not found: $fastq_tumor_1"
-exit 1
-fi
-
-if [ "$fastq_tumor_2" != "" ] && [ ! -f "$fastq_tumor_2" ]; then
-echo "ERROR, File not found: $fastq_tumor_2"
-exit 1
-fi
-
-if [ "$bam_normal" != "" ] && [ ! -f "$bam_normal" ]; then
-echo "ERROR, File not found: $bam_normal"
-exit 1
-fi
-
-if [ "$bam_tumor" != "" ] && [ ! -f "$bam_tumor" ]; then
-echo "ERROR, File not found: $bam_tumor"
-exit 1
-fi
+# # CHECK IF ALL NEEDED FILE EXIST
+# if [ "$fastq_normal_1" != "" ] && [ ! -f "$fastq_normal_1" ]; then
+# echo "ERROR, File not found: $fastq_normal_1"
+# exit 1
+# fi
+#
+# if [ "$fastq_normal_2" != "" ] && [ ! -f "$fastq_normal_2" ]; then
+# echo "ERROR, File not found: $fastq_normal_2"
+# exit 1
+# fi
+#
+# if [ "$fastq_tumor_1" != "" ] && [ ! -f "$fastq_tumor_1" ]; then
+# echo "ERROR, File not found: $fastq_tumor_1"
+# exit 1
+# fi
+#
+# if [ "$fastq_tumor_2" != "" ] && [ ! -f "$fastq_tumor_2" ]; then
+# echo "ERROR, File not found: $fastq_tumor_2"
+# exit 1
+# fi
+#
+# if [ "$bam_normal" != "" ] && [ ! -f "$bam_normal" ]; then
+# echo "ERROR, File not found: $bam_normal"
+# exit 1
+# fi
+#
+# if [ "$bam_tumor" != "" ] && [ ! -f "$bam_tumor" ]; then
+# echo "ERROR, File not found: $bam_tumor"
+# exit 1
+# fi
 
 
 # SET PARAMETERS FOR PURITY ANALYSIS
@@ -253,16 +252,6 @@ else
 fi
 
 
-# Absolute ist default 'yes' for WES and default 'no' for WGS
-# Absolute needs segmented copy ratios data data ((/Copywriter/CNAprofiles/segment.Rdata or HMMCopy/HMMCopy.20000.segments.txt"))
-# Absolute can optionally use somatic mutation data (Mutect2.vep.maf.fn), this will be determined by the value of Mutect2
-if [ $sequencing_type = 'WES' ] && [ -z $Absolute ]; then
-	Absolute=yes
-elif [ $sequencing_type = 'WGS' ] && [ -z $Absolute ]; then
-	Absolute=no
-fi
-
-
 # Facets ist default 'yes' for WES and default 'no' for WGS
 if [ $sequencing_type = 'WES' ] && [ -z $Facets ]; then
 	Facets=yes
@@ -276,12 +265,6 @@ if [ $Facets = 'yes' ] && [ $runmode = 'SS' ]; then
 	echo 'PARAMETER CHANGE: FACETS needs matched tumor/normal and can not be used on single sample runs. Facets was set to "no".'
 fi
 
-# BubbleTree ist default 'yes' for WES and default 'no' for WGS
-if [ $sequencing_type = 'WES' ] && [ -z $BubbleTree ]; then
-	BubbleTree=yes
-elif [ $sequencing_type = 'WGS' ] && [ -z $BubbleTree ]; then
-	BubbleTree=no
-fi
 
 # BubbleTree needs LOH and paired samples (tumor+normal WIG files)
 # If BubbleTree set to 'yes', forces Mutect2 to 'yes'. set to 'no' if runmode SS
