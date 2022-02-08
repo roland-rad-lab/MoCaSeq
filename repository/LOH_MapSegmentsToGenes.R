@@ -96,11 +96,11 @@ if (nrow(segments) > 0)
 		loh[1,"GeneID"]="EMPTY"
 }
 
-write.table(loh,paste(name,"/results/LOH/",name,".LOH.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+write.table(loh,paste(name,"/results/LOH/",name,".LOH.TITAN.genes.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
 
 CGC=read.delim(CGC,header=T,sep="\t")
 
 loh_cgc = loh %>%
 filter(Gene %in% c(as.character(CGC[,1]),"Cdkn2_ncruc"))
 
-write.table(loh_cgc,paste(name,"/results/LOH/",name,".LOH.genes.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
+write.table(loh_cgc,paste(name,"/results/LOH/",name,".LOH.TITAN.genes.CGC.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")
