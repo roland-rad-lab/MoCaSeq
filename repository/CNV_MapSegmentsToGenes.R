@@ -24,36 +24,46 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(GenomicRanges))
 suppressPackageStartupMessages(library(data.table))
 
-genesDT = readRDS(genecode_file)
-
+genesDT <- readRDS(genecode_file)
 genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
 
-AnnotateSegment <- function(segDF)
-{
+AnnotateSegment <- function(segDF){
   segDF[,"chr"]=paste0("chr",segDF[,"chr"])
   segGR <- makeGRangesFromDataFrame(segDF, keep.extra.columns = T)
   hits <- findOverlaps(segGR, genesGR)
-  
-  #returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneID)] # only geneID
   returnDat <- genesDT[subjectHits(hits), .(chr, start, end, geneName, geneID)] # more stuff
   return(data.frame(returnDat))
 }
 
 if (method=="Copywriter"){
-  segment=paste(name,"/results/",method,"/",name,".",method,".segments.Mode.txt",sep="")
+  segment_file=paste(name,"/results/",method,"/",name,".",method,".segments.Mode.txt",sep="")
 } else if (method=="HMMCopy") {
-  segment=paste(name,"/results/",method,"/",name,".",method,".",resolution,".segments.txt",sep="")
+  segment_file=paste(name,"/results/",method,"/",name,".",method,".",resolution,".segments.txt",sep="")
 } else if (method=="CNVKit") {
-  
   if(runmode == "SS"){
-    segment=paste(name,"/results/",method,"/single/",name,".Tumor.cns",sep="")
+    segment_file=paste(name,"/results/",method,"/single/",name,".Tumor.cns",sep="")
   } else if(runmode == "MS"){
-    segment=paste(name,"/results/",method,"/matched/",name,".cns",sep="")
+    segment_file=paste(name,"/results/",method,"/matched/",name,".cns",sep="")
   }
 }
 
-cnv=data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
-segment=read.delim(segment)
+cnv <- data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
+segment <- fread(segment_file)
+segment[, Chrom := as.character(Chrom)]
+
+# ensure X,Y are correct
+if(species == "Mouse"){
+  segment[Chrom == 20, Chrom := "X"]
+  segment[Chrom == 21, Chrom := "Y"]
+  genesDT[Chrom == 20, Chrom := "X"]
+  genesDT[Chrom == 21, Chrom := "Y"]
+} else if(species == "Human"){
+  segment[Chrom == 23, Chrom := "X"]
+  segment[Chrom == 24, Chrom := "Y"]
+  genesDT[Chrom == 23, Chrom := "X"]
+  genesDT[Chrom == 24, Chrom := "Y"]
+}
+segment <- data.frame(segment)
 
 if (method=="Copywriter" | method=="HMMCopy") {
   for (i in 1:nrow(segment)) {
@@ -105,8 +115,6 @@ if (species=="Mouse"){
 }
 
 cnv=tbl_df(cnv) %>% mutate_each(as.character)
-
-#print("For all genes on segment border, pick the absolute largest mean.")
 
 cnv = cnv %>% 
   group_by(Gene) %>% 
