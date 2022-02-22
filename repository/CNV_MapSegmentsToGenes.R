@@ -25,6 +25,7 @@ suppressPackageStartupMessages(library(GenomicRanges))
 suppressPackageStartupMessages(library(data.table))
 
 genesDT <- readRDS(genecode_file)
+genesDT <- data.table(genesDT)
 genesGR <- makeGRangesFromDataFrame(genesDT, keep.extra.columns = T)
 
 AnnotateSegment <- function(segDF){
@@ -55,13 +56,13 @@ segment[, Chrom := as.character(Chrom)]
 if(species == "Mouse"){
   segment[Chrom == 20, Chrom := "X"]
   segment[Chrom == 21, Chrom := "Y"]
-  genesDT[Chrom == 20, Chrom := "X"]
-  genesDT[Chrom == 21, Chrom := "Y"]
+  genesDT[chr == 20, Chrom := "X"]
+  genesDT[chr == 21, Chrom := "Y"]
 } else if(species == "Human"){
   segment[Chrom == 23, Chrom := "X"]
   segment[Chrom == 24, Chrom := "Y"]
-  genesDT[Chrom == 23, Chrom := "X"]
-  genesDT[Chrom == 24, Chrom := "Y"]
+  genesDT[chr == 23, Chrom := "X"]
+  genesDT[chr == 24, Chrom := "Y"]
 }
 segment <- data.frame(segment)
 
