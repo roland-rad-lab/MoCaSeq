@@ -338,25 +338,45 @@ process cnv_kit_segment {
 		path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns")
 
 	script:
-	"""#!/usr/bin/env bash
+	"""#!/usr/bin/env python3.7
 
-cnvkit.py segment \\
-	-p ${params.cnv_kit.threads} \\
-	--drop-low-coverage \\
-	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns \\
-	${coverage_cnr}
+from cnvlib import call, segmentation, segmetrics
+from skgenome import tabio
+from cnvlib import cnary
 
-cnvkit.py call \\
-	-m none \\
-	--center ${centre} \\
-	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns \\
-	${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns
+cnr_table = tabio.read_auto ("${coverage_cnr}")
+cnarr = cnary.CopyNumArray (cnr_table)
 
-cnvkit.py call \\
-	-m none \\
-	--center ${centre} \\
-	-o ${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr \\
-	${coverage_cnr}
+segments = segmentation.do_segmentation(cnarr, "cbs",
+	rscript_path="Rscript",
+	skip_low=True,
+	processes=4,
+	**({'threshold': 1e-6} if "wgs" == 'wgs' else {}))
+
+print ("Post-processing %s.cns ..." % "${meta.sampleName}.${type}.CNVKit.${coverage_source}")
+
+
+
+# TODO/ENH take centering shift & apply to .cnr for use in segmetrics
+seg_metrics = segmetrics.do_segmetrics(cnarr, segments,
+	interval_stats=['ci'],
+	alpha=0.5,
+	smoothed=True)
+
+tabio.write(seg_metrics, "${meta.sampleName}.${type}.CNVKit.${coverage_source}.cns")
+
+# Remove likely false-positive breakpoints
+cnarr.center_all ("${centre}", skip_low=True,verbose=True)
+tabio.write (cnarr, "${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr")
+
+seg_call = call.do_call (seg_metrics, method="none", filters=['ci'],)
+# Calculate another segment-level test p-value
+seg_alltest = segmetrics.do_segmetrics(cnarr, seg_call, location_stats=['p_ttest'])
+
+# Finally, assign absolute copy number values to each segment
+seg_alltest.center_all ("${centre}",skip_low=True,verbose=True)
+seg_final = call.do_call(seg_alltest, method="threshold")
+tabio.write (seg_final, "${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns")
 
 	"""
 

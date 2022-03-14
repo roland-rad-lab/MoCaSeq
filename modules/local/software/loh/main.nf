@@ -952,6 +952,7 @@ touch ${meta.sampleName}.LOH.segments.chromosomes.full.pdf
 touch ${meta.sampleName}.LOH.segments.chromosomes.labelled.pdf
 touch ${meta.sampleName}.LOH.segments.genome.pdf
 touch ${meta.sampleName}.LOH.segments.genome.full.pdf
+touch ${meta.sampleName}.LOH.segments.genome.labelled.pdf
 	"""
 }
 

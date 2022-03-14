@@ -11,7 +11,7 @@ process bubble_tree_matched {
 		tuple val (meta), path (loh_tsv), val (cn_source), path (segments_tsv)
 
 	output:
-		tuple val (meta), path ("${meta.sampleName}.Bubbletree.txt"), emit: result
+		tuple val (meta), path ("${meta.sampleName}.Bubbletree.${cn_source}.txt"), emit: result
 		path ("*.pdf")
 
 	when:
@@ -23,44 +23,6 @@ process bubble_tree_matched {
 library(ggplot2)
 library(BubbleTree)
 library (dplyr)
-
-# function to plot all chromosomes individually
-PlotChromBT <- function(data=pred, chrom, mode="adjusted"){
-
-  # define the data, chromosome and output name for both modes
-  if(mode=="adjusted"){
-    dat <- pred@rbd.adj
-    plotdata <- dat[dat\$seqnames == as.character(chrom),]
-    pdfname <- paste0(name,"/results/BubbleTree/",name,"_Chromosomes/adjusted/",name,".Bubbletree.adjusted.chr",chrom,".pdf")
-  } else if(mode == "unadjusted"){
-    dat <- pred@rbd
-    plotdata <- dat[dat\$seqnames == as.character(chrom),]
-    pdfname <- paste0(name,"/results/BubbleTree/",name,"_Chromosomes/unadjusted/",name,".Bubbletree.unadjusted.chr",chrom,".pdf")
-  } else {
-    stop("ERROR: only adjusted and unadjusted valid for mode")
-  }
-
-  # for some stupid reason, the first entry is set to color white, this way we catch it
-  plotdata <- rbind(emptyElem, plotdata)
-
-  # draw the plot
-  btree <- drawBTree(btreeplotter, plotdata)
-
-  # save the plot
-  ggsave(filename = pdfname, plot = btree, width = 16, height = 9, device = "pdf")
-}
-
-add_num_probes <- function (data)
-{
-	if ( "Num_Probes" %in% names (data))
-	{
-		return (data)
-	}
-	else
-	{
-		return (data %>% dplyr::mutate (Num_Probes=(End-Start)/1000) )
-	}
-}
 
 cn_source_prefix <- strsplit ("${cn_source}",".",fixed=T)[[1]][1]
 cat (paste ("Running BubbleTree using copy number data from ${cn_source} called by ",cn_source_prefix,"\\n",sep=""))
@@ -106,7 +68,7 @@ cnv_plot <- ggplot (data.frame (width=width (gr_cnv),seg.mean=mcols (gr_cnv)[,"s
 	geom_point (aes(colour=seg.sig)) +
 	theme_bw ()
 
-ggsave(filename="${meta.sampleName}.Bubbletree.cnv.pdf", plot = cnv_plot, width = 16, height = 9, device = "pdf")
+ggsave(filename="${meta.sampleName}.Bubbletree.${cn_source}.cnv.pdf", plot = cnv_plot, width = 16, height = 9, device = "pdf")
 
 # Get rid of the unreliable segments
 mcols(gr_cnv)[!mcols(gr_cnv)[,"seg.sig"],"seg.mean"] <- 0
@@ -129,7 +91,7 @@ cat ("\\nUsing min.segSize: ",btreepredictor@config\$min.segSize," retained ",nr
 pred <- btpredict(btreepredictor)
 
 info <- info(pred)
-write.table(info,"${meta.sampleName}.Bubbletree.txt", col.names=F, row.names=F, quote=F, sep="\\t")
+write.table(info,"${meta.sampleName}.Bubbletree.${cn_source}.txt", col.names=F, row.names=F, quote=F, sep="\\t")
 
 cat("\\nPurity/Ploidy: ", info, "\\n")
 
@@ -137,13 +99,13 @@ cat("\\nPurity/Ploidy: ", info, "\\n")
 btreeplotter <- new("BTreePlotter", branch.col="gray50")
 pred@rbd <- rbind(emptyElem, pred@rbd) # for some stupid reason, the first entry is set to color white, this way we catch it
 btree <- drawBTree(btreeplotter, pred@rbd)
-ggsave(filename="${meta.sampleName}.Bubbletree.unadjusted.pdf", plot = btree, width = 16, height = 9, device = "pdf")
+ggsave(filename="${meta.sampleName}.Bubbletree.${cn_source}.unadjusted.pdf", plot = btree, width = 16, height = 9, device = "pdf")
 
 # plot full adjusted
 btreeplotter <- new("BTreePlotter", branch.col="gray50")
 pred@rbd.adj <- rbind(emptyElem, pred@rbd.adj) # for some stupid reason, the first entry is set to color white, this way we catch it
 btree <- drawBTree(btreeplotter, pred@rbd.adj)
-ggsave(filename="${meta.sampleName}.Bubbletree.adjusted.pdf", plot = btree, width = 16, height = 9, device = "pdf")
+ggsave(filename="${meta.sampleName}.Bubbletree.${cn_source}.adjusted.pdf", plot = btree, width = 16, height = 9, device = "pdf")
 
 # plot shift from unadjusted to adjusted
 btreeplotter <- new("BTreePlotter", branch.col="gray50")
@@ -151,7 +113,7 @@ rbd1 <- pred@rbd
 rbd2 <- pred@rbd.adj
 arrows <- trackBTree(btreeplotter, rbd1, rbd2, min.srcSize=0.01, min.trtSize=0.01)
 btree <- drawBTree(btreeplotter, rbd2) + arrows
-ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btree, width = 16, height = 9, device = "pdf")
+ggsave(filename="${meta.sampleName}.Bubbletree.${cn_source}.adjustmentshift.pdf", plot = btree, width = 16, height = 9, device = "pdf")
 
 
 	"""
@@ -160,14 +122,14 @@ ggsave(filename="${meta.sampleName}.Bubbletree.adjustmentshift.pdf", plot = btre
 	"""#!/usr/bin/env bash
 
 if [[ "${params.stub_json_map?.bubble_tree_matched}" == "null" ]]; then
-	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.txt .
+	cp ${params.stub_dir}/${genome_build}/${meta.sampleName}/results/BubbleTree/${meta.sampleName}.Bubbletree.${cn_source}.txt .
 fi
 
-touch ${meta.sampleName}.Bubbletree.txt
-touch ${meta.sampleName}.Bubbletree.adjusted.pdf
-touch ${meta.sampleName}.Bubbletree.adjustmentshift.pdf
-touch ${meta.sampleName}.Bubbletree.cnv.pdf
-touch ${meta.sampleName}.Bubbletree.unadjusted.pdf
+touch ${meta.sampleName}.Bubbletree.${cn_source}.txt
+touch ${meta.sampleName}.Bubbletree.${cn_source}.adjusted.pdf
+touch ${meta.sampleName}.Bubbletree.${cn_source}.adjustmentshift.pdf
+touch ${meta.sampleName}.Bubbletree.${cn_source}.cnv.pdf
+touch ${meta.sampleName}.Bubbletree.${cn_source}.unadjusted.pdf
 	"""
 
 }
