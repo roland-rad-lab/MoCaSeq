@@ -335,7 +335,7 @@ process cnv_kit_segment {
 		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr"), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns"), emit: result
 		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cnr"), emit: cnr
 		tuple val (meta), val (type), val ("CNVKit.${coverage_source}.${centre}"), val (resolution), path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.call.cns"), emit: call
-		path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.${centre}.cns")
+		path ("${meta.sampleName}.${type}.CNVKit.${coverage_source}.cns")
 
 	script:
 	"""#!/usr/bin/env python3.7
