@@ -62,5 +62,41 @@ curl -fsSL https://get.nextflow.io | bash
 
 ```
 
+#### Where to put things
+We have access to various storage systems on the LRZ:
+ - Project dir (/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000)
+  - 10 Tb
+  - This is shared by different users within the same project
+ - Scratch (/gpfs/scratch/pn29ya/${USERNAME})
+  - Space on a 2 Pb partition (unlimited)
+  - Old files are automatically deleted (so don't put scripts here, and save results you want to keep to the Project dir)
+ - Home dir (${HOME})
+  - Space on a 0.5 Pb partition (unlimited)
+
+I have the following folders setup to run the MoCaSeq nextflow pipeline:
+```bash
+####### project dir #########################################
+# Container image tarballs
+/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images
+# MoCaSeq reference folders and other genome references
+/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference
+# Results and input files (safe from deletion)
+/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects
+
+###### user home dir ######################################
+# Extracted container images (You have your own copy so you can debug and hack it without affecting others)
+$HOME/images-live
+# Default location for config files for our pipelines (e.g. MoCaSeq should read $HOME/nextflow-configs/mocaseq/pipeline/mocaseq.config by default)
+$HOME/nextflow-configs
+# If you wrote a shell script to invoke the pipeline then somewhere in your home dir is a good place for it (e.g. $HOME/pipelines/compass/bin/run.sh)
+
+###### scratch dir #######################################
+# /tmp on the LRZ nodes is tiny so instead we use this folder on the scratch space
+/gpfs/scratch/pn29ya/ge26baf2/tmp
+# folder for nextflow work dir (e.g. compass samples)
+/gpfs/scratch/pn29ya/ge26baf2/compass/work
+# Technically you could set the results dir to be in the project dir (or copy the results there once the pipeline is complete)
+
+```
 
 
