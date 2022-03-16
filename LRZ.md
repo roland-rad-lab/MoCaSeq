@@ -59,19 +59,21 @@ which ch-run
 
 cd $HOME/software/bin
 curl -fsSL https://get.nextflow.io | bash
-
+# $HOME/software/bin should also be on our path
+which nextflow
+# /dss/dsshome1/lxc0C/ge26baf2/software/bin/nextflow
 ```
 
 #### Where to put things
 We have access to various storage systems on the LRZ:
  - Project dir (/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000)
-  - 10 Tb
-  - This is shared by different users within the same project
+   - 10 Tb
+   - This is shared by different users within the same project
  - Scratch (/gpfs/scratch/pn29ya/${USERNAME})
-  - Space on a 2 Pb partition (unlimited)
-  - Old files are automatically deleted (so don't put scripts here, and save results you want to keep to the Project dir)
+   - Space on a 2 Pb partition (unlimited)
+   - Old files are automatically deleted (so don't put scripts here, and save results you want to keep to the Project dir)
  - Home dir (${HOME})
-  - Space on a 0.5 Pb partition (unlimited)
+   - Space on a 0.5 Pb partition (unlimited)
 
 I have the following folders setup to run the MoCaSeq nextflow pipeline:
 ```bash
@@ -99,4 +101,37 @@ $HOME/nextflow-configs
 
 ```
 
+### Deploy the pipeline
+Nextflow will download and cache the pipeline code directly from the gihub repo, therefore we only need to supply the configuration (tailored for our compute environment) and the software used by the pipeline (we will use container images). We store our [images](https://github.com/roland-rad-lab/Cluster/blob/main/Images.md) on our [LRZ GitLab](https://gitlab.lrz.de/roland-rad-lab/images-public/container_registry), if you want to know more, here are the [docs](https://docs.gitlab.com/ee/user/packages/container_registry/)). Outside of the LRZ we can pull the images we need and create tarballs to copy to LRZ.
+```bash
+
+```
+Now we can login to LRZ, extract our images and try to configure and run the pipeline.
+
+```bash
+# There are example configuration files for LRZ in the test-datasets repo
+# you can save them locally or try and use them directly
+
+# On the LRZ the SLURM scheduling system has separate areas called clusters
+# for SLURM commands to work we need to specify the area we want to address
+# in this case the 'serial' cluster
+# we also set TMPDIR because /tmp on the nodes is too small, even to run
+# our container system
+export SLURM_CLUSTERS="serial"
+export TMPDIR="/gpfs/scratch/pn29ya/ge26baf2/ge26baf2"
+
+nextflow run \
+	roland-rad-lab/MoCaSeq \
+	-r human-pipeline-nextflow \
+	-resume \
+	-dump-channels \
+	-profile charliecloud \
+	-work-dir /gpfs/scratch/pn29ya/ge26baf2/ge26baf2/test/work \
+	--output_base /gpfs/scratch/pn29ya/ge26baf2/ge26baf2/test/results \
+	--custom_config_version mocaseq-lrz \
+	--custom_config_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_design.tsv
+
+
+```
 

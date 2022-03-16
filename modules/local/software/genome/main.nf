@@ -123,7 +123,7 @@ process interval_bed_intersect {
 
 	script:
 	"""#!/usr/bin/env bash
-source ${params.script_base}/file_handling.sh
+source ${projectDir}/repository/file_handling.sh
 temp_file_b=\$(moc_mktemp_file .)
 trap "rm \${temp_file_b}" EXIT
 
