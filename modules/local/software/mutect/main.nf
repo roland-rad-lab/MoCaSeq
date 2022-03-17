@@ -124,7 +124,7 @@ for f in *.interval.vcf.stats;
 do
 	cmd_mutect_stats_merge="\${cmd_mutect_stats_merge} --stats \${f}"
 done
-cmd_mutect_stats_merge="${cmd_mutect_stats_merge} --output ${meta.sampleName}.${type}.m2.vcf.gz.stats"
+cmd_mutect_stats_merge="\${cmd_mutect_stats_merge} --output ${meta.sampleName}.${type}.m2.vcf.gz.stats"
 
 echo "\${cmd_mutect_stats_merge}"
 \${cmd_mutect_stats_merge}
