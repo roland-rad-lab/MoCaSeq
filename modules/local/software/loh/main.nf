@@ -240,6 +240,7 @@ data_interval_plot <- data_interval %>%
 	data.frame
 
 data_plot <- data %>%
+	dplyr::mutate (Chrom=as.character(Chrom)) %>%
 	dplyr::inner_join (data_interval_plot,by="Chrom",suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Pos.Genome=Pos+CumulativeStart) %>%
 	data.frame

@@ -129,9 +129,12 @@ tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/quay.io%biocont
 
 # The final thing we need to do is to ensure that we have mount points for important resources
 # (At some point this should be incorporated into the container images)
-mkdir -p mocaseq2/var/pipeline/ref mocaseq2/var/pipeline/repository
-mkdir -p structural-variation-jabba/var/pipeline/ref structural-variation-jabba/var/pipeline/repository
-mkdir -p cnv-kit-0.9.9/var/pipeline/ref cnv-kit-0.9.9/var/pipeline/repository
+mkdir -p mocaseq2/var/pipeline
+mkdir -p structural-variation-jabba/var/pipeline
+mkdir -p cnv-kit-0.9.9/var/pipeline
+
+# Now we need to pretend there is a HOME for cnvlib
+echo -e "HOME=/home/fake\n" >> $HOME/images-live/cnv-kit-0.9.9/ch/environment
 
 # There are example configuration files for LRZ in the test-datasets repo
 # you can save them locally or try and use them directly
