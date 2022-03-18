@@ -52,16 +52,17 @@ make
 
 # Now we should add $HOME/software/charliecloud-0.26/bin to our path
 which ch-run
-# /dss/dsshome1/lxc0C/ge26baf2/software/charliecloud-0.26/bin/ch-run
+# /dss/dsshome1/lxc0C/ge26baf2/software/charliecloud-0.26/bin/ch-run (your path will be in your home)
 
 
 # Nextflow
 
 cd $HOME/software/bin
 curl -fsSL https://get.nextflow.io | bash
+chmod u+x $HOME/software/bin/nextflow
 # $HOME/software/bin should also be on our path
 which nextflow
-# /dss/dsshome1/lxc0C/ge26baf2/software/bin/nextflow
+# /dss/dsshome1/lxc0C/ge26baf2/software/bin/nextflow (your path will be in your home)
 ```
 
 #### Where to put things
@@ -147,6 +148,9 @@ echo -e "HOME=/home/fake\n" >> $HOME/images-live/cnv-kit-0.9.9/ch/environment
 export SLURM_CLUSTERS="serial"
 export TMPDIR="/gpfs/scratch/pn29ya/${USER}/${USER}"
 
+# If you have not added $HOME/software/bin and $HOME/software/charliecloud-0.26/bin to your path then the following line does that
+export PATH="${HOME}/software/bin:${HOME}/software/charliecloud-0.26/bin:${PATH}"
+
 # Here we download a tiny test genome and annotation (tiny.human)
 # We also add the --tiny flag to skip steps that break with too little data
 # Note that here we only use the charliecloud profile, so nothing will be submitted to slurm (see the next example)
@@ -156,8 +160,6 @@ mkdir /gpfs/scratch/pn29ya/${USER}/${USER}/test
 nextflow run \
 	roland-rad-lab/MoCaSeq \
 	-r human-pipeline-nextflow \
-	-resume \
-	-dump-channels \
 	-profile charliecloud \
 	-work-dir /gpfs/scratch/pn29ya/${USER}/${USER}/test/work \
 	--output_base /gpfs/scratch/pn29ya/${USER}/${USER}/test/results \
