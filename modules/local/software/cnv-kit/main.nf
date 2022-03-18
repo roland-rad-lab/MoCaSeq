@@ -433,6 +433,7 @@ data_interval_plot <- data_interval %>%
 	data.frame
 
 data_ratio_plot <- data_ratio %>%
+	dplyr::mutate (chromosome=as.character (chromosome)) %>%
 	dplyr::filter (!is.na (log2)) %>%
 	dplyr::mutate (midpoint=(start+end)/2) %>%
 	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
@@ -440,6 +441,7 @@ data_ratio_plot <- data_ratio %>%
 	data.frame
 
 data_call_plot <- data_call %>%
+	dplyr::mutate (chromosome=as.character (chromosome)) %>%
 	dplyr::inner_join (data_interval_plot,by=c("chromosome"="Chrom"),suffix=c("",".Chrom")) %>%
 	dplyr::mutate (Start.Genome=start+CumulativeStart,End.Genome=end+CumulativeStart) %>%
 	data.frame

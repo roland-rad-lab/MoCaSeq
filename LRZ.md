@@ -69,6 +69,7 @@ We have access to various storage systems on the LRZ:
  - Project dir (/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000)
    - 10 Tb
    - This is shared by different users within the same project
+   - You are limited in the number of files you can create here so its best for archiving
  - Scratch (/gpfs/scratch/pn29ya/${USERNAME})
    - Space on a 2 Pb partition (unlimited)
    - Old files are automatically deleted (so don't put scripts here, and save results you want to keep to the Project dir)
@@ -126,6 +127,12 @@ tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/mocaseq2.tar.gz
 tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/structural-variation-jabba.tar.gz -C structural-variation-jabba
 tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/quay.io%biocontainers%cnvkit:0.9.9--pyhdfd78af_0.tar.gz -C cnv-kit-0.9.9
 
+# The final thing we need to do is to ensure that we have mount points for important resources
+# (At some point this should be incorporated into the container images)
+mkdir -p mocaseq2/var/pipeline/ref mocaseq2/var/pipeline/repository
+mkdir -p structural-variation-jabba/var/pipeline/ref structural-variation-jabba/var/pipeline/repository
+mkdir -p cnv-kit-0.9.9/var/pipeline/ref cnv-kit-0.9.9/var/pipeline/repository
+
 # There are example configuration files for LRZ in the test-datasets repo
 # you can save them locally or try and use them directly
 
@@ -139,6 +146,7 @@ export TMPDIR="/gpfs/scratch/pn29ya/${USER}/${USER}"
 
 # Here we download a tiny test genome and annotation (tiny.human)
 # We also add the --tiny flag to skip steps that break with too little data
+# Note that here we only use the charliecloud profile, so nothing will be submitted to slurm (see the next example)
 
 mkdir /gpfs/scratch/pn29ya/${USER}/${USER}/test
 
