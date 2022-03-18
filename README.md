@@ -82,7 +82,7 @@ We provide container images containing the complete software used by the analysi
 - genomes.config: Location of reference genomes and associated index files
 - genome\_annotations.config: Location of annotations on the reference genome, e.g. genes, common variants 
 
-There is a more in depth walkthrough of setting up your environment to run the pipeline on [LRZ](LRZ.md).
+There is a more in depth [walkthrough](LRZ.md) of setting up your environment to run the pipeline on [LRZ](https://www.lrz.de/).
 
 Once you have setup mocaseq.config for your computing environment you can use [genomes.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genomes.config) and [genome\_annotations.config](https://github.com/roland-rad-lab/test-datasets/blob/mocaseq-nextflow/nextflow-configs/mocaseq/pipeline/genome_annotations.config) directly to run the test data.
 

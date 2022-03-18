@@ -41,7 +41,7 @@ process cache_genome_url {
 			if ( reference_uri.scheme && reference_uri.scheme == "http" ) { exit 1, "[MoCaSeq] error: No support for http downloads use https, url requested was '${reference_local}'" }
 			if ( reference_uri.scheme && reference_uri.scheme == "https" && reference_uri.path )
 			{
-				def cache_dir = workDir.resolve ("genome_cache/${genome_build}");
+				def cache_dir = java.nio.file.Paths.get ("${params.cache_base}").resolve ("genome_cache/${genome_build}");
 				java.nio.file.Files.createDirectories (cache_dir);
 				def file_name_base = reference_uri.path.tokenize ('/')[-1]
 				path_cached = cache_dir.resolve ( [file_name_base, extension_list[0]].findAll { it }.join (".") ).toString ()
@@ -123,7 +123,7 @@ process interval_bed_intersect {
 
 	script:
 	"""#!/usr/bin/env bash
-source ${projectDir}/repository/file_handling.sh
+source ${params.script_base}/file_handling.sh
 temp_file_b=\$(moc_mktemp_file .)
 trap "rm \${temp_file_b}" EXIT
 

@@ -6,7 +6,7 @@ This aims to get you up and running on the LRZ HPC from scratch. First lets star
 There is in fact a lot of software available on the LRZ HPC system.
 ```bash
 # Show available softwares
-moduel avail
+module avail
 # See what versions of specific software (nextflow and charliecloud) are offered
 module avail nextflow charliecloud
 
@@ -87,6 +87,7 @@ I have the following folders setup to run the MoCaSeq nextflow pipeline:
 
 ###### user home dir ######################################
 # Extracted container images (You have your own copy so you can debug and hack it without affecting others)
+# for my co-workers everyone can use /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images-live instead
 $HOME/images-live
 # Default location for config files for our pipelines (e.g. MoCaSeq should read $HOME/nextflow-configs/mocaseq/pipeline/mocaseq.config by default)
 $HOME/nextflow-configs
@@ -109,6 +110,22 @@ Nextflow will download and cache the pipeline code directly from the gihub repo,
 Now we can login to LRZ, extract our images and try to configure and run the pipeline.
 
 ```bash
+# Extracting our images (It is not possible to put them in the project dir as you use up all of your inode quota)
+# df -hi /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images-live
+# Filesystem     Inodes IUsed IFree IUse% Mounted on
+# dssfs02          215K  215K   136  100% /dss/dssfs02
+
+# for me it anyway makes more sense to have your own copy in your home folder so you can experiment without affecting other users
+# The tarballs are in /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images
+
+mkdir ${HOME}/images-live
+cd ${HOME}/images-live
+mkdir mocaseq2 structural-variation-jabba cnv-kit-0.9.9
+
+tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/mocaseq2.tar.gz -C mocaseq2
+tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/structural-variation-jabba.tar.gz -C structural-variation-jabba
+tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/quay.io%biocontainers%cnvkit:0.9.9--pyhdfd78af_0.tar.gz -C cnv-kit-0.9.9
+
 # There are example configuration files for LRZ in the test-datasets repo
 # you can save them locally or try and use them directly
 
@@ -118,7 +135,12 @@ Now we can login to LRZ, extract our images and try to configure and run the pip
 # we also set TMPDIR because /tmp on the nodes is too small, even to run
 # our container system
 export SLURM_CLUSTERS="serial"
-export TMPDIR="/gpfs/scratch/pn29ya/ge26baf2/ge26baf2"
+export TMPDIR="/gpfs/scratch/pn29ya/${USER}/${USER}"
+
+# Here we download a tiny test genome and annotation (tiny.human)
+# We also add the --tiny flag to skip steps that break with too little data
+
+mkdir /gpfs/scratch/pn29ya/${USER}/${USER}/test
 
 nextflow run \
 	roland-rad-lab/MoCaSeq \
@@ -126,10 +148,14 @@ nextflow run \
 	-resume \
 	-dump-channels \
 	-profile charliecloud \
-	-work-dir /gpfs/scratch/pn29ya/ge26baf2/ge26baf2/test/work \
-	--output_base /gpfs/scratch/pn29ya/ge26baf2/ge26baf2/test/results \
+	-work-dir /gpfs/scratch/pn29ya/${USER}/${USER}/test/work \
+	--output_base /gpfs/scratch/pn29ya/${USER}/${USER}/test/results \
 	--custom_config_version mocaseq-lrz \
 	--custom_config_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
+	--test_config_genome_version mocaseq \
+	--genome_build.human tiny.human \
+	--tiny \
 	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_design.tsv
 
 
