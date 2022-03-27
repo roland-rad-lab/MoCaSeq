@@ -145,17 +145,20 @@ echo -e "HOME=/home/fake\n" >> $HOME/images-live/cnv-kit-0.9.9/ch/environment
 # in this case the 'serial' cluster
 # we also set TMPDIR because /tmp on the nodes is too small, even to run
 # our container system
-export SLURM_CLUSTERS="serial"
-export TMPDIR="/gpfs/scratch/pn29ya/${USER}/${USER}"
+export SLURM\_CLUSTERS="serial"
+export TMPDIR="/gpfs/scratch/pn29ya/${USER}/${USER}/tmp"
+mkdir -p ${TMPDIR}
 
 # If you have not added $HOME/software/bin and $HOME/software/charliecloud-0.26/bin to your path then the following line does that
 export PATH="${HOME}/software/bin:${HOME}/software/charliecloud-0.26/bin:${PATH}"
 
+
 # Here we download a tiny test genome and annotation (tiny.human)
 # We also add the --tiny flag to skip steps that break with too little data
 # Note that here we only use the charliecloud profile, so nothing will be submitted to slurm (see the next example)
+# Please remember to add the slurm profile for real data so you don't start trying to run mutect on the head node
 
-mkdir /gpfs/scratch/pn29ya/${USER}/${USER}/test
+mkdir -p /gpfs/scratch/pn29ya/${USER}/${USER}/test
 
 nextflow run \
 	roland-rad-lab/MoCaSeq \
@@ -170,7 +173,79 @@ nextflow run \
 	--genome_build.human tiny.human \
 	--tiny \
 	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_design.tsv
+```
 
+### Testing with real samples
+We can download the Texas Open Cancer Genomes samples from the EGA archive. This will also demonstrate running the [pyega3 client](https://github.com/EGA-archive/ega-download-client) for downloading files from the archive.
+```bash
+# Although a pre-built image exists, they have not updated it in a long time, so it has (https://github.com/EGA-archive/ega-download-client/issues/139)
+# On workstation-05 we can build our own image from git
+
+cd ~/Documents/workspace-docker/charlie-cloud/
+./build-image-generic.sh pyega3-fixed Dockerfile.pyega3
+scp target/pyega3-fixed.tar.gz ge26baf2@lxlogin2.lrz.de:/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/
+
+```
+Next we connect to LRZ and use the pyega3 client to download some test data.
+
+
+```bash
+# ssh ge26baf2@lxlogin2.lrz.de
+mkdir -p /gpfs/scratch/pn29ya/${USER}/${USER}/test\_open/ega
+
+mkdir ~/images-live
+cd ~/images-live
+mkdir pyega3-fixed
+tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/pyega3-fixed.tar.gz -C pyega3-fixed
+mkdir ~/test_open_genomes
+cd ~/test_open_genomes
+mkdir bin
+# We need somewhere to save the data for this project
+mkdir /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes
+
+cat > bin/cc.sh <<EOF
+#!/usr/bin/env bash
+image_name="pyega3-fixed"
+data_dir="/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes"
+
+ch-run --no-home -w ${HOME}/images-live/\${image_name} -- bash -c "mkdir -p "\${data_dir}" "$PWD"";ch-run --no-home --unset-env="*" -w --set-env=${HOME}/images-live/\${image_name}/ch/environment --no-passwd --bind "\${data_dir}":"\${data_dir}" --bind "${PWD}":"${PWD}" -c "$PWD" ${HOME}/images-live/\${image_name} -- /bin/bash -c "./bin/ega_download.sh"
+
+EOF
+
+cat > bin/ega_download.sh <<EOF
+#!/usr/bin/env bash
+
+output_base="/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes/ega"
+mkdir -p \${output_base}
+
+while IFS= read -r line;
+do
+	pyega3 -c 30 -cf RadLab_credentials_ega.json fetch \${line} --output-dir \${output_base}
+done < egaf_ids.txt
+
+EOF
+
+cat > egaf_ids.txt <<EOF
+EGAF00002233848
+EGAF00002239689
+EOF
+
+chmod u+x bin/cc.sh
+chmod u+x bin/ega_download.sh
+
+# Now download these files
+# this will take some time so run in a screen session
+# unfortunately the download service is not so great so often many retries will be needed.
+./bin/cc.sh
+
+```
+
+### Remapping to GRCh38.p12
+Sometimes the data downloaded are in an older genome build, so the first task is to run the MAP workflow, to remap the BAM files to the current reference.
+
+```bash
+
+# Real samples, this will take a long time so run in a screen session
 
 ```
 

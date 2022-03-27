@@ -129,6 +129,11 @@ trap "rm \${temp_file_b}" EXIT
 
 extract_if_zip ${bed_b} bed_b_extracted \${temp_file_b}
 
+if [[ ! -f ${bed_a} ]]; then
+        echo "Error: '${bed_a}' not found"
+        exit 1
+fi
+
 bedtools intersect -a ${bed_a} -b \${bed_b_extracted} ${flags} | bgzip -c > intervals.intersection.bed.gz
 tabix -p bed intervals.intersection.bed.gz
 
