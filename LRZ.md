@@ -191,7 +191,6 @@ Next we connect to LRZ and use the pyega3 client to download some test data.
 
 ```bash
 # ssh ge26baf2@lxlogin2.lrz.de
-mkdir -p /gpfs/scratch/pn29ya/${USER}/${USER}/test\_open/ega
 
 mkdir ~/images-live
 cd ~/images-live
@@ -201,7 +200,8 @@ mkdir ~/test_open_genomes
 cd ~/test_open_genomes
 mkdir bin
 # We need somewhere to save the data for this project
-mkdir /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes
+mkdir -p /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes/ega
+
 
 cat > bin/cc.sh <<EOF
 #!/usr/bin/env bash
@@ -216,7 +216,6 @@ cat > bin/ega_download.sh <<EOF
 #!/usr/bin/env bash
 
 output_base="/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/TestGenomes/ega"
-mkdir -p \${output_base}
 
 while IFS= read -r line;
 do
@@ -228,6 +227,13 @@ EOF
 cat > egaf_ids.txt <<EOF
 EGAF00002233848
 EGAF00002239689
+EOF
+
+cat > RadLab_credentials_ega.json <<EOF
+{
+    "username": "roland.rad@tum.de",
+    "password": "SUPER_SECRET_PASSWORD_HERE"
+}
 EOF
 
 chmod u+x bin/cc.sh
