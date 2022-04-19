@@ -67,11 +67,16 @@ All *bash*, *R* and *python* scripts are directly invokable from `repository`.
 The standard input format are FASTQ files produced from modern Illumina sequencers. These should be split into forward and reverse reads for both the tumour and the matched normal sample. BAM files can be processed as well, giving the user the choice of starting after alignment (if mapped to GRCm38) or re-mapping all the raw data (see below).
 
 ## Usage
-We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. The basic commandline to run the dockerized pipeline is as follows:
+We provide a Docker image containing the complete analysis pipeline in order to simplify deployment and to keep software versions as consistent as possible. 
+
+For this heavily modified branch, you have to rebuild the docker image on your own using:
+```docker build -t mocaseq2 . 2>&1 | tee mocaseq2_dockerbuild.log```
+
+After the build finished successfully, the basic commandline to run the dockerized pipeline is as follows:
 ```bash
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
-rolandradlab/mocaseq:<mocaseq_version> <options>
+mocaseq2 <options>
 ```
 Options are listed [below](#options). When invoked without options, the container will start, display usage information and shut down.
 
@@ -81,7 +86,7 @@ Docker by design runs the container and its contents as user root (UID 1 and GID
 sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
 --user $(id -u):$(id -g) \
-rolandradlab/mocaseq:<mocaseq_version> <options>
+mocaseq2 <options>
 ```
 This will run the pipeline with your current UID and GID and set the permissions of the output files accordingly.
 
@@ -94,7 +99,7 @@ sudo docker run \
 -v <your_working_directory>:/var/pipeline/ \
 -v <your_ref_directory>:/var/pipeline/ref/ \
 -v <your_temp_directory>:/var/pipeline/temp/ \
-rolandradlab/mocaseq:<mocaseq_version> <options>
+mocaseq2 <options>
 ```
 Importantly, the pipeline requires that: \
 The main working directory needs to be mapped to ``/var/pipeline/``. \
@@ -139,7 +144,7 @@ sudo docker run \
 -it --entrypoint=/bin/bash \
 --user $(id -u):$(id -g) \
 -v <your_working_directory>:/var/pipeline/ \
-rolandradlab/mocaseq:<mocaseq_version>
+mocaseq2
 ```
 
 ## TL;DR
