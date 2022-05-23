@@ -19,8 +19,8 @@ parseobj <- OptionParser(option_list=option_list, usage = "usage: Rscript %prog 
 opt <- parse_args(parseobj)
 print(opt)
 
-suppressPackageStartupMessageslibrary(stringr))
-suppressPackageStartupMessageslibrary(data.table))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(data.table))
 
 phi2Dir <- opt$ploidyRun2
 phi3Dir <- opt$ploidyRun3
