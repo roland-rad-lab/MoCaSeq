@@ -18,7 +18,7 @@ types=$7
 
 . $config_file
 
-AccessBed=${temp_dir}/access-CNVKit.bed
+AccessBed=${temp_dir}/${name}_access-CNVKit.bed
 CNVKit_folder=$name/results/CNVKit
 bam_tumor=$name/results/bam/$name.Tumor.bam
 bam_normal=$name/results/bam/$name.Normal.bam

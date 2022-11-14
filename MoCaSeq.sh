@@ -36,7 +36,7 @@ usage()
 	echo "	-abs, --Absolute         Set to 'yes' or 'no'. Runs ABSOLUTE to estimate purity/ploidy and compute copy-numbers. Optional. Can also include information from somatic mutation data, for this set Mutect2 to 'yes'. Defaults to 'yes' for WES and WGS."
 	echo "	-fac, --Facets           Set to 'yes' or 'no'. Runs the allele-specific copy-number caller FACETS with sample purity estimations. Optional. Defaults to 'yes' for WES and 'no' for WGS. Only use in matched-sample mode."
 	echo "	-bt, --BubbleTree             Set to 'yes' or 'no'. Runs the analysis of tumoral aneuploidy and clonality. Optional. If set to 'yes', forces Mutect2 to 'yes'. Optional. Defaults to 'yes' for WES and WGS. Only use in matched-sample mode."
-	echo "	-gatk, --GATKVersion     Set to '4.1.0.0', '4.1.3.0', '4.1.4.1', '4.1.7.0' or '4.2.0.0', determining which GATK version is used. Optional. Defaults to 4.2.0.0 (high recommended to identify all mutations)"
+	echo "	-gatk, --GATKVersion     Set to '4.1.7.0' or '4.2.0.0', determining which GATK version is used. Optional. Defaults to 4.2.0.0 (high recommended to identify all mutations)"
 	echo "	--test                   If set to 'yes': Will download reference files (if needed) and start a test run. All other parameters will be ignored"
 	echo "	--memstats               If integer > 0 specified, will write timestamped memory usage and cumulative CPU time usage of the docker container to ./results/memstats.txt every <integer> seconds. Defaults to '0'."
 	echo "  --para                   Run Mutect2 in parallel"
@@ -70,7 +70,7 @@ test=no
 memstats=0
 config_file=
 species=Mouse
-para=
+para=no
 # Titan and Facets will be set below
 BubbleTree=yes
 Absolute=yes
@@ -106,7 +106,7 @@ while [ "$1" != "" ]; do case $1 in
     -gatk|--GATKVersion) shift;GATK="$1";;
     --memstats) shift;memstats="$1";;
     --test) shift;test="$1";;
-		--para) shift;para="yes";;
+		--para) shift;para="$1";;
     --help) usage;shift;;
 	*) usage;shift;;
 esac; shift; done
@@ -229,6 +229,11 @@ fi
 # exit 1
 # fi
 
+if [ "$GATK" == "4.1.0.0" ]; then
+echo "ERROR, GATK 4.1.0.0 is not supported anymore, please choose 4.2.0.0"
+exit 1
+fi
+
 
 # SET PARAMETERS FOR PURITY ANALYSIS
 
@@ -283,6 +288,20 @@ else
 	fi
 
 	BubbleTree=no
+fi
+
+# check for valid entries for the bool variables
+boolVars="repeat_mapping quality_control artefact_type Mutect2 CNVKit Delly BubbleTree Facets Titan Absolute test"
+for varName in $boolVars
+do
+	eval varValue=\$$varName
+	if [ $varValue != 'yes' ] && [ $varValue != 'no' ]; then
+		echo "Invalid value for ${varName} (only yes or no are allowed): ${varValue}"
+	fi
+done
+
+if [ $filtering != 'soft' ] && [ $filtering != 'hard' ]; then
+	echo "Invalid value for filtering (only soft or hard are allowed): ${filtering}"
 fi
 
 
@@ -1158,7 +1177,7 @@ if [ $CNVKit = 'yes' ]; then
 
 	Rscript $repository_dir/CNV_PlotCNVKit.R $name $species $repository_dir "$types"
 
-	rm ${temp_dir}/access-CNVKit.bed # remove tmp files
+	rm ${temp_dir}/${name}_access-CNVKit.bed # remove tmp files
 fi
 
 
