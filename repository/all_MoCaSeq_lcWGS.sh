@@ -82,6 +82,7 @@ mkdir -p $name/results/QC
 mkdir -p $name/results/bam
 mkdir -p $name/results/Copywriter
 mkdir -p $name/results/HMMCopy
+mkdir -p $name/results/CNVKit
 
 
 if [ ! -d $temp_dir ]; then
@@ -489,6 +490,18 @@ echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.rep
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 sh $repository_dir/CNV_RunHMMCopy.sh $name $species $config_file $runmode 1000 $types
+
+
+echo '---- Run CNVKit ----' | tee -a $name/results/QC/$name.report.txt
+echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+echo '---- Run CNVKit ----' | tee -a $name/results/QC/$name.report.txt
+
+# types is a space separated string, so it needs the ""
+sh $repository_dir/CNV_RunCNVKit.sh $name $runmode WGS $config_file $species $threads "$types"
+Rscript $repository_dir/CNV_PlotCNVKit.R $name $species $repository_dir "$types"
+rm GRCm38.p6.bed # remove tmp files
+
 
 echo '---- Finished analysis of sample '$name' ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
