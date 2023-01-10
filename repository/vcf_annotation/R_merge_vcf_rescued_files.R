@@ -135,7 +135,7 @@ startRun <- function(allfolders){
 
     # print(outDT)
     # optional filtering
-    outDT <- outDT[`GEN[Normal].AD` == 0]
+    # outDT <- outDT[`GEN[Normal].AD` == 0]
     
     # formating
     outDT[, ID := paste(CHROM, POS, REF, ALT, sep = "_")]

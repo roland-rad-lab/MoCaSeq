@@ -23,11 +23,17 @@
 # USING THIS COMMAND
 #bash /opt/MoCaSeq/repository/vcf_annotation/Annotate_Variants_Wrapper.sh hPDAC03_HD_LivMet-1 Human
 
+# for sample in */ ; do
+#     sample=$(basename $sample)
+#     echo $sample
+#     bash /opt/MoCaSeq/repository/vcf_annotation/Annotate_Variants_Wrapper.sh ${sample} Mouse
+# done
+
+
+
 name=$1
 species=$2
 echo "RUNNING $name for species $species"
-
-
 
 temp_dir=/var/pipeline/temp2
 annTmp=${temp_dir}/annInput
@@ -90,7 +96,7 @@ python3.7 ${annoScriptDir}annotate_variant_bash_wrapper.py -gf=${genome_file} -s
 
 # Run the wrapper
 mkdir -p ${annTmp}/finalAnnotation/
-bash ${annTmp}/scripts/wrapper/${projname}/${name}_Mutect2_annotation_wrapper.sh
+time bash ${annTmp}/scripts/wrapper/${projname}/${name}_Mutect2_annotation_wrapper.sh
 
 mkdir ${name}/results/VariantAnnotation
 chown -R 1000:1000 ${name}/results/VariantAnnotation

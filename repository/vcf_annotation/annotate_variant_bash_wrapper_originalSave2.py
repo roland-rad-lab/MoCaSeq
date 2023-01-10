@@ -78,12 +78,7 @@ def main():
     ofile.write("\n#\t- 2.1) Get the pileup information for the variants\n")
     ofile.write("echo '#\t- 2.1) Get the pileup information for the variants'\n")
     snvMpileupFile  =  "{}.pileup".format(filteredInterimFileName)
-    #ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(snvBedFile, genomeFastaFile, tumorBamFile,snvMpileupFile))
-
-    # changed by Niklas (19.12.22): QNAME will be placed before the MAPQ column which results in broken MAPQ values, so we have to re-order 
-    # also snvSubBamFile should be used instead of the full BAM...
-    ofile.write('time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} | awk -v OFS="\\t" \'{{print $1, $2, $3, $4, $5, $6, $8, $7}}\' > {3}\n\n'.format(snvBedFile, genomeFastaFile, snvSubBamFile ,snvMpileupFile))
-
+    ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(snvBedFile, genomeFastaFile, tumorBamFile,snvMpileupFile))
 
     # 2.2) Parse the output of exact tumor pileup
     ofile.write("\n\n#\t- 2.2) Parse the output of exact tumor pileup\n")
@@ -201,13 +196,8 @@ def main():
     ofile.write("\n#- 9.1) Get the extended pileup information for the variants in tumor bam file\n")
     ofile.write("echo '#- 9.1) Get the extended pileup information for the variants in tumor bam file'\n")
     snvMextendedTumorPileupFile  =  "{}_tumor.extendedpileup".format(filteredInterimFileName)
-    #ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(usableIndelExtendedBed, genomeFastaFile, tumorBamFile,snvMextendedTumorPileupFile))
+    ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(usableIndelExtendedBed, genomeFastaFile, tumorBamFile,snvMextendedTumorPileupFile))
     
-    # changed by Niklas (19.12.22): QNAME will be placed before the MAPQ column which results in broken MAPQ values, so we have to re-order 
-    # also snvSubBamFile should be used instead of the full BAM...
-    ofile.write('time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} | awk -v OFS="\\t" \'{{print $1, $2, $3, $4, $5, $6, $8, $7}}\' > {3}\n\n'.format(usableIndelExtendedBed, genomeFastaFile, snvSubBamFile,snvMextendedTumorPileupFile))
-
-
     # 9.2) Parse the output of extended pileup file for tumor bams
     ofile.write("\n\n#- 9.2) Parse the output of extended pileup file for tumor bams\n")
     ofile.write("echo '#- 9.2) Parse the output of extended pileup file for tumor bams'\n")
@@ -218,10 +208,7 @@ def main():
     ofile.write("\n#- 9.3) Get the extended base reads and mapping quality for the variants for indels in normal bam files")
     ofile.write("echo '#- 9.3) Get the extended base reads and mapping quality for the variants for indels in normal bam files'\n")
     snvMextendedNormalPileupFile  =  "{}_normal.extendedpileup".format(filteredInterimFileName)
-    #ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(usableIndelExtendedBed, genomeFastaFile, normalBamFile,snvMextendedNormalPileupFile))
-    # changed by Niklas (19.12.22): QNAME will be placed before the MAPQ column which results in broken MAPQ values, so we have to re-order 
-    ofile.write('time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} | awk -v OFS="\\t" \'{{print $1, $2, $3, $4, $5, $6, $8, $7}}\' > {3}\n\n'.format(usableIndelExtendedBed, genomeFastaFile, normalBamFile,snvMextendedNormalPileupFile))
-
+    ofile.write("time samtools mpileup -A -B -Q 0 -s -x --output-QNAME -l {0} -f {1} {2} -o {3}".format(usableIndelExtendedBed, genomeFastaFile, normalBamFile,snvMextendedNormalPileupFile))
 
     # 9.4) Parse the output of extended pileup file for normal bams
     ofile.write("\n\n#- 9.4) Parse the output of extended pileup file for normal bams")
