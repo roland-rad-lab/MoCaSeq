@@ -36,7 +36,7 @@ for (y_axis in c("CNV_5","CNV_2"))
 	Segments = paste(name,".Copywriter.segments.",normalization,".txt",sep="")
 	Counts = paste(name,".Copywriter.log2RR.",normalization,".txt",sep="")
 
-	Segments = ProcessSegmentData(segmentdata=Segments,chrom.sizes,method="Copywriter")
+	Segments = ProcessSegmentData(segmentdata=Segments,chrom.sizes,method="Copywriter",y_axis=y_axis)
 	Counts = ProcessCountData(countdata=Counts,chrom.sizes,method="Copywriter")
 
 	plotGlobalRatioProfile(cn=Counts[[1]],ChromBorders=Counts[[2]],cnSeg=Segments[[1]],samplename=name,method="CNV",toolname="Copywriter",normalization=normalization,y_axis=y_axis,Transparency=30, Cex=0.3,outformat="pdf")

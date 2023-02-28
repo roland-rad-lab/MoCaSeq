@@ -182,15 +182,15 @@ ProcessCountData = function(countdata="",chrom.sizes=chrom.sizes,method="")
   return(Outlist)
 }
 
-
-ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
+ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="",y_axis="CNV_5")
 {
+  y_axis_val <- as.numeric(gsub("CNV_", "", y_axis))
   Outlist = list()
   FirstPosition = c()
   if(method!="aCGH")
-   {
-   segmentdata = read.table(segmentdata,header=T,sep="\t")
-   }
+  {
+    segmentdata = read.table(segmentdata,header=T,sep="\t")
+  }
   SetVariableNamesSegments(method)
   cnSeg <- data.frame()
   borders <- c()
@@ -198,10 +198,12 @@ ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
   for(i in names(chrom.sizes))
   {
     cur <- segmentdata[segmentdata[,SegmentChromosome]==i,c(SegmentChromosome,SegmentStart,SegmentStop,SegmentMean)]
-    cur[cur[,SegmentMean]<=(-5),SegmentMean]=-4.9
-    cur[cur[,SegmentMean]>=(5),SegmentMean]=4.9
+    
+    cur[cur[,SegmentMean]<=(-y_axis_val),SegmentMean]=-(y_axis_val-0.1)
+    cur[cur[,SegmentMean]>=(y_axis_val),SegmentMean]=y_axis_val-0.1
+    
     cnSeg <- rbind(cnSeg,data.frame(Chromosome=cur[,SegmentChromosome],start=cur[,SegmentStart]+last,
-                    stop=cur[,SegmentStop]+last,copy=cur[,SegmentMean]))
+                                    stop=cur[,SegmentStop]+last,copy=cur[,SegmentMean]))
     borders <- c(borders,last)
     last = last + chrom.sizes[i]
   }
@@ -209,6 +211,38 @@ ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
   Outlist[["NonProcessed"]] = segmentdata
   return(Outlist)
 }
+
+
+# ProcessSegmentData = function(segmentdata="",chrom.sizes=chrom.sizes,method="")
+# {
+#   Outlist = list()
+#   FirstPosition = c()
+#   if(method!="aCGH")
+#    {
+#    segmentdata = read.table(segmentdata,header=T,sep="\t")
+#    }
+#   SetVariableNamesSegments(method)
+#   cnSeg <- data.frame()
+#   borders <- c()
+#   last = 0
+#   for(i in names(chrom.sizes))
+#   {
+#     cur <- segmentdata[segmentdata[,SegmentChromosome]==i,c(SegmentChromosome,SegmentStart,SegmentStop,SegmentMean)]
+#     cur[cur[,SegmentMean]<=(-5),SegmentMean]=-4.9
+#     cur[cur[,SegmentMean]>=(5),SegmentMean]=4.9
+#     cnSeg <- rbind(cnSeg,data.frame(Chromosome=cur[,SegmentChromosome],start=cur[,SegmentStart]+last,
+#                     stop=cur[,SegmentStop]+last,copy=cur[,SegmentMean]))
+#     borders <- c(borders,last)
+#     last = last + chrom.sizes[i]
+#   }
+#   Outlist[["CN"]] = cnSeg
+#   Outlist[["NonProcessed"]] = segmentdata
+#   return(Outlist)
+# }
+
+
+
+
 
 
 SetYAxis = function(y_axis)
