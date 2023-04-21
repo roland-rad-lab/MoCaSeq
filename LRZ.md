@@ -51,6 +51,7 @@ module rm intel-mpi/2019-intel intel-mkl/2019 intel/19.0.5
 make
 
 # Now we should add $HOME/software/charliecloud-0.26/bin to our path
+export PATH="${PATH}:${HOME}/software/charliecloud-0.26/bin"
 which ch-run
 # /dss/dsshome1/lxc0C/ge26baf2/software/charliecloud-0.26/bin/ch-run (your path will be in your home)
 
@@ -61,6 +62,7 @@ cd $HOME/software/bin
 curl -fsSL https://get.nextflow.io | bash
 chmod u+x $HOME/software/bin/nextflow
 # $HOME/software/bin should also be on our path
+export PATH="${PATH}:${HOME}/software/bin"
 which nextflow
 # /dss/dsshome1/lxc0C/ge26baf2/software/bin/nextflow (your path will be in your home)
 ```
@@ -97,9 +99,9 @@ $HOME/nextflow-configs
 
 ###### scratch dir #######################################
 # /tmp on the LRZ nodes is tiny so instead we use this folder on the scratch space
-/gpfs/scratch/pn29ya/ge26baf2/tmp
+/gpfs/scratch/pn29ya/${USER}/${USER}/tmp
 # folder for nextflow work dir (e.g. compass samples)
-/gpfs/scratch/pn29ya/ge26baf2/compass/work
+/gpfs/scratch/pn29ya/${USER}/${USER}/compass/work
 # Technically you could set the results dir to be in the project dir (or copy the results there once the pipeline is complete)
 
 ```
