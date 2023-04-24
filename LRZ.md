@@ -89,6 +89,9 @@ I have the following folders setup to run the MoCaSeq nextflow pipeline:
 # Results and input files (safe from deletion)
 /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects
 
+# directory for TCGA project
+/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/
+
 ###### user home dir ######################################
 # Extracted container images (You have your own copy so you can debug and hack it without affecting others)
 # for my co-workers everyone can use /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images-live instead
@@ -164,7 +167,7 @@ mkdir -p /gpfs/scratch/pn29ya/${USER}/${USER}/test
 
 nextflow run \
 	roland-rad-lab/MoCaSeq \
-	-r human-pipeline-nextflow \
+	-r human-pipeline-nextflow-2 \
 	-profile charliecloud \
 	-work-dir /gpfs/scratch/pn29ya/${USER}/${USER}/test/work \
 	--output_base /gpfs/scratch/pn29ya/${USER}/${USER}/test/results \
