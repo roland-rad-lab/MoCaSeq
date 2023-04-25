@@ -41,8 +41,8 @@ process cache_genome_url {
 			if ( reference_uri.scheme && reference_uri.scheme == "http" ) { exit 1, "[MoCaSeq] error: No support for http downloads use https, url requested was '${reference_local}'" }
 			if ( reference_uri.scheme && reference_uri.scheme == "https" && reference_uri.path )
 			{
-				println java.nio.file.Paths.get ("${params.cache_dir}") // debug
-				def cache_dir = java.nio.file.Paths.get ("${params.cache_dir}").resolve ("genome_cache/${genome_build}");
+				println java.nio.file.Paths.get ("${params.cache_base}") // debug
+				def cache_dir = java.nio.file.Paths.get ("${params.cache_base}").resolve ("genome_cache/${genome_build}");
 				println cache_dir // debug error in following line
 				java.nio.file.Files.createDirectories (cache_dir);
 				def file_name_base = reference_uri.path.tokenize ('/')[-1]

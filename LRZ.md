@@ -165,6 +165,10 @@ export PATH="${HOME}/software/bin:${HOME}/software/charliecloud-0.26/bin:${PATH}
 
 mkdir -p /gpfs/scratch/pn29ya/${USER}/${USER}/test
 
+# this execution of the pipleine does not work
+# regarding config files: the pipeline call automatically completes the dir "mocaseq-lrz/pipeline"
+# please make sure to have the branch name "mocaseq-nextflow" in the url
+# complete file will be like https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs/mocaseq-lrz/pipeline/mocaseq.config
 nextflow run \
 	roland-rad-lab/MoCaSeq \
 	-r human-pipeline-nextflow-2 \
@@ -178,6 +182,10 @@ nextflow run \
 	--genome_build.human tiny.human \
 	--tiny \
 	--input https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/testdata/bam/human_design.tsv
+	
+# after altering the pipeline, please make sure to make a git pull from the lrz where the git repo resides.
+# the location can be determined with nextflow info roland-rad-lab/MoCaSeq
+# should be something like ${HOME}/.nextflow/assets/roland-rad-lab/MoCaSeq 
 ```
 
 ### Testing with real samples
