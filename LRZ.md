@@ -148,6 +148,7 @@ echo -e "HOME=/home/fake\n" >> $HOME/images-live/cnv-kit-0.9.9/ch/environment
 # On the LRZ the SLURM scheduling system has separate areas called clusters
 # for SLURM commands to work we need to specify the area we want to address
 # in this case the 'serial' cluster
+# more cluster info at https://doku.lrz.de/display/PUBLIC/Available+SLURM+clusters+and+features
 # we also set TMPDIR because /tmp on the nodes is too small, even to run
 # our container system
 export SLURM\_CLUSTERS="serial"
