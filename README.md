@@ -46,11 +46,11 @@ Here, we describe standardised computational pipelines tailored specifically for
 
 Workflows have been extensively validated and cross-compared using multiple methodologies. We also give step by step guidance on the execution of individual analysis types and provide advice on data interpretation.
 
-The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq/tree/human-pipeline-nextflow) and can be run as a nextflow pipeline.
+The complete code is available [online](https://github.com/roland-rad-lab/MoCaSeq/tree/human-pipeline-nextflow-2) and can be run as a nextflow pipeline.
 
 ```bash
 # input is a required parameter and is a tab separated file providing information about samples and file paths
-nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow --input input.tsv
+nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input input.tsv
 ```
 
 This protocol takes 2-7 days, depending on the desired analyses.  
@@ -92,7 +92,7 @@ Once you have setup mocaseq.config for your computing environment you can use [g
 # fastq -> bam
 nextflow run \
 	roland-rad-lab/MoCaSeq \
-	-r human-pipeline-nextflow \
+	-r human-pipeline-nextflow-2 \
 	-entry MAP \
 	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
 	--test_config_genome_version mocaseq \
@@ -101,7 +101,7 @@ nextflow run \
 # bam -> bam
 nextflow run \
 	roland-rad-lab/MoCaSeq \
-	-r human-pipeline-nextflow \
+	-r human-pipeline-nextflow-2 \
 	-entry MAP \
 	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
 	--test_config_genome_version mocaseq \
@@ -110,7 +110,7 @@ nextflow run \
 # pipeline (skipping steps that fail with little data)
 nextflow run \
 	roland-rad-lab/MoCaSeq \
-	-r human-pipeline-nextflow \
+	-r human-pipeline-nextflow-2 \
 	--test_config_genome_base https://raw.githubusercontent.com/roland-rad-lab/test-datasets/mocaseq-nextflow/nextflow-configs \
 	--test_config_genome_version mocaseq \
 	--tiny \
@@ -125,7 +125,7 @@ The following example will look for all three config files in ${HOME}/nextflow-c
 # To run with the charliecloud profile defined in the custom configuration files in the directory ${HOME}/nextflow-configs/human-pipeline-nextflow you can start the pipeline as follows:
 nextflow run \
 	roland-rad-lab/MoCaSeq \
-	-r human-pipeline-nextflow \
+	-r human-pipeline-nextflow-2 \
 	-profile charliecloud \
 	--custom_config_version human-pipeline-nextflow \
 	--custom_config_base ${HOME}/nextflow-configs \
@@ -139,7 +139,7 @@ Although most analysis is specified in the input file (a mix of mouse and human 
 
 ```bash
 # To run the MAP workflow (fastq -> bam or bam -> bam)
-nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow -entry MAP --input input.tsv
+nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 -entry MAP --input input.tsv
 ```
 
 ### Input TSV
