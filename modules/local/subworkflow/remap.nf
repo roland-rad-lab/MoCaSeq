@@ -128,13 +128,16 @@ workflow REMAP
 		// println "args for sam_to_fastq_paired" // ${it[0]}, ${it[1]}, ${it[2]}"
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
 		sam_to_fastq_paired.out.result.view { "args for fastqc_paired_extracted\n ${it}" }
+		// println genome_build
 		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
-		println "args for bwa_mem_paired: "
-		//fastqc_paired_extracted.out.view {"args for bwa_mem_paired:\n ${result}"}
+		// println "args for bwa_mem_paired: "
+		fastqc_paired_extracted.out.result.view {"args for bwa_mem_paired:\n ${it}"}
 		bwa_mem_paired (ch_bwa_index, fastqc_paired_extracted.out.result)
-		println "args for mark_duplicates: "
+		// println "args for mark_duplicates: "
+		bwa_mem_paired.out.result.view {"args for mark_duplicates:\n ${it}"}
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
-		println "args for recalibrate: "
+		// println "args for recalibrate: "
+		mark_duplicates.out.result.view {"args for recalibrate:\n ${it}"}
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
