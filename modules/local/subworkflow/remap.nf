@@ -20,6 +20,7 @@ workflow MAP
 		ch_data
 
 	main:
+	if (params.debug) { println "entered MAP subworfklow" }
 		ch_data_branched = ch_data.map { it ->
 			if ( it["type"] == "Normal" )
 			{
@@ -104,6 +105,7 @@ workflow REMAP
 		ch_data
 
 	main:
+	if (params.debug) { println "entered REMAP subworfklow" }
 		ch_data_branched = ch_data.map { it ->
 			if ( it["type"] == "Normal" )
 			{
