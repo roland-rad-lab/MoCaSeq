@@ -248,7 +248,7 @@ workflow HUMAN_MAP {
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
-	MAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
+	// MAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
 	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
 }
 
