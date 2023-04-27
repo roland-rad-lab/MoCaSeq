@@ -108,6 +108,10 @@ process bwa_mem_paired {
 
 	script:
 	"""#!/usr/bin/env bash
+	
+if [[ ${params.debug}]]; then
+	echo "starting bwa_mem_paired"
+fi
 
 if [[ "${phred}" != "phred33" ]]; then
 	echo "Error bwa mem only accepts phred33, you gave '${phred}'"
