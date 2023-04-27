@@ -124,15 +124,15 @@ workflow REMAP
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching REMAP workflow path for input:\n${it}" }
 		
-		println ("args for sam_to_fastq_paired: ", it[0], it[1], it[2])
+		println "args for sam_to_fastq_paired: " //, it[0], it[1], it[2])
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
-		println ("args for fastqc_paired_extracted: ", sam_to_fastq_paired.out.result)
+		println "args for fastqc_paired_extracted: " //, sam_to_fastq_paired.out.result)
 		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
-		println ("args for bwa_mem_paired: ")
+		println "args for bwa_mem_paired: "
 		bwa_mem_paired (ch_bwa_index, fastqc_paired_extracted.out.result)
-		println ("args for mark_duplicates: ")
+		println "args for mark_duplicates: "
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
-		println ("args for recalibrate: ")
+		println "args for recalibrate: "
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
