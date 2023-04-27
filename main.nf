@@ -251,7 +251,7 @@ workflow HUMAN_MAP {
 
 	MAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
 	// println (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs) // debug
-	println "bwa_index from prep genome out"
+	if (params.debug) { println "[MoCaSeq] debug: bwa_index from prep genome out" }
 	PREPARE_GENOME.out.bwa_index.view()
 	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
 }
