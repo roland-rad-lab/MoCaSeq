@@ -124,7 +124,7 @@ workflow REMAP
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching REMAP workflow path for input:\n${it}" }
 		
-		ch_data_branched.view { "args for sam_to_fastq_paired\n ${it[0]}, ${it[1]}, ${it[2]}" }
+		ch_data_branched.paired.view { "args for sam_to_fastq_paired\n ${it[0]}, ${it[1]}, ${it[2]}" }
 		// println "args for sam_to_fastq_paired" // ${it[0]}, ${it[1]}, ${it[2]}"
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
 		println "args for fastqc_paired_extracted: " //, sam_to_fastq_paired.out.result)
