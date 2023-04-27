@@ -129,7 +129,8 @@ workflow REMAP
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
 		sam_to_fastq_paired.out.view { "args for fastqc_paired_extracted\n ${result}" }
 		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
-		println "args for bwa_mem_paired: "
+		// println "args for bwa_mem_paired: "
+		fastqc_paired_extracted.out.view {"args for bwa_mem_paired:\n ${result}"}
 		bwa_mem_paired (ch_bwa_index, fastqc_paired_extracted.out.result)
 		println "args for mark_duplicates: "
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
