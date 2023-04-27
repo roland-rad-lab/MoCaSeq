@@ -41,7 +41,7 @@ workflow PREPARE_GENOME
 		genome_name
 
 	main:
-	if (params.debug) { println "entered PREPARE_GENOME subworfklow" }
+	if (params.debug) { println "[MoCaSeq] debug: entered PREPARE_GENOME subworfklow" }
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_ext_bwa_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_bwa_index"] ? Channel.of (params.genomes[genome_name]["ext_bwa_index"]).first () : Channel.empty ()
 		ch_ext_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_dict"] ? Channel.of (params.genomes[genome_name]["ext_dict"]).first () : Channel.empty ()
@@ -80,7 +80,7 @@ workflow GENOME_ANNOTATION
 		genome_name
 
 	main:
-	if (params.debug) { println "entered GENOME_ANNOTATION subworfklow" }
+	if (params.debug) { println "[MoCaSeq] debug: entered GENOME_ANNOTATION subworfklow" }
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_all_vcf = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["all_vcf"] ? Channel.of (params.genome_annotations[genome_name]["all_vcf"]).first () : Channel.empty ()
 		ch_alt_haplotype = params.genome_annotations && params.genome_annotations[genome_name] && params.genome_annotations[genome_name]["alt_haplotype"] ? Channel.of (params.genome_annotations[genome_name]["alt_haplotype"]).first () : Channel.empty ()

@@ -245,7 +245,7 @@ workflow MOUSE_WEX
 
 workflow HUMAN_MAP {
 	main:
-	if (params.debug) { println "entered HUMAN_MAP worfklow" }
+	if (params.debug) { println "[MoCaSeq] debug: entered HUMAN_MAP worfklow" }
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
@@ -365,7 +365,7 @@ workflow {
 
 // Run using -entry MAP
 workflow MAP {
-	if (params.debug) { println "entered MAP worfklow" }
+	if (params.debug) { println "[MoCaSeq] debug: entered MAP worfklow" }
 	if ( params.genome_build.human ) { HUMAN_MAP () }
 	if ( params.genome_build.mouse ) { MOUSE_MAP () }
 }
