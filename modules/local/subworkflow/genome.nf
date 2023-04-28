@@ -53,6 +53,12 @@ workflow PREPARE_GENOME
 		ch_chrom_names_auto = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto"] ? Channel.value (params.genomes[genome_name]["names"]["auto"]) : Channel.empty ()
 		chrom_n = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? params.genomes[genome_name]["names"]["auto_sex"].size () : 0
 
+		if (params.debug) {
+			println "[MoCaSeq] debug: pre PREPARE_GENOME::cache_genome_url_bwa_index"
+			println "[MoCaSeq] debug: genome_name value: ${genome_name}"
+			ch_ext_bwa_index.view { "[MoCaSeq] debug: ch_ext_bwa_index value: ${it}" }
+			ch_genome_base.view { "[MoCaSeq] debug: ch_genome_base value: ${it}" }
+		}
 		cache_genome_url_bwa_index (genome_name, ch_genome_base, ch_ext_bwa_index)
 		cache_genome_url_dict (genome_name, ch_genome_base, ch_ext_dict)
 		cache_genome_url_fasta (genome_name, ch_genome_base, ch_ext_fasta)
