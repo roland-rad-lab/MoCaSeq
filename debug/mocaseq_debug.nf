@@ -80,8 +80,9 @@ workflow PREPARE_GENOME {
 		ch_ext_bwa_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_bwa_index"] ? Channel.of (params.genomes[genome_name]["ext_bwa_index"]).first () : Channel.empty ()
 		ch_ext_bwa_index.view { "[MoCaSeq] debug: ch_ext_bwa_index value: ${it}" }
 		ch_genome_base = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["genome_base"] ? Channel.of (params.genomes[genome_name]["genome_base"]).first () : Channel.empty ()
+		ch_genome_base.view { "[MoCaSeq] debug: ch_genome_base value: ${it}" }
 		cache_genome_url (genome_name, ch_genome_base, ch_ext_bwa_index)
-		cache_genome_url.out.view()
+		cache_genome_url.out.view { "[MoCaSeq] debug: ch_ext_bwa_index value: ${it}" }
 }
 
 // workflow from main.nf
