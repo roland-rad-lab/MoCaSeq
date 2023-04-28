@@ -160,7 +160,7 @@ ch_input_sample = Channel.empty ()
 log.info """\
     MoCaSeq cancer genome sequencing pipeline for mouse and human
     =============================================================
-    genomes_base 		: ${params.genomes_base}
+    genomes_base 	: ${params.genomes_base}
     cache_base       	: ${params.cache_base}
     genome_build.human  : ${params.genome_build.human}
     """
