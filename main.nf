@@ -158,13 +158,19 @@ ch_input_sample = Channel.empty ()
 
 // pipeline info
 log.info """\
-    MoCaSeq cancer genome sequencing pipeline for mouse and human
-    =============================================================
-    genomes_base 	: ${params.genomes_base}
-    cache_base       	: ${params.cache_base}
-    genome_build.human  : ${params.genome_build.human}
-    """
-    .stripIndent()
+MoCaSeq cancer genome sequencing pipeline for mouse and human
+=============================================================
+Core parameters for run
+cache_base		: ${params.cache_base}
+script_base		: ${params.script_base}
+genomes_base		: ${params.genomes_base}
+genome_build.human	: ${params.genome_build.human}
+genome_build.mouse	: ${params.genome_build.mouse}
+genomes			: ${params.genomes}
+genome_annotations	: ${params.genome_annotations}
+input			: ${params.input}
+output_base		: ${params.output_base}
+""".stripIndent()
 
 
 // check if we have valid --input
