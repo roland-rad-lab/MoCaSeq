@@ -41,7 +41,7 @@ workflow PREPARE_GENOME
 		genome_name
 
 	main:
-	if (params.debug) { println "[MoCaSeq] debug: entered PREPARE_GENOME subworfklow" }
+		if (params.debug) { println "[MoCaSeq] debug: entered PREPARE_GENOME subworfklow" }
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_ext_bwa_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_bwa_index"] ? Channel.of (params.genomes[genome_name]["ext_bwa_index"]).first () : Channel.empty ()
 		ch_ext_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_dict"] ? Channel.of (params.genomes[genome_name]["ext_dict"]).first () : Channel.empty ()

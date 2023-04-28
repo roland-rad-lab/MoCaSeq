@@ -76,6 +76,7 @@ workflow PREPARE_GENOME {
 	take:
 		genome_name
 	main:
+		if (params.debug) { println "[MoCaSeq] debug: entered PREPARE_GENOME subworfklow" }
 		ch_ext_bwa_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_bwa_index"] ? Channel.of (params.genomes[genome_name]["ext_bwa_index"]).first () : Channel.empty ()
 		ch_genome_base = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["genome_base"] ? Channel.of (params.genomes[genome_name]["genome_base"]).first () : Channel.empty ()
 		cache_genome_url (genome_name, ch_genome_base, ch_ext_bwa_index)
