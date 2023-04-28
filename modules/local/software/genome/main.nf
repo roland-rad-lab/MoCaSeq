@@ -34,7 +34,7 @@ process cache_genome_url {
 
 	exec:
 		if (params.debug) { println "[MoCaSeq] debug: entered cache_genome_url process" }
-		if (params.debug) { println "[MoCaSeq] debug: genome_build:\n${genome_build}\nreference:\n${reference}\nextension_list:\n${extension_list}" }
+		// if (params.debug) { println "[MoCaSeq] debug: genome_build:\n ${genome_build}\nreference:\n ${reference}\nextension_list:\n ${extension_list}" }
 		def reference_local = reference;
 		if ( extension_list.size () == 0 ) { exit 1, "[MoCaSeq] error: At least one file extension is required to append to '${reference_local}'" }
 		if ( valid_uri (reference_local) )
