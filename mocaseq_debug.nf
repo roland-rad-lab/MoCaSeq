@@ -5,11 +5,11 @@
  */
 
 // pipeline input parameters
-params.genomes_base = "/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference/GRCh38.p12/" //for charliecloud container: "/var/pipeline/ref"
-params.cache_base = "/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/cache"
-// params.genome_build.human = "GRCh38.p12"
- 
+
 params {
+	genomes_base = "/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference/GRCh38.p12/" //for charliecloud container: "/var/pipeline/ref"
+	cache_base = "/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/cache"
+	
 	genome_build {
 		human = "GRCh38.p12"
 	}
