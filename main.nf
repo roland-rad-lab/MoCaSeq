@@ -2,6 +2,68 @@
 
 nextflow.enable.dsl=2
 
+// print help info TODO
+if (params.help != null || params.h != null){
+	println """\
+    MoCaSeq cancer genome sequencing pipeline for mouse and human
+    ======================================================================================
+	Extensive analysis of cancer sequencing data from human or mouse featuring mapping,
+	 remapping, mutation calling, LOH analysis, 
+	Employs: cnv-kit, bwa_mem, mutect2, 
+	
+	Usage: 
+	nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAMETERS] 
+
+	1. General Nextflow parameters
+	-entry							set specific workflow as entry point by name
+	-profile						use nextflow profiles defined in config files
+	-work-dir						set working directory
+	
+	2. MoCaSeq specific parameters
+	2.1. I/O
+	--output_base					|
+	--input							|
+	--qc_dir						|
+	
+	2.2. Config
+	--cache_base					|
+	--script_base					|
+	--test_config_genome_base		|
+	--test_config_genome_version	|
+	--custom_config_base			|
+	--custom_config_version			|
+	--gatk.jar						|
+	--tiny							|
+			
+	2.3. Genomes
+	--genomes_base					|
+	--genomes						|
+	--genome_annotations			|
+	--genome_build.human			|
+	--genome_build.mouse			|
+	--stub_json						Optionally load json map to control the behaviour of 
+									stubs (cp vs touch)
+	
+	2.4. Panel of normals analysis
+	--pon_dir						|
+	--pon_sample					|
+	--pon_tsv						|
+	--pon_bed						|
+	--pon_dry						|
+	--pon_resolution				|
+
+	2.5. Tool parameters
+	--cnv_kit						ch_centre assignment
+	--cnv_kit.centre				|
+	--cnv_kit.centre.tokenize		|
+	--track_cn						runs IGV_TRACK_CNS in HUMAN_WGS workflow
+	--track_sv						runs IGV_TRACK_VCF_SV_{jabba|manta}
+	--track_read					runs IGV_TRACK_READ
+    """
+    
+    exit 0
+}
+
 include {
 	parse_stub_json
 } from "./modules/stub"
@@ -93,6 +155,16 @@ pon_bed_path = null
 pon_tsv_path = null
 
 ch_input_sample = Channel.empty ()
+
+// pipeline info
+log.info """\
+    MoCaSeq cancer genome sequencing pipeline for mouse and human
+    =============================================================
+    genomes_base 		: ${params.genomes_base}
+    cache_base       	: ${params.cache_base}
+    genome_build.human  : ${params.genome_build.human}
+    """
+    .stripIndent()
 
 
 // check if we have valid --input
