@@ -33,8 +33,7 @@ process cache_genome_url {
 		val (path_cached), emit: result
 
 	exec:
-		if (params.debug) { println "[MoCaSeq] debug: entered cache_genome_url process" }
-		// if (params.debug) { println "[MoCaSeq] debug: genome_build:\n ${genome_build}\nreference:\n ${reference}\nextension_list:\n ${extension_list}" }
+		if (params.debug.cache_genome_url != null) { println "[MoCaSeq] debug: entered cache_genome_url process" }
 		def reference_local = reference;
 		if ( extension_list.size () == 0 ) { exit 1, "[MoCaSeq] error: At least one file extension is required to append to '${reference_local}'" }
 		if ( valid_uri (reference_local) )
@@ -45,7 +44,7 @@ process cache_genome_url {
 			{
 				// println java.nio.file.Paths.get ("${params.cache_base}") // debug
 				def cache_dir = java.nio.file.Paths.get ("${params.cache_base}").resolve ("genome_cache/${genome_build}");
-				if (params.debug) { println "[MoCaSeq] debug: using cache_dir ${cache_dir}" }
+				if (params.debug.cache_genome_url != null) { println "[MoCaSeq] debug: using cache_dir ${cache_dir}" }
 				// println cache_dir // debug error in following line
 				java.nio.file.Files.createDirectories (cache_dir);
 				def file_name_base = reference_uri.path.tokenize ('/')[-1]

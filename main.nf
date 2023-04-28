@@ -21,8 +21,9 @@ nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAME
 
 2. MoCaSeq specific parameters
 2.1. I/O
---output_base			|
---input				|
+--output_base			specify output path prefix
+--input				set input .tsv file with sample information 
+				 (see git repo for details)
 --qc_dir			|
 
 2.2. Config
@@ -328,7 +329,6 @@ workflow HUMAN_MAP {
 	GENOME_ANNOTATION (params.genome_build.human)
 
 	MAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
-	// println (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs) // debug
 	if (params.debug) { println "[MoCaSeq] debug: bwa_index from prep genome out" }
 	PREPARE_GENOME.out.bwa_index.view()
 	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
