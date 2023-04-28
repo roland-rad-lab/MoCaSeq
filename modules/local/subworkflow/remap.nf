@@ -139,7 +139,9 @@ workflow REMAP
 		// bwa_mem_paired.out.result.view {"args for mark_duplicates:\n ${it}"}
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
 		if (params.debug) { println "[MoCaSeq] debug: next recalibrate" }
-		// mark_duplicates.out.result.view {"args for recalibrate:\n ${it}"}
+		mark_duplicates.out.view {"args for recalibrate:\n ${it}"}
+		ch_fasta.view()
+		ch_common_vcf.view()
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
