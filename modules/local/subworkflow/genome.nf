@@ -44,10 +44,12 @@ workflow PREPARE_GENOME
 		if (params.debug) { println "[MoCaSeq] debug: entered PREPARE_GENOME subworfklow" }
 		if ( genome_name == null ) { exit 1, "[MoCaSeq] error: Genome name not found. Check params.genome_build." }
 		ch_ext_bwa_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_bwa_index"] ? Channel.of (params.genomes[genome_name]["ext_bwa_index"]).first () : Channel.empty ()
+		ch_ext_bwa_index.view { "[MoCaSeq] debug: ch_ext_bwa_index value: ${it}" }
 		ch_ext_dict = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_dict"] ? Channel.of (params.genomes[genome_name]["ext_dict"]).first () : Channel.empty ()
 		ch_ext_fasta = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_fasta"] ? Channel.of (params.genomes[genome_name]["ext_fasta"]).first () : Channel.empty ()
 		ch_ext_fasta_index = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["ext_fasta_index"] ? Channel.of (params.genomes[genome_name]["ext_fasta_index"]).first () : Channel.empty ()
 		ch_genome_base = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["genome_base"] ? Channel.of (params.genomes[genome_name]["genome_base"]).first () : Channel.empty ()
+		ch_genome_base.view { "[MoCaSeq] debug: ch_genome_base value: ${it}" }
 		ch_dir = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["dir"] ? Channel.of (params.genomes[genome_name]["dir"]).first () : Channel.empty ()
 		ch_chrom_names = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? Channel.value (params.genomes[genome_name]["names"]["auto_sex"]) : Channel.empty ()
 		ch_chrom_names_auto = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto"] ? Channel.value (params.genomes[genome_name]["names"]["auto"]) : Channel.empty ()

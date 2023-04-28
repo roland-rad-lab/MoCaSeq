@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 // print help info TODO
-if (params.help != null || params.h != null){
+if (params.help != null){
 	println """\
 MoCaSeq cancer genome sequencing pipeline for mouse and human
 ======================================================================================
