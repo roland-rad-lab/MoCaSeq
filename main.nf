@@ -27,14 +27,24 @@ nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAME
 --qc_dir			|
 
 2.2. Config
---cache_base			|
---script_base			|
---test_config_genome_base	|
---test_config_genome_version	|
---custom_config_base		|
---custom_config_version		|
---gatk.jar			|
---tiny				|
+--cache_base			directory that hold pipeline cache dirs
+--script_base			directory holding some pipeline scripts inside containers.
+				Make sure to bind MoCaSeq/repository/:/var/pipeline/repository
+				or custom path with respective change in your mocaseq.config. 
+--custom_config_base		directory to look for mocaseq.config, genomes.config
+				and genome_annotations.config. These *.config files 
+				need to be in a subdir '<custom_config_version>/pipeline'.
+				For templates see /conf in git repo. May be https url.
+--custom_config_version		config version found in <custom_config_base>
+--test_config_genome_base	directory for test *.config files like --custom_config_base
+				IMPORTANT: this overwrites --custom_config_base
+--test_config_genome_version	test config version like --custom_config_version
+				IMPORTANT: this overwrites --custom_config_version
+--gatk.jar			Path to Genome Analysis Toolkit .jar file.
+				Please use /opt/gatk-<version>/gatk.jar with version one of
+				(4.2.0.0, 4.1.7.0, 4.1.3.0, 4.1.0.0) for this. Alternatively
+				adapt the container for another version of gatk.
+--tiny				skip pipeline steps that would fail with few data
 		
 2.3. Genomes
 --genomes_base			|
@@ -172,7 +182,8 @@ genome_annotations	: ${params.genome_annotations}
 input			: ${params.input}
 output_base		: ${params.output_base}
 """.stripIndent()
-
+// dry_init option stops before executing any steps, but prints run configuration
+if (params.dry_init != null) { exit 0 }
 
 // check if we have valid --input
 if (params.input == null && params.pon_tsv == null && params.qc_dir == null) {
