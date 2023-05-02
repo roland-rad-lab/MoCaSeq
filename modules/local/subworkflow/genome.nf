@@ -55,12 +55,12 @@ workflow PREPARE_GENOME
 		ch_chrom_names_auto = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto"] ? Channel.value (params.genomes[genome_name]["names"]["auto"]) : Channel.empty ()
 		chrom_n = params.genomes && params.genomes[genome_name] && params.genomes[genome_name]["names"] && params.genomes[genome_name]["names"]["auto_sex"] ? params.genomes[genome_name]["names"]["auto_sex"].size () : 0
 
-		if (params.debug.PREPARE_GENOME != null) {
+		/* if (params.debug.PREPARE_GENOME != null) {
 			println "[MoCaSeq] debug: pre PREPARE_GENOME::cache_genome_url_bwa_index"
 			println "[MoCaSeq] debug: genome_name value: ${genome_name}"
 			ch_ext_bwa_index.view { "[MoCaSeq] debug: ch_ext_bwa_index value: ${it}" }
 			ch_genome_base.view { "[MoCaSeq] debug: ch_genome_base value: ${it}" }
-		}
+		}*/
 		cache_genome_url_bwa_index (genome_name, ch_genome_base, ch_ext_bwa_index)
 		cache_genome_url_dict (genome_name, ch_genome_base, ch_ext_dict)
 		cache_genome_url_fasta (genome_name, ch_genome_base, ch_ext_fasta)
@@ -128,19 +128,19 @@ workflow GENOME_ANNOTATION
 		cache_genome_url_cgc (genome_name, ch_cgc, Channel.value ([""]))
 		cache_genome_url_common_vcf (genome_name, ch_common_vcf, Channel.value (["", "tbi"]))
 		cache_genome_url_dbnsfp (genome_name, ch_dbnsfp, Channel.value (["", "tbi"]))
-		if (params.debug.GENOME_ANNOTATION != null) {
+		/*if (params.debug.GENOME_ANNOTATION != null) {
 			println "[MoCaSeq] debug: pre GENOME_ANNOTATION::cache_genome_url_gc_wig"
 			println "[MoCaSeq] debug: genome_name value: ${genome_name}"
 			ch_gc_wig_branched.uri.view { "[MoCaSeq] debug: ch_gc_wig_branched.uri value: ${it}" }
-		}
+		}*/
 		cache_genome_url_gc_wig (genome_name, ch_gc_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_gencode_genes_bed (genome_name, ch_gencode_genes_bed, Channel.value ([""]))
 		cache_genome_url_mappability (genome_name, ch_mappability, Channel.value ([""]))
-		if (params.debug.GENOME_ANNOTATION != null) {
+		/*if (params.debug.GENOME_ANNOTATION != null) {
 			println "[MoCaSeq] debug: pre GENOME_ANNOTATION::cache_genome_url_map_wig"
 			println "[MoCaSeq] debug: genome_name value: ${genome_name}"
 			ch_map_wig_branched.uri.view { "[MoCaSeq] debug: ch_map_wig_branched.uri value: ${it}" }
-		}
+		}*/
 		cache_genome_url_map_wig (genome_name, ch_map_wig_branched.uri, Channel.value ([""]))
 		cache_genome_url_micro_satellite (genome_name, ch_micro_satellite, Channel.value ([""]))
 		cache_genome_url_ref_flat (genome_name, ch_ref_flat, Channel.value ([""]))
