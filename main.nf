@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 // print help info TODO
-if (params.help != null){
+if (params.help){
 	println """\
 MoCaSeq cancer genome sequencing pipeline for mouse and human
 ======================================================================================
@@ -183,7 +183,7 @@ input			: ${params.input}
 output_base		: ${params.output_base}
 """.stripIndent()
 // dry_init option stops before executing any steps, but prints run configuration
-if (params.dry_init != null) { exit 0 }
+if (params.dry_init) { exit 0 }
 
 // check if we have valid --input
 if (params.input == null && params.pon_tsv == null && params.qc_dir == null) {
@@ -249,6 +249,8 @@ ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find m
 workflow HUMAN_WGS
 {
 	main:
+	if (params.debug) { println "[MoCaSeq] debug: entered HUMAN_WGS worfklow" }
+	
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
@@ -317,6 +319,8 @@ workflow HUMAN_WGS
 workflow MOUSE_WEX
 {
 	main:
+	if (params.debug) { println "[MoCaSeq] debug: entered MOUSE_WEX worfklow" }
+	
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
@@ -336,17 +340,20 @@ workflow MOUSE_WEX
 workflow HUMAN_MAP {
 	main:
 	if (params.debug) { println "[MoCaSeq] debug: entered HUMAN_MAP workflow" }
+	
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
 	MAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_map_branched.human_wgs)
-	if (params.debug) { println "[MoCaSeq] debug: bwa_index from prep genome out" }
-	PREPARE_GENOME.out.bwa_index.view()
+	// if (params.debug) { println "[MoCaSeq] debug: bwa_index from prep genome out" }
+	// PREPARE_GENOME.out.bwa_index.view()
 	REMAPPER (params.genome_build.human, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.fasta, GENOME_ANNOTATION.out.common_vcf, ch_input_branched_remap_branched.human_wgs)
 }
 
 workflow MOUSE_MAP {
 	main:
+	if (params.debug) { println "[MoCaSeq] debug: entered MOUSE_MAP worfklow" }
+	
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
@@ -356,6 +363,8 @@ workflow MOUSE_MAP {
 
 workflow HUMAN_PON {
 	main:
+	if (params.debug) { println "[MoCaSeq] debug: entered HUMAN_PON worfklow" }
+	
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
@@ -422,6 +431,8 @@ workflow HUMAN_PON {
 
 workflow MOUSE_PON {
 	main:
+	if (params.debug) { println "[MoCaSeq] debug: entered MOUSE_PON worfklow" }
+	
 	PREPARE_GENOME (params.genome_build.mouse)
 	GENOME_ANNOTATION (params.genome_build.mouse)
 
@@ -448,6 +459,7 @@ workflow MOUSE_PON {
 }
 
 workflow {
+	if (params.debug) { println "[MoCaSeq] debug: entered main worfklow" }
 	if ( params.genome_build.human ) { HUMAN_WGS () }
 	if ( params.genome_build.mouse ) { MOUSE_WEX () }
 }
@@ -459,8 +471,9 @@ workflow MAP {
 	if ( params.genome_build.mouse ) { MOUSE_MAP () }
 }
 
-// Run using -entry PON
+// Run panel of normal workflow using -entry PON
 workflow PON {
+	if (params.debug) { println "[MoCaSeq] debug: entered PON worfklow" }
 	if ( params.genome_build.human ) { HUMAN_PON () }
 	if ( params.genome_build.mouse ) { MOUSE_PON () }
 }
@@ -468,6 +481,7 @@ workflow PON {
 
 // Run using -entry QC
 workflow QC {
+	if (params.debug) { println "[MoCaSeq] debug: entered QC worfklow" }
 	COHORT_QC_human (params.genome_build.human, Channel.fromPath (params.qc_dir))
 	COHORT_QC_mouse (params.genome_build.mouse, Channel.fromPath (params.qc_dir))
 }
