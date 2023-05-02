@@ -201,7 +201,10 @@ if (tsv_path) {
 	if (tsv_file instanceof List) exit 1, "[MoCaSeq] error: can only accept one TSV file per run."
 	if (!tsv_file.exists ()) exit 1, "[MoCaSeq] error: input TSV file could not be found. Does the file exist and is it in the right place? You gave the path: ${params.input}"
 	ch_input_sample = extract_data (tsv_path)
-
+	if (params.debug) {
+		println "[MoCaSeq] debug: ch_input_sample:"
+		ch_input_sample.view()
+	}
 }
 else if (pon_tsv_path)
 {
@@ -253,9 +256,11 @@ workflow HUMAN_WGS
 	
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
-
+	
+	// debug the ch_bam, to see if the data is parsed correctly
 	if (params.debug) {
-		ch_input_branched_bam_branched.human_wgs.view { "[MoCaSeq] debug: ch_input_branched_bam_branched.human_wgs value:\n ${it}" }
+		println "[MoCaSeq] debug: ch_input_branched_bam_branched.human_wgs value:"
+		ch_input_branched_bam_branched.human_wgs.view()
 	}
 	ch_bam = ch_input_branched_bam_branched.human_wgs
 
