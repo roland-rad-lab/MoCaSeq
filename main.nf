@@ -254,6 +254,9 @@ workflow HUMAN_WGS
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 
+	if (params.debug) {
+		ch_input_branched_bam_branched.human_wgs.view { "[MoCaSeq] debug: ch_input_branched_bam_branched.human_wgs value:\n ${it}" }
+	}
 	ch_bam = ch_input_branched_bam_branched.human_wgs
 
 	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
