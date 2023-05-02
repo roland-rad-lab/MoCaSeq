@@ -146,8 +146,9 @@ def extract_data (tsv_file)
 				}
 				accumulator
 			}
-			println ("samples_by_type")
-			println (samples_by_type)
+			// TODO revert comment or use with debug flag
+			// println ("samples_by_type")
+			// println (samples_by_type)
 			def result = []
 			if ( samples_by_type.containsKey ("Normal") )
 			{

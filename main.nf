@@ -257,12 +257,13 @@ workflow HUMAN_WGS
 	PREPARE_GENOME (params.genome_build.human)
 	GENOME_ANNOTATION (params.genome_build.human)
 	
+	ch_bam = ch_input_branched_bam_branched.human_wgs
+
 	// debug the ch_bam, to see if the data is parsed correctly
 	if (params.debug) {
-		println "[MoCaSeq] debug: ch_input_branched_bam_branched.human_wgs value:"
-		ch_input_branched_bam_branched.human_wgs.view()
+		println "[MoCaSeq] debug: ch_bam value:"
+		ch_bam.view()
 	}
-	ch_bam = ch_input_branched_bam_branched.human_wgs
 
 	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
 	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
