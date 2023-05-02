@@ -161,7 +161,8 @@ mkdir temp_coor
 process recalibrate {
 	tag "${meta.sampleName}"
 
-	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap", mode: "copy"
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam", mode: "copy"
+	// publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/bam_remap", mode: "copy"
 
 	input:
 		val (genome_build)
