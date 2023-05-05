@@ -16,7 +16,7 @@ export OMP_NUM_THREADS=8
 # script from Niklas to change chr names in bams using samtools
 
 # get bam file
-rawBAM=$1
+rawBAM=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/ega2_complete/EGAF00002239684/PCSI_0357_St_R.bam
 
 # assert bam file suffix
 if [[ $rawBAM != *.bam ]]
@@ -34,4 +34,4 @@ sed '/random/d;/chrUn/d;/chrM/d;/chrEBV/d;/GL/d;/JH/d' -i header # remove all ot
 sed -e 's/SN:chr/SN:/' -i header
 samtools reheader header -i ${tmpBAM} > ${BAM}
 samtools index ${BAM}
-rm header ${tmpBAM}
+# rm header ${tmpBAM}
