@@ -6,7 +6,7 @@
 #SBATCH --clusters=serial
 #SBATCH --partition=serial_std
 #SBATCH --mail-type=end
-#SBATCH --mem=800mb
+#SBATCH --mem=12gb
 #SBATCH --cpus-per-task=8
 #SBATCH --mail-user=marcus.wagner@tum.de
 #SBATCH --export=NONE
