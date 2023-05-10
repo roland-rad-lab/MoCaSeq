@@ -21,22 +21,24 @@ dt.info <- separate(dt.info, col = 'Downloaded', into = c('Batch', 'Stamp'), sep
 
 data_path_prefix <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh37_bam'
 input_dir <- 'input/'
+batch <- 'batch02'
 
 # MoCaSeq call parameters
+old_project_dir <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/'
 project_dir <- '/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS'
 work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/test/mocaseq/work'
-remap_out_base <- file.path(project_dir, 'input')
-mocaseq_out_base <- file.path(project_dir, 'output')
 genome_build.human <- 'GRCh38.p12'
 custom_config_version <- 'mocaseq-lrz'
 custom_config_base <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/conf'
 input_prefix <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/input/'
 
+remap_out_base <- file.path(project_dir, 'input')
+mocaseq_out_base <- file.path(project_dir, 'output')
 
 # input table columns
 # Sample_Name, Sample_Group, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM
 
-dt.remap <- dt.info[Batch == 'batch02', .(FileID, FileName, SampleID, Batch)]
+dt.remap <- dt.info[Batch == batch, .(FileID, FileName, SampleID, Batch)]
 dt.remap[, ':=' (Sample_Name = SampleID, Library_ID = '?', Lane = '?', 
                  Colour_Chemistry = '?', SeqType = 'wgs', Organism = 'Human', 
                  BAM = NA)]
@@ -86,15 +88,16 @@ for (s_group in sample_groups) {
 # create input table for mocaseq call
 dt.mocaseq <- copy(dt.remap)
 dt.mocaseq[, ':=' (R2 = NA, R1 = NA,
-                   BAM = file.path(remap_out_base, genome_build.human, 
-                                   Sample_Name, 'results', 'bam', 
+                   BAM = file.path(remap_out_base, paste0(genome_build.human, '_bam'), 
+                                   batch, Sample_Name, 'results', 'bam', 
                                    paste0(Sample_Name, '.', Type, '.bam')))]
 
 # write input and runner files per sample group
 for (s_group in sample_groups) {
   # write input.tsv files by Sample_Group
-  write.table(dt.mocaseq[Sample_Group == s_group], sep = '\t',
-            file = file.path(input_dir, 'mocaseq', paste0(s_group, '.tsv')))
+  write.table(dt.mocaseq[Sample_Group == s_group],
+            file = file.path(input_dir, 'mocaseq', paste0(s_group, '.tsv')),
+            sep = '\t', row.names = F, quote = F)
   
   # write caller script file by Sample_Group
   cat(paste0('nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 ',
