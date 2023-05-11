@@ -24,9 +24,10 @@ input_dir <- 'input/'
 batch <- 'batch02'
 
 # MoCaSeq call parameters
+# make sure these directories exist in your $USER paths
 old_project_dir <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/'
 project_dir <- '/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS'
-work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/test/mocaseq/work'
+work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/mocaseq-nf/' # add [remap|mocaseq]/work later
 genome_build.human <- 'GRCh38.p12'
 custom_config_version <- 'mocaseq-lrz'
 custom_config_base <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/conf'
@@ -65,7 +66,7 @@ dt.remap <- dt.remap[, .(Sample_Name, Sample_Group, Library_ID, Lane,
 # get sample groups
 sample_groups <- dt.remap$Sample_Group %>% unique()
 
-# write input and runner files per sample group
+# write input and runner files per sample group for remapping
 for (s_group in sample_groups) {
   # write input.tsv files by Sample_Group
   write.table(dt.remap[Sample_Group == s_group],
@@ -75,7 +76,8 @@ for (s_group in sample_groups) {
   # write caller script file by Sample_Group
   cat(paste0('nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 ',
              ' -profile charliecloud,slurm', ' -entry MAP',
-             ' -work-dir ', work_dir, ' --output_base ', remap_out_base,
+             ' -work-dir ', file.path(work_dir, 'remap', 'work'),
+             ' --output_base ', remap_out_base,
              ' --genome_build.human ', genome_build.human,
              ' --custom_config_version ', custom_config_version,
              ' --custom_config_base ', custom_config_base,
@@ -102,7 +104,8 @@ for (s_group in sample_groups) {
   # write caller script file by Sample_Group
   cat(paste0('nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 ',
              ' -profile charliecloud,slurm',
-             ' -work-dir ', work_dir, ' --output_base ', mocaseq_out_base, 
+             ' -work-dir ', file.path(work_dir, 'mocaseq', 'work'), 
+             ' --output_base ', mocaseq_out_base, 
              ' --genome_build.human ', genome_build.human,
              ' --custom_config_version ', custom_config_version,
              ' --custom_config_base ', custom_config_base, 
