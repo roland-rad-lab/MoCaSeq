@@ -163,16 +163,14 @@ mkdir -p ${working_directory} \
 
 4. Download and unzip the repository from Github:
 ```bash
-wget https://github.com/roland-rad-lab/MoCaSeq/archive/master.zip \
-&& unzip master.zip \
-&& rm master.zip \
-&& mv MoCaSeq-master ${working_directory}/MoCaSeq
+wget https://github.com/roland-rad-lab/MoCaSeq/archive/refs/heads/human-pipeline.zip \
+&& unzip human-pipeline.zip \
+&& rm human-pipeline.zip \
+&& mv MoCaSeq-human-pipeline ${working_directory}/MoCaSeq
 ```
 
-5. Download the Docker image from Dockerhub:
-```bash
-sudo docker pull rolandradlab/mocaseq
-```
+5. For this heavily modified branch, you have to rebuild the docker image on your own using:
+```docker build -t mocaseq2 . 2>&1 | tee mocaseq2_dockerbuild.log```
 
 6. Test the pipeline, which automatically downloads the required reference files. If succesful, reference files will be located in `ref/` and test results in `MoCaSeq_Test/`. This will take up to 24 hours!
 ```bash
