@@ -384,8 +384,9 @@ plotChromosomalRatioProfile = function(cn=cn,chrom.sizes,cnSeg="",samplename="",
     pdf(paste(samplename,"_Chromosomes/",samplename,".Chr",chromosome,".",method,".",toolname,normalization,y_output,"pdf",sep=""),width=25,height=10)
   }
   par(mar=c(4, 4, 0, 0))
-  if(toolname=="CNVKit"){cn <- cn[c(TRUE,rep(FALSE,9)), ]}
+  #if(toolname=="CNVKit"){cn <- cn[c(TRUE,rep(FALSE,9)), ]}
   plot(cn[,Start],cn[,CopyNumber],pch=20,cex=Cex,xlim=c(Xmin,Xmax),ylim=ylim,xaxt="n",yaxt="n",bty="n",col=paste("#000000",Transparency,sep=""),ylab="",xlab="",yaxt="n")
+  
   if(method=="CNV")
   {
     cnSeg = cnSeg[cnSeg[,SegmentChromosome]==chromosome,]

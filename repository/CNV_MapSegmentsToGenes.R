@@ -50,6 +50,13 @@ if (method=="Copywriter"){
 
 cnv <- data.frame(Name=NULL,Chrom=NULL, Start=NULL, End=NULL, Mean=NULL,Gene=NULL)
 segment <- fread(segment_file)
+
+# special renaming for CNVKit
+if (method=="CNVKit") {
+  segment <- segment[, -c("gene")]
+  setnames(segment, c("chromosome", "start", "end", "log2"), c("Chrom", "Start", "End", "Mean"))
+}
+
 segment[, Chrom := as.character(Chrom)]
 
 # ensure X,Y are correct
@@ -58,11 +65,13 @@ if(species == "Mouse"){
   segment[Chrom == 21, Chrom := "Y"]
   genesDT[chr == 20, Chrom := "X"]
   genesDT[chr == 21, Chrom := "Y"]
+  chromorder <- c(1:19, "X", "Y")
 } else if(species == "Human"){
   segment[Chrom == 23, Chrom := "X"]
   segment[Chrom == 24, Chrom := "Y"]
   genesDT[chr == 23, Chrom := "X"]
   genesDT[chr == 24, Chrom := "Y"]
+  chromorder <- c(1:22, "X", "Y")
 }
 segment <- data.frame(segment)
 
@@ -87,14 +96,14 @@ if (method=="Copywriter" | method=="HMMCopy") {
 if (method=="CNVKit") {
   for (i in 1:nrow(segment)) {
     temp=NULL
-    temp=as.data.frame(segment[i,c("chromosome","start","end")])
+    temp=as.data.frame(segment[i,c("Chrom","Start","End")])
     colnames(temp)=c("chr","start","end")
     results=AnnotateSegment(temp)
     if (nrow(results) > 0) 
     {
       colnames(results)=c("Chrom", "Start", "End", "Gene", "GeneID")
       results[,"Chrom"]=gsub("chr","",results[,"Chrom"])
-      results$Mean=segment[i,"log2"]
+      results$Mean=segment[i,"Mean"]
       results$Name=name
       results=results[,c("Name", "Chrom", "Start", "End", "Mean","Gene", "GeneID")]
       cnv=rbind(cnv,results)
@@ -122,6 +131,11 @@ cnv = cnv %>%
   arrange(desc(abs(as.numeric(Mean))),.by_group=T) %>% 
   filter(row_number()==1) %>% 
   arrange(as.numeric(Start),as.numeric(End))
+
+# sort by chromosome
+cnv$Chrom <- factor(cnv$Chrom, levels = chromorder)
+cnv$Start <- as.numeric(cnv$Start)
+setorder(cnv, Chrom, Start)
 
 if (method=="Copywriter"){
   write.table(cnv,paste(name,"/results/",method,"/",name,".",method,".genes.Mode.txt",sep=""),col.names=T,row.names=F,quote=F,sep="\t")

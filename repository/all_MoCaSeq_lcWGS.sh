@@ -471,7 +471,7 @@ echo '---- Plot CNV-profiles ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
 Rscript $repository_dir/CNV_PlotCopywriter.R $name $species $repository_dir
-Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter 20000 $CGC_file $TruSight_file
+Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes Copywriter 20000 $CGC_file $TruSight_file  $runmode
 sh $repository_dir/CNV_CleanUp.sh $name
 
 echo '---- Run HMMCopy (bin-size 20000) ----' | tee -a $name/results/QC/$name.report.txt
@@ -484,7 +484,7 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 
 Rscript $repository_dir/CNV_PlotHMMCopy.R $name $species $repository_dir $sequencing_type 20000 \
 $mapWig_file $gcWig_file $centromere_file $varregions_file $runmode $types
-Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 20000 $CGC_file $TruSight_file
+Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes HMMCopy 20000 $CGC_file $TruSight_file  $runmode
 
 echo '---- Run HMMCopy (bin-size 1000) ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -500,6 +500,8 @@ echo '---- Run CNVKit ----' | tee -a $name/results/QC/$name.report.txt
 # types is a space separated string, so it needs the ""
 sh $repository_dir/CNV_RunCNVKit.sh $name $runmode WGS $config_file $species $threads "$types"
 Rscript $repository_dir/CNV_PlotCNVKit.R $name $species $repository_dir "$types"
+Rscript $repository_dir/CNV_MapSegmentsToGenes.R $name $species $genecode_file_genes CNVKit "NA" $CGC_file $TruSight_file $runmode
+
 rm GRCm38.p6.bed # remove tmp files
 
 
