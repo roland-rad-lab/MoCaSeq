@@ -47,9 +47,17 @@ workflow MUTECT
 		ch_data_single_branched.other.view { "[MoCaSeq] error: Unknown (type) for input:\n${it}\nExpected: [Normal,Tumor]." }
 
 		mutect_matched (genome_build, ch_fasta, ch_data_expanded, ch_interval)
-		if (params.debug) { println "[MoCaSeq] debug: pre mutect_single_normal process" }
+		if (params.debug) { 
+			println "[MoCaSeq] debug: pre mutect_single_normal process for ${meta.sampleName}"
+			ch_data_single_branched.normal.view()
+			ch_data_expanded_normal.view()
+		}
 		mutect_single_normal (genome_build, ch_fasta, ch_data_single_branched.normal.map { it -> tuple ( it, "Normal", it["normalBAM"], it["normalBAI"] ) }, ch_interval)
-		if (params.debug) { println "[MoCaSeq] debug: pre mutect_single_tumor process" }
+		if (params.debug) { 
+			println "[MoCaSeq] debug: pre mutect_single_tumor process for ${meta.sampleName}"
+			ch_data_single_branched.tumor.view()
+			ch_data_expanded_normal.view()
+		}
 		mutect_single_tumor (genome_build, ch_fasta, ch_data_single_branched.tumor.map { it -> tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }, ch_interval)
 
 		ch_vcf = mutect_matched.out.result.map { [[it[1], it[0]["sampleName"]].join ("__"), it] }
