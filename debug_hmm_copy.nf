@@ -9,14 +9,97 @@ MoCaSeq test wrapper for HUMAN_WGS:HMM_COPY:hmm_copy_wig_tumor
 }
 
 include {
+	parse_stub_json
+} from "./modules/stub"
+
+// Optionally load json map to control the behaviour of stubs (cp vs touch)
+stub_json_map = params.stub_json && ( params.stub_json.toString ().toLowerCase ().endsWith ("js") || params.stub_json.toString ().toLowerCase ().endsWith ("json") ) ? parse_stub_json (params.stub_json) : null
+
+include {
+	extract_data;
+	file_has_extension
+} from "./modules/input"
+
+include {
+	PREPARE_GENOME;
+	GENOME_ANNOTATION
+} from "./modules/local/subworkflow/genome"
+
+include {
+	MAP as MAPPER
+	REMAP as REMAPPER
+} from "./modules/local/subworkflow/remap"
+
+include {
+	MANTA
+} from "./modules/local/subworkflow/manta" addParams (stub_json_map: stub_json_map)
+
+include {
+	STRELKA
+} from "./modules/local/subworkflow/strelka"
+
+include {
+	MUTECT;
+	MUTECT_ANNOTATE;
+	MUTECT_RESULT;
+	MUTECT_RESULT_RARE
+} from "./modules/local/subworkflow/mutect" addParams (stub_json_map: stub_json_map)
+
+include {
+	DELLY
+} from "./modules/local/subworkflow/delly"
+
+include {
+	CNV_KIT;
+	CNV_KIT_SELECT_SAMPLE;
+	CNV_KIT_TARGET_BED;
+	CNV_KIT_COVERAGE;
+	CNV_KIT_FIX;
+	CNV_KIT_SEGMENT;
+	CNV_KIT_PON
+} from "./modules/local/subworkflow/cnv-kit" addParams (stub_json_map: stub_json_map)
+
+include {
 	HMM_COPY
 } from "./modules/local/subworkflow/hmm-copy"
+
+include {
+	LOH
+} from "./modules/local/subworkflow/loh"
+
+include {
+	MSI_SENSOR
+} from "./modules/local/subworkflow/msi-sensor"
+
+include {
+	BUBBLE_TREE
+} from "./modules/local/subworkflow/bubble-tree"
+
+include {
+	JABBA
+} from "./modules/local/subworkflow/jabba"
+
+include {
+	IGV_TRACK_READ;
+	IGV_TRACK_CNR as IGV_TRACK_CNR_cnv_kit;
+	IGV_TRACK_CNR as IGV_TRACK_CNR_hmm_copy;
+	IGV_TRACK_CNS;
+	IGV_TRACK_CNS as IGV_TRACK_CNS_cnv_kit;
+	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_jabba;
+	IGV_TRACK_VCF_SV as IGV_TRACK_VCF_SV_manta
+} from "./modules/local/subworkflow/igv-track"
+
+include {
+	COHORT_QC as COHORT_QC_human;
+	COHORT_QC as COHORT_QC_mouse
+} from "./modules/local/subworkflow/qc"
 
 tsv_path = null
 pon_bed_path = null
 pon_tsv_path = null
 
 ch_input_sample = Channel.empty ()
+
 
 // pipeline info
 log.info """\
