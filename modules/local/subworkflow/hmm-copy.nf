@@ -38,8 +38,8 @@ workflow HMM_COPY {
 		hmm_copy_wig_normal (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
 		if (params.debug) { 
 			println "[MoCaSeq] debug: pre hmm_copy_wig_tumor process"
-			ch_resolution.view()
-			ch_data_expanded_tumor.view()
+			/* ch_resolution.view()
+			ch_data_expanded_tumor.view() */
 		}
 		hmm_copy_wig_tumor (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
 
