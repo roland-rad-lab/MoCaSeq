@@ -9,7 +9,7 @@ MoCaSeq cancer genome sequencing pipeline for mouse and human
 ======================================================================================
 Extensive analysis of cancer sequencing data from human or mouse featuring mapping,
  remapping, mutation calling, LOH analysis, 
-Employs: cnv-kit, bwa_mem, mutect2, 
+Employs: cnv-kit, bwa_mem, mutect2, hmm_copy
 
 Usage: 
 nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAMETERS] 
