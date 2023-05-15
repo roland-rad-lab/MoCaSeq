@@ -166,7 +166,22 @@ ch_input_branched_bam_branched = ch_input_branched.bam.branch {
 	other: true
 }
 
+ch_input_branched_map_branched = ch_input_branched.map.branch {
+	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wgs: it["organism"] == "mouse" && it["seqType"] == "wgs"
+	other: true
+}
+
+ch_input_branched_remap_branched = ch_input_branched.remap.branch {
+	human_wgs: it["organism"] == "human" && it["seqType"] == "wgs"
+	mouse_wgs: it["organism"] == "mouse" && it["seqType"] == "wgs"
+	mouse_wex: it["organism"] == "mouse" && it["seqType"] == "wex"
+	other: true
+}
+
 ch_input_branched_bam_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input bam:\n${it}" }
+ch_input_branched_map_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input map:\n${it}" }
+ch_input_branched_remap_branched.other.view { "[MoCaSeq] error: Failed to find matching workflow (organism & seqType) for input remap:\n${it}" }
 
 workflow HUMAN_WGS
 {
@@ -189,7 +204,7 @@ workflow HUMAN_WGS
 		ch_bam.view() */
 	}
 
-	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
+	HMM_COPY(params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 }
 
 workflow {
