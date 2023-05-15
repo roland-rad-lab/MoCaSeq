@@ -182,11 +182,11 @@ workflow HUMAN_WGS
 	if (params.debug) {
 		println "[MoCaSeq] debug: pre HMM_COPY chanel values"
 		println "${params.genome_build.human}"
-		PREPARE_GENOME.out.chrom_names.view()
+		/* PREPARE_GENOME.out.chrom_names.view()
 		PREPARE_GENOME.out.interval_bed.view()
 		GENOME_ANNOTATION.out.gc_wig.view()
 		GENOME_ANNOTATION.out.map_wig.view()
-		ch_bam.view()
+		ch_bam.view() */
 	}
 
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
