@@ -48,13 +48,13 @@ workflow MUTECT
 
 		mutect_matched (genome_build, ch_fasta, ch_data_expanded, ch_interval)
 		if (params.debug) { 
-			println "[MoCaSeq] debug: pre mutect_single_normal process for ${meta.sampleName}"
+			println "[MoCaSeq] debug: pre mutect_single_normal process"
 			ch_data_single_branched.normal.view()
 			ch_data_expanded_normal.view()
 		}
 		mutect_single_normal (genome_build, ch_fasta, ch_data_single_branched.normal.map { it -> tuple ( it, "Normal", it["normalBAM"], it["normalBAI"] ) }, ch_interval)
 		if (params.debug) { 
-			println "[MoCaSeq] debug: pre mutect_single_tumor process for ${meta.sampleName}"
+			println "[MoCaSeq] debug: pre mutect_single_tumor process"
 			ch_data_single_branched.tumor.view()
 			ch_data_expanded_normal.view()
 		}
