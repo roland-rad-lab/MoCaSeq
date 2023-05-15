@@ -192,3 +192,9 @@ workflow HUMAN_WGS
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 }
 
+workflow {
+	if (params.debug) { println "[MoCaSeq] debug: entered main worfklow" }
+	if ( params.genome_build.human ) { HUMAN_WGS () }
+	if ( params.genome_build.mouse ) { MOUSE_WEX () }
+}
+
