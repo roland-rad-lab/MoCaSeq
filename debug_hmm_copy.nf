@@ -195,6 +195,5 @@ workflow HUMAN_WGS
 workflow {
 	if (params.debug) { println "[MoCaSeq] debug: entered main worfklow" }
 	if ( params.genome_build.human ) { HUMAN_WGS () }
-	if ( params.genome_build.mouse ) { MOUSE_WEX () }
 }
 
