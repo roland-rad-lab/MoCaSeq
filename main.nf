@@ -70,6 +70,9 @@ nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAME
 --track_cn			runs IGV_TRACK_CNS in HUMAN_WGS workflow
 --track_sv			runs IGV_TRACK_VCF_SV_{jabba|manta}
 --track_read			runs IGV_TRACK_READ
+--hmm_copy.resolution		list of hmm_copy resultion parameters 
+				(cannot be overridden on cmd, change in
+				nextflow.config)
 """
     
     exit 0

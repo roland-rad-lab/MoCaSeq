@@ -16,9 +16,11 @@ workflow HMM_COPY {
 
 	main:
 		if (params.debug) { println "[MoCaSeq] debug: entered HMM_COPY subworkflow" }
+		
 		ch_resolution = params.hmm_copy && params.hmm_copy.resolution && params.hmm_copy.resolution ? params.hmm_copy.resolution.tokenize (",") : Channel.empty ()
 		ch_interval_csv_string = ch_interval.map { it.join (",") }
 
+		// branch data by type for Normal and Tumor channel each
 		ch_data_branched = ch_data.branch {
 			normal: it["type"] == "Normal"
 			tumor: it["type"] == "Tumor"
@@ -30,17 +32,19 @@ workflow HMM_COPY {
 		ch_data_expanded_normal = ch_data_branched.normal.map { tuple (it, "Normal", it["normalBAM"], it["normalBAI"] ) }
 		ch_data_expanded_tumor = ch_data_branched.tumor.map { tuple (it, "Tumor", it["tumorBAM"], it["tumorBAI"] ) }
 
-		if (params.debug) { 
+		// run hmm_copy readCounter for normal samples and specified resolutions
+		if (params.debug > 2) { 
 			println "[MoCaSeq] debug: pre hmm_copy_wig_normal process"
-			/* ch_resolution.view()
-			ch_data_expanded_normal.view() */
+			ch_resolution.view {ch_resolution\n:${it}}
+			ch_data_expanded_normal.view {ch_data_expanded_normal\n:${it}}
 		}
 		hmm_copy_wig_normal (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
-		if (params.debug) { 
+		if (params.debug > 2) { 
 			println "[MoCaSeq] debug: pre hmm_copy_wig_tumor process"
-			/* ch_resolution.view()
-			ch_data_expanded_tumor.view() */
+			ch_resolution.view {ch_resolution\n:${it}}
+			ch_data_expanded_tumor.view {ch_data_expanded_tumor\n:${it}}
 		}
+		
 		hmm_copy_wig_tumor (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
 
 		ch_gc_wig_resolution = ch_gc_wig.map { new File (it.trim ()) }.map {

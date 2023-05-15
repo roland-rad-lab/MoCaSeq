@@ -95,6 +95,15 @@ workflow MAP
 		result = sample
 }
 
+/*
+ * Workflow to extract reads from an alignment file and remap these reads to the specified reference genome.
+ * Main steps:
+ * 1. SAM/BAM -> fastq
+ * 2. FastQC on fastq
+ * 3. bwa_mem map fastq to reference genome
+ * 4. mark duplicates
+ * 5. base quality score recalibration using GATK
+*/
 workflow REMAP
 {
 	take:
@@ -105,7 +114,9 @@ workflow REMAP
 		ch_data
 
 	main:
-	if (params.debug) { println "[MoCaSeq] debug: entered REMAP subworfklow" }
+		if (params.debug) { println "[MoCaSeq] debug: entered REMAP subworfklow" }
+	
+		// branch data by sample type -> one channel per Tumor/Normal
 		ch_data_branched = ch_data.map { it ->
 			if ( it["type"] == "Normal" )
 			{
@@ -124,28 +135,34 @@ workflow REMAP
 
 		ch_data_branched.other.view { "[MoCaSeq] error: Failed to find matching REMAP workflow path for input:\n${it}" }
 		
-		// ch_data_branched.paired.view { "args for sam_to_fastq_paired\n ${it[0]}, ${it[1]}, ${it[2]}" }
-		// println "args for sam_to_fastq_paired" // ${it[0]}, ${it[1]}, ${it[2]}"
+		// convert SAM/BAM file to fastq file
+		if (params.debug < 2) { 
+			ch_data_branched.paired.view { "[MoCaSeq] debug: args for sam_to_fastq_paired:\n ${it[0]}, ${it[1]}, ${it[2]}" }
+		}
 		sam_to_fastq_paired (ch_data_branched.paired.map { tuple (it[0], it[1], it[2] ) })
-		// sam_to_fastq_paired.out.result.view { "args for fastqc_paired_extracted\n ${it}" }
-		// if (params.debug.REMAP != null) { println "[MoCaSeq] debug: sam_to_fastq_paired done, using ${genome_build} for fastqc_paired_extracted" }
+		// fastQC on results
 		fastqc_paired_extracted (genome_build, Channel.value ("REMAP_extracted") , sam_to_fastq_paired.out.result)
-		// println "args for bwa_mem_paired: "
-		// fastqc_paired_extracted.out.result.view {"args for bwa_mem_paired:\n ${it}"}
-		/* if (params.debug.REMAP != null) { 
-			println "[MoCaSeq] debug: next bwa_mem, viewing ch_bwa_index channel"
-			ch_bwa_index.view()
-		} */
+		
+		// map fastq files to specified reference genome
+		if (params.debug < 2) { 
+			fastqc_paired_extracted.out.result.view {"[MoCaSeq] debug: args for bwa_mem_paired:\n ${it}"}
+			ch_bwa_index.view {"[MoCaSeq] debug: ch_bwa_index:\n ${it}"}
+		}
 		bwa_mem_paired (ch_bwa_index, fastqc_paired_extracted.out.result)
-		// if (params.debug.REMAP != null) { println "[MoCaSeq] debug: next mark_duplicates" }
-		// bwa_mem_paired.out.result.view {"args for mark_duplicates:\n ${it}"}
+		
+		// mark duplicate reads
+		if (params.debug < 2) { 
+			bwa_mem_paired.out.result.view {"[MoCaSeq] debug: args for mark_duplicates:\n ${it}"}
+		}
 		mark_duplicates (genome_build, bwa_mem_paired.out.result)
-		/* if (params.debug.REMAP != null) {
+		
+		// base quality score recalibration
+		if (params.debug < 2) { 
 			println "[MoCaSeq] debug: next recalibrate"
-			mark_duplicates.out.view {"args for recalibrate:\n ${it}"}
-			ch_fasta.view()
-			ch_common_vcf.view()
-		} */
+			mark_duplicates.out.view {"[MoCaSeq] debug: args for recalibrate:\n ${it}"}
+			ch_fasta.view {"[MoCaSeq] debug: ch_fasta\n:${it}"}
+			ch_common_vcf.view {"[MoCaSeq] debug: ch_common_vcf:\n${it}"}
+		}
 		recalibrate (genome_build, ch_fasta, ch_common_vcf, mark_duplicates.out.result)
 		sample = recalibrate.out.result.map { [it[0]["sampleName"], it] }
 			.groupTuple (size: 2)
