@@ -16,18 +16,21 @@ library(splitstackshape)
 dt.info <- fread('../../AllCompassAssociatedEgadFiles_2022-02-24.csv')
 dt.info[Downloaded == 'corrupted-2021-12', Downloaded := 'corrupted_2021-12']
 # separate batch
-dt.info <- separate(dt.info, col = 'Downloaded', into = c('Batch', 'Stamp'), sep = '_') %>% 
+dt.info <- separate(dt.info, col = 'Downloaded', into = c('Batch', 'Date'), sep = '_') %>% 
   as.data.table()
 
-data_path_prefix <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh37_bam'
-input_dir <- 'input/'
-batch <- 'batch02'
+# set column for EGA source data availability
+dt.info[, EGAonLRZ := F]
+dt.info[grep('yes', Date), EGAonLRZ := T]
+
+# split yes/no from Date
+dt.info[, Date := substr(Date, 1, 7)]
 
 # MoCaSeq call parameters
 # make sure these directories exist in your $USER paths
-old_project_dir <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/'
+ega_data_path <- '/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh37_bam'
 project_dir <- '/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS'
-work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/mocaseq-nf/' # add [remap|mocaseq]/work later
+work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/mocaseq-nf' # add [remap|mocaseq]/work later
 genome_build.human <- 'GRCh38.p12'
 custom_config_version <- 'mocaseq-lrz'
 custom_config_base <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/conf'
@@ -36,10 +39,16 @@ input_prefix <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-
 remap_out_base <- file.path(project_dir, 'input')
 mocaseq_out_base <- file.path(project_dir, 'output')
 
+# batch01 test samples
+# batch01_test <- c("RAMP_0007_Lv_M_5262", "RAMP_0007_Mu_R", "RAMP_0008_Ln_M_526",
+#                   "RAMP_0008_Lv_M_526", "RAMP_0008_Mu_R", "RAMP_0008_Pa_P")
+
+# get only samples that are currently present on LRZ
+# alternatively filter for samples here
+dt.remap <- dt.info[EGAonLRZ == TRUE, .(FileID, FileName, SampleID, Batch)]
+
 # input table columns
 # Sample_Name, Sample_Group, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM
-
-dt.remap <- dt.info[Batch == batch, .(FileID, FileName, SampleID, Batch)]
 dt.remap[, ':=' (Sample_Name = SampleID, Library_ID = '?', Lane = '?', 
                  Colour_Chemistry = '?', SeqType = 'wgs', Organism = 'Human', 
                  BAM = NA)]
@@ -49,7 +58,7 @@ dt.remap[grep('_R', SampleID), Type := 'Normal']
 dt.remap[is.na(Type), Type := 'Tumor']
 
 # create R1 and R2 reference on bam files
-dt.remap[, R1 := file.path(data_path_prefix, Batch, FileID, FileName)]
+dt.remap[, R1 := file.path(ega_data_path, Batch, FileID, FileName)]
 dt.remap[, R2 := R1]
 
 # extract Sample_Group information from SampleID
@@ -59,18 +68,16 @@ dt.remap <- separate(dt.remap, 'SampleID', into = c('Sample_Group', 'Tag'), sep 
 # remove unneccesary information
 dt.remap[, ':=' (FileID = NULL, FileName = NULL, Tag = NULL)]
 
-# bring columns in right order
-dt.remap <- dt.remap[, .(Sample_Name, Sample_Group, Library_ID, Lane,
-                         Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM)]
-
 # get sample groups
-sample_groups <- dt.remap$Sample_Group %>% unique()
+sample_groups <- dt.remap[, paste0(Batch, '-', Sample_Group)] %>% unique()
 
 # write input and runner files per sample group for remapping
 for (s_group in sample_groups) {
-  # write input.tsv files by Sample_Group
-  write.table(dt.remap[Sample_Group == s_group],
-            file = file.path(input_dir, 'remap', paste0(s_group, '.tsv')),
+  # write input.tsv files by Sample_Group and with correct order of columns
+  write.table(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2], 
+                       .(Sample_Name, Sample_Group, Library_ID, Lane,
+                         Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM)],
+            file = file.path('input', 'remap', paste0(s_group, '.tsv')),
             sep = '\t', row.names = F, quote = F)
 
   # write caller script file by Sample_Group
@@ -91,14 +98,16 @@ for (s_group in sample_groups) {
 dt.mocaseq <- copy(dt.remap)
 dt.mocaseq[, ':=' (R2 = NA, R1 = NA,
                    BAM = file.path(remap_out_base, paste0(genome_build.human, '_bam'), 
-                                   batch, Sample_Name, 'results', 'bam', 
+                                   Batch, Sample_Name, 'results', 'bam', 
                                    paste0(Sample_Name, '.', Type, '.bam')))]
 
 # write input and runner files per sample group
 for (s_group in sample_groups) {
   # write input.tsv files by Sample_Group
-  write.table(dt.mocaseq[Sample_Group == s_group],
-            file = file.path(input_dir, 'mocaseq', paste0(s_group, '.tsv')),
+  write.table(dt.mocaseq[Sample_Group == strsplit(s_group, '-')[[1]][2], 
+                         .(Sample_Name, Sample_Group, Library_ID, Lane,
+                           Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM)],
+            file = file.path('input', 'mocaseq', paste0(s_group, '.tsv')),
             sep = '\t', row.names = F, quote = F)
   
   # write caller script file by Sample_Group
