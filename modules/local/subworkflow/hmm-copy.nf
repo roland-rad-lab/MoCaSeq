@@ -35,14 +35,14 @@ workflow HMM_COPY {
 		// run hmm_copy readCounter for normal samples and specified resolutions
 		if (params.debug > 2) { 
 			println "[MoCaSeq] debug: pre hmm_copy_wig_normal process"
-			ch_resolution.view {ch_resolution\n:${it}}
-			ch_data_expanded_normal.view {ch_data_expanded_normal\n:${it}}
+			ch_resolution.view {"ch_resolution\n:${it}"}
+			ch_data_expanded_normal.view {"ch_data_expanded_normal\n:${it}"}
 		}
 		hmm_copy_wig_normal (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_normal)
 		if (params.debug > 2) { 
 			println "[MoCaSeq] debug: pre hmm_copy_wig_tumor process"
-			ch_resolution.view {ch_resolution\n:${it}}
-			ch_data_expanded_tumor.view {ch_data_expanded_tumor\n:${it}}
+			ch_resolution.view {"ch_resolution\n:${it}"}
+			ch_data_expanded_tumor.view {"ch_data_expanded_tumor\n:${it}"}
 		}
 		
 		hmm_copy_wig_tumor (genome_build, ch_interval_csv_string, ch_resolution, ch_data_expanded_tumor)
