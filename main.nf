@@ -50,8 +50,8 @@ nextflow run roland-rad-lab/MoCaSeq -r human-pipeline-nextflow-2 --input [PARAME
 --genomes_base			|
 --genomes			|
 --genome_annotations		|
---genome_build.human		|
---genome_build.mouse		|
+--genome_build.human		human genome version (default GRCh38.p12)
+--genome_build.mouse		mouse genome version (default GRCm38.p6)
 --stub_json			Optionally load json map to control the behaviour of 
 				stubs (cp vs touch)
 
