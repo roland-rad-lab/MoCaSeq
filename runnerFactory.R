@@ -90,6 +90,10 @@ for (s_group in sample_groups) {
              ' --custom_config_base ', custom_config_base,
              ' --input ', input_prefix, 'remap/', s_group, '.tsv'),
       file = file.path('launch', 'remap', paste0(s_group, '_remap.sh')))
+  
+  # make runner file executable for user
+  system(paste0("chmod u+x ",
+                file.path('launch', 'remap', paste0(s_group, '_remap.sh'))))
 }
 
 # --------- MoCaSeq Call ------------- 
@@ -120,4 +124,8 @@ for (s_group in sample_groups) {
              ' --custom_config_base ', custom_config_base, 
              ' --input ', input_prefix, 'mocaseq/', paste0(s_group, '.tsv')),
       file = file.path('launch', 'mocaseq', paste0(s_group, '_mocaseq.sh')))
+  
+  # make runner file executable for user
+  system(paste0("chmod u+x ", 
+                file.path('launch', 'mocaseq', paste0(s_group, '_mocaseq.sh'))))
 }
