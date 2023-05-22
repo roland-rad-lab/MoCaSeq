@@ -1,3 +1,0 @@
-Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
-hg19_PCSI_0357_St_R_1percent	hg19_PCSI_0357	?	?	?	wgs	Human	Normal	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/ega2_complete/EGAF00002239684/PCSI_0357_St_R.bam
-hg19_PCSI_0357_Pa_P_5262_1percent	hg19_PCSI_0357	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/ega2_complete/EGAF00002239683/PCSI_0357_Pa_P_5262.bam

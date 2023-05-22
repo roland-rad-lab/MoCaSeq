@@ -1,3 +1,0 @@
-Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
-RAMP_0007_Lv_M_5262	RAMP_0007	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0007_Lv_M_5262/results/bam/RAMP_0007_Lv_M_5262.Tumor.bam
-RAMP_0007_Mu_R	RAMP_0007	?	?	?	wgs	Human	Normal	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0007_Mu_R/results/bam/RAMP_0007_Mu_R.Normal.bam
