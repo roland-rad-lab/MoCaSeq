@@ -34,7 +34,7 @@ work_dir <- '/gpfs/scratch/pn29ya/${USER}/${USER}/mocaseq-nf' # add [remap|mocas
 genome_build.human <- 'GRCh38.p12'
 custom_config_version <- 'mocaseq-lrz'
 custom_config_base <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/conf'
-input_prefix <- 'https://raw.githubusercontent.com/roland-rad-lab/MoCaSeq/human-pipeline-nextflow-2/input/'
+input_prefix <- '/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/mocaseq_input_tables'
 
 remap_out_base <- file.path(project_dir, 'input')
 mocaseq_out_base <- file.path(project_dir, 'output')
