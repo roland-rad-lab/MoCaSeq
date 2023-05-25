@@ -43,16 +43,17 @@ dt.info[Downloaded == 'corrupted-2021-12', Downloaded := 'corrupted_2021-12']
 dt.info <- separate(dt.info, col = 'Downloaded', into = c('Batch', 'Date'), sep = '_') %>% 
   as.data.table()
 
-# set column for EGA source data availability
-dt.info[, EGAonLRZ := F]
-dt.info[grep('yes', Date), EGAonLRZ := T]
+# make a column for the sample status
+# Possible StatusLRZ values: 'Not downloaded', 'EGA (hg19) bams available', 'Remap running',  'hg38 bam available', 'MoCaSeq running', 'MoCaSeq done'
+dt.info[, StatusLRZ := 'Not downloaded']
+dt.info[grep('yes', Date), StatusLRZ := 'EGA (hg19) bams available']
 
 # split yes/no from Date
 dt.info[, Date := substr(Date, 1, 7)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
-dt.remap <- dt.info[EGAonLRZ == TRUE, .(FileID, FileName, SampleID, Batch)]
+dt.remap <- dt.info[StatusLRZ == 'EGA (hg19) bams available', .(FileID, FileName, SampleID, Batch)]
 
 # input table columns
 # Sample_Name, Sample_Group, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM
