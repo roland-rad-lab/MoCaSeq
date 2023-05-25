@@ -438,183 +438,121 @@ GetSegments <- function(dupDT){
   return(lohSegs)
 }
 
-#Get_LOH_segments <- function(name,seqType,species,filterBAF=T,denovoBAF=F,minLOHsegdif=0.03,customData=NULL,MinDifToMerge=0.05,minSegSize=100000)
-Get_LOH_segments <- function(name,seqType,species,data,data_gr,chrom.sizes,filterBAF=T,denovoBAF=F,minLOHsegdif=0.03,customData=NULL,MinDifToMerge=0.05,minSegSize=100000)
+Get_LOH_segments <- function(name,seqType,species,data,data_gr,chrom.sizes,filterBAF=T,denovoBAF=F,minLOHsegdif=0.03,customData=NULL,MinDifToMerge=0.05,minSegSize=100000, minSNPs=NULL, minSNPsMB=NULL)
 {
-
+ 
   # denovoBAF: take SNP BAFs from table or recalculate
   # filterBAF: apply snp filtering (centromeres, haplotypes, mappability) --> currently only for human
   # minLOHsegdif: up/low segment with differences smaller than this will be set to 0.5
   # MinDifToMerge: 0.05 # distance (BAF difference) used to merge neighbouring segments
   # minSegSize <- 100000 # minimal length of called segments
-
-  # minimal number of total SNPs and SNPs per megabase
-  if(seqType == "WES"){
-    minSNPsMB <- 3
+ 
+  # minimal number of total SNPs
+  if(seqType == "WES" & is.null(minSNPs)){
     minSNPs <- 5
-  } else if(seqType == "WGS") {
+  } else if(seqType == "WGS" & is.null(minSNPs)) {
     minSNPs <- 100
-    minSNPsMB <- 100
+  } else if(seqType == "SNP" & is.null(minSNPs)) {
+    minSNPs <- 30
   }
-
-####
-#  chrom.sizes = DefineChromSizes(species)
-#  if (species=="human"){
-#    chromosomes=21
-#    nXbreaks <- 10 # number of breaks on x-axis
-#
-#    # data calculated in: "/home/rad/Documents/small_scripts/MoCaSeq_DevCode/Cohort_GenerateOverlay_FilterNoise.R"
-#    load("/media/rad/SSD2/MoCaSeq_runs/AGRad_test/loh_seg/hg38_cents-haplo-mappability.RData")
-#  } else if (species=="Mouse"){
-#    chromosomes=19
-#    nXbreaks <- 10 # number of breaks on x-axis
-#    load("/media/rad/HDD1/Lookups/mm10_cents-haplo-mappability.RData")
-#  }
-#
-#
-#  if(!denovoBAF){
-#    # OLD
-#    data=paste0(name,"/results/LOH/",name,".VariantsForLOH.txt")
-#    LOHDat = ProcessCountData2(data,chrom.sizes,"LOH")
-#    lohDT <- data.table(LOHDat[[4]])
-#    lohDT <- lohDT[!Chrom %in% c("X", "Y")]
-#    lohDT[, Chrom := as.numeric(Chrom)]
-#  } else {
-#
-#    # NEW, this takes a long time
-#    tumorBAM <- paste(name,"/results/bam/",name,".Tumor.bam", sep="")
-#    tumor <- fread(paste(name,"/results/Mutect2/",name,".Tumor.Mutect2.Positions.txt", sep=""), header=T, sep="\t",
-#                   col.names=c("Chrom", "Pos", "Ref", "Alt", "Tumor_Freq", "Tumor_RefCount", "Tumor_AltCount", "MapQ", "BaseQ"))
-#    normal <- fread(paste(name,"/results/Mutect2/",name,".Normal.Mutect2.Positions.txt", sep=""), header=T, sep="\t",
-#                    col.names=c("Chrom", "Pos", "Ref", "Alt", "Normal_Freq", "Normal_RefCount", "Normal_AltCount", "MapQ", "BaseQ"))
-#
-#    # filter normal (keep tumor as it is)
-#    normal <- normal[Chrom %in% c(1:22)]
-#    normal <- normal[nchar(paste0(Ref, Alt)) == 2]
-#    normal <- normal[MapQ >= 60]
-#    normal <- normal[(Normal_RefCount + Normal_AltCount) >= 10]
-#    normal <- normal[Normal_Freq %between% c(0.3, 0.7)]
-#    normal[, id := paste0(Chrom, ":", Pos, "-", Pos)]
-#    normal[, UniquePos := paste(Chrom, Pos, Pos, sep="_")]
-#    tumor[, UniquePos := paste(Chrom, Pos, Pos, sep="_")]
-#
-#    # Scan the tumor bam file for coverage
-#    library(Rsamtools)
-#    which <- GRanges(seqnames = normal\$Chrom, ranges = IRanges(normal\$Pos,normal\$Pos))
-#    what <- c("mapq")
-#    param <- ScanBamParam(which = which, what = what)
-#    tumorList <- scanBam(tumorBAM, param=param)
-#    tumorList <- lapply(tumorList, unlist)
-#    tumorList <- lapply(tumorList, function(x) length(x[x >= 60])) # apply MAPQ filtering
-#    tumorRaw <- data.table(TumorCounts=tumorList)
-#    tumorRaw[, id := names(tumorList)]
-#
-#    variants <- merge(normal, tumorRaw, by="id", all.x=T)
-#    variants <- merge(variants, tumor[, .(UniquePos, Tumor_Freq)], all.x=T, by="UniquePos")
-#    variants[, Chrom := as.numeric(Chrom)]
-#    #saveRDS(variants, "/home/rad/Downloads/temp6/DS36_variants_unfiltered.rds")
-#    #variants <- readRDS("/home/rad/Downloads/temp6/DS36_variants_unfiltered.rds")
-#    variants <- variants[TumorCounts >= 10]
-#    variants[is.na(Tumor_Freq), Tumor_Freq := 0]
-#
-#    #ggplot(variants[Chrom == 6], aes(Pos, Tumor_Freq)) + geom_point()
-#    variants[, Dif_Freq := Tumor_Freq-Normal_Freq]
-#    variants[, Tumor_Freq := Dif_Freq]
-#    lohDT <- copy(variants)
-#  }
-#
-####
-
+ 
+  # minimal number of SNPs per megabase
+  if(seqType == "WES" & is.null(minSNPsMB)){
+    minSNPsMB <- 3
+  } else if(seqType == "WGS" & is.null(minSNPsMB)) {
+    minSNPsMB <- 100
+  } else if(seqType == "SNP" & is.null(minSNPsMB)) {
+    minSNPsMB <- 30
+  }
+ 
   lohDT = data.table (data)
-
+ 
   # reset the "mouse correction procedure" for human
   if ( species=="human" )
   {
     lohDT[, Plot_Freq := Tumor_Freq]
   }
-
+ 
   # generate a copy with all SNPs (and merge it back to keep removed SNPs but with a lighter color)
   lohDT.all <- copy(lohDT)
-
+ 
   lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
-
+ 
   # filter SNPS for centromeres, low mappability regions and alternative haplotypes
   if(filterBAF){
-    # filter variants coming from "bad regions"
-
-####
-#    filter.gr <- append(cents.gr, haplo.gr)
-#    hits <- findOverlaps(lohGR, filter.gr)
-#    lohDT[queryHits(hits), remove := "yes"]
-#
-#    hits <- findOverlaps(lohGR, mappab.gr)
-#    BAFmappa <- cbind(lohDT[queryHits(hits)], mappab[subjectHits(hits), score])
-#    BAFmappa <- BAFmappa[, mean(V2), by=UniquePos]
-#    setnames(BAFmappa, "V1", "mappability")
-#    lohDT <- merge(lohDT, BAFmappa, by="UniquePos", all.x=T, sort=F)
-#    lohDT[is.na(mappability), mappability := 0]
-#
-#    lohDT <- lohDT[is.na(remove)]
-#    lohDT <- lohDT[mappability > 0.5]
-####
     lohDT <- lohDT[mcols (data_gr)[mcols(data_gr)[,"LOH_Filter"]=="PASS" & !is.na (mcols(data_gr)[,"score"]) & mcols(data_gr)[,"score"] > 0.5,"row_index"]]
     lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
   }
-
+ 
   dupDT <- MirrorAndDuplicate(lohDT)
   lohSegs <- GetSegments(dupDT)
-
+ 
   # if segments and dots are removed at the start/end of the chromosome, the points in the middle would shift and look like the start of the chromosome
   # here we generate dummy data to keep the lengths as they were before
   startDummy <- data.table(Chrom = names(chrom.sizes), Pos = 0, Plot_Freq=0)
   endDummy <- data.table(Chrom = names(chrom.sizes), Pos = chrom.sizes, Plot_Freq=0)
   chromDummy <- rbind(startDummy, endDummy)
-
+ 
   # very small focal segments: remove all overlapping SNPs and rerun segmentation
   removeSegs <- lohSegs[width < minSegSize]
   if(nrow(removeSegs) > 0){
     removeSegs.gr <- makeGRangesFromDataFrame(removeSegs[, .(chr=Chrom, start, end)])
     hits <- findOverlaps(lohGR, removeSegs.gr)
     lohDT <- lohDT[!queryHits(hits)]
-
+    
     dupDT <- MirrorAndDuplicate(lohDT)
   }
-
+ 
   lohSegs <- GetSegments(dupDT)
-
+ 
+  # after this there can still be some very very small segments, so we do it again, but without redoing the segmentation again
+  removeSegs2 <- lohSegs[width < minSegSize]
+  if(nrow(removeSegs2) > 0){
+    removeSegs2.gr <- makeGRangesFromDataFrame(removeSegs2[, .(chr=Chrom, start, end)])
+    hits <- findOverlaps(lohGR, removeSegs2.gr)
+    lohDT <- lohDT[!queryHits(hits)]
+    lohGR <- makeGRangesFromDataFrame(lohDT[, .(chr=Chrom, start=Pos, end=Pos)])
+    lohSegs <- lohSegs[width >= minSegSize]
+  }
+ 
   if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint A (change the parameter \\"minSegSize\\")");quit ('no')}
-
+ 
   # re-assign segID to the SNPs
   lohDT <- AssignSNPids(lohSegs, lohDT)
-
+ 
   # remove segments supported only by few SNP, as well as the corresponding SNPs
   snpcountDT <- lohDT[, .N, by=.(Chrom, segID)]
   lohSegs <- merge(lohSegs, snpcountDT[, .(Chrom, segID, nSNPs=N)], by=c("Chrom", "segID")) # also add it to segments
-  removeSegs <- snpcountDT[N <= minSNPs, paste(Chrom, segID, sep="+")]
-  removeSNPs <- lohDT[paste(Chrom, segID,sep="+") %in% removeSegs, snpID]
-
-  lohSegs <- lohSegs[!paste(Chrom, segID, sep="+") %in% removeSegs]
-  lohDT <- lohDT[!snpID %in% removeSNPs]
-
+ 
   if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint B (change the parameter \\"minSNPs\\")");quit ('no')}
-
+ 
   # merge similar neighboring segments
   lohSegs[, DifNextSeg := abs(upSeg - data.table::shift(upSeg)), by = Chrom]
   lohSegs[, DistNextSeg := abs(start - data.table::shift(end)), by = Chrom]
   lohSegs[, mergeID := as.numeric(.I)]
   lohSegs[DifNextSeg < MinDifToMerge & DistNextSeg < 10000000, mergeID := NA]
   lohSegs[, mergeID := na.locf(mergeID)]
-
+ 
   lohSegs <- unique(lohSegs[, .(Chrom, segID=as.integer(mean(segID)),
                                 start=min(start), end=max(end), mid=mean(mid), mode=mean(mode),
                                 upSeg=mean(upSeg), lowSeg=mean(lowSeg), width=sum(width), nSNPs=sum(nSNPs)), by=mergeID])
   lohSegs[, mergeID := NULL]
-
+ 
   # reassign segment IDs
   lohSegs[, segID := sequence(.N), by = Chrom]
-
+ 
   # re-assign segID to the SNPs
   lohDT <- AssignSNPids(lohSegs, lohDT)
+ 
+ 
+  # remove segments supported only by few SNP, as well as the corresponding SNPs
+  snpcountDT <- lohDT[, .N, by=.(Chrom, segID)]
+  lohSegs[, nSNPs := NULL] # remove old assignment
+  lohSegs <- merge(lohSegs, snpcountDT[, .(Chrom, segID, nSNPs=N)], by=c("Chrom", "segID")) # also add it to segments
+  removeSegs <- snpcountDT[N <= minSNPs, paste(Chrom, segID, sep="+")]
+  removeSNPs <- lohDT[paste(Chrom, segID,sep="+") %in% removeSegs, snpID]
+  lohSegs <- lohSegs[!paste(Chrom, segID, sep="+") %in% removeSegs]
+  lohDT <- lohDT[!snpID %in% removeSNPs]
 
   # now finally remove all segments with a very low number of SNPs per MB
   lohSegs[, nSNPperMB := nSNPs / width * 1000000]
@@ -622,21 +560,21 @@ Get_LOH_segments <- function(name,seqType,species,data,data_gr,chrom.sizes,filte
   removeSNPs <- lohDT[paste(Chrom, segID,sep="+") %in% removeSegs, snpID]
   lohSegs <- lohSegs[!paste(Chrom, segID, sep="+") %in% removeSegs]
   lohDT <- lohDT[!snpID %in% removeSNPs]
-
+ 
   if(nrow(lohSegs) == 0){print("No LOH segments found at checkpoint C (change the parameter \\"minSNPsMB\\")");quit ('no')}
-
+ 
   # reassign segment IDs
   lohSegs[, segID := sequence(.N), by = Chrom]
-
+ 
   # re-assign segID to the SNPs
   lohDT <- AssignSNPids(lohSegs, lohDT)
-
+ 
   # add removed SNPs back but mark them
   lohDT.removed <- lohDT.all[!UniquePos %in%lohDT\$UniquePos]
-
+ 
   lohSegs[, segDif := upSeg-lowSeg]
   lohSegs[segDif < minLOHsegdif, `:=` (upSeg=0.5, lowSeg=0.5)]
-
+ 
   return(list(lohDT=lohDT, lohSegs=lohSegs))
 }
 
@@ -690,10 +628,13 @@ print (data_gr)
 
 chrom.sizes <- setNames (data_interval %>% dplyr::filter (Chrom %in% intervals) %>% pull (Chrom.End), data_interval %>% filter (Chrom %in% intervals) %>% pull (Chrom))
 
-result <- Get_LOH_segments ("${meta.sampleName}",toupper ("${meta.seqType}"), "${meta.organism}",data,data_gr,chrom.sizes)
+result <- Get_LOH_segments ("${meta.sampleName}",toupper ("${meta.seqType}"), "${meta.organism}",data,data_gr,chrom.sizes, minSegSize=5000000)
+write.table (result[["lohDT"]],file="${meta.sampleName}.LOH.Variants.tsv",sep="\\t",row.names=F,quote=F)
+write.table (result[["lohSegs"]],file="${meta.sampleName}.LOH.Segments.tsv",sep="\\t",row.names=F,quote=F)
 
-write.table (result[["lohDT"]],file="${meta.sampleName}_LOH_SNPs.tsv",sep="\\t",row.names=F,quote=F)
-write.table (result[["lohSegs"]],file="${meta.sampleName}_LOH_Segments.tsv",sep="\\t",row.names=F,quote=F)
+result <- Get_LOH_segments ("${meta.sampleName}",toupper ("${meta.seqType}"), "${meta.organism}",data,data_gr,chrom.sizes)
+write.table (result[["lohDT"]],file="${meta.sampleName}.LOH.Variants.flex.tsv",sep="\\t",row.names=F,quote=F)
+write.table (result[["lohSegs"]],file="${meta.sampleName}.LOH.Segments.flex.tsv",sep="\\t",row.names=F,quote=F)
 
 	"""
 
