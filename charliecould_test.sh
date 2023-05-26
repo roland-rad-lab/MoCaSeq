@@ -4,8 +4,7 @@
 #SBATCH -J slurm-ccc-test
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
-#SBATCH --clusters=cm2
-#SBATCH --partition=cm2_std
+#SBATCH --clusters=cm2_tiny
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mem=800mb
