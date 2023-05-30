@@ -41,7 +41,7 @@ ch-run $ccc_path --no-home --set-env -w --no-passwd \
 --bind ${script_directory}:/opt/MoCaSeq/ \
 --bind ${bam_path_prefix}:/var/pipeline/raw/ \
 -- \
-time /opt/MoCaSeq/MoCaSeq_LRZ.sh \
+/opt/MoCaSeq/MoCaSeq_LRZ.sh \
 -tb /var/pipeline/raw/${sampleT}/results/bam_remap/${sampleT}.Tumor.bam \
 -nb /var/pipeline/raw/${sampleN}/results/bam_remap/${sampleN}.Normal.bam \
 --name ${sampleT} \
