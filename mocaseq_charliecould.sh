@@ -24,7 +24,7 @@ ccc_path=${HOME}/images-live/mocaseq2/
 # specify mount path
 working_directory=/gpfs/scratch/pn29ya/ga89tog2/mocaseq-slurm
 ref_directory=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference
-script_directory=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/MoCaSeq
+script_directory=/dss/dsshome1/0F/ga89tog2/.nextflow/assets/roland-rad-lab/MoCaSeq
 # TODO: asseble full bam path in pipeline: RAMP_0008_Pa_P/results/bam_remap/
 bam_path_prefix=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/
 # TODO out dir
