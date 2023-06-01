@@ -35,7 +35,7 @@ sampleT=RAMP_0008_Pa_P
 sampleN=RAMP_0008_Mu_R
 
 # MoCaSeq call inside charliecloud container
-ch-run $ccc_path --no-home --set-env -w --no-passwd \
+ch-run $ccc_path --no-home --set-env=sampleT=${sampleT} --set-env=sampleN=${sampleN} -w --no-passwd \
 --bind ${working_directory}:/var/wd/ \
 --bind ${working_directory}/tmp:/var/pipeline/temp/ \
 --bind ${ref_directory}:/var/pipeline/ref/ \
