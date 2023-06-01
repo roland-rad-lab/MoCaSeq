@@ -42,11 +42,10 @@ ch-run $ccc_path --no-home --set-env=sample=${sample} -w --no-passwd \
 --species Human \
 --repeat_mapping yes \
 --sequencing_type WGS \
---quality_control no \
+--quality_control yes \
 --threads 40 \
 --RAM 40 \
 --GATKVersion 4.1.7.0 \
 --filtering soft \
--qc yes \
 --artefact yes
 
