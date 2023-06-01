@@ -124,3 +124,7 @@ dt.master <- merge(dt.merge2, dt.aspera, by = c("FileName"), all = T) %>% unique
 # contains 111 double entries with two uploads to Aspera
 double_EGAF_master <- dt.master[, .N, by = FileID][N > 1, FileID]
 dt.master[FileID %in% double_EGAF_master]
+
+# TODO: replace NA values in Date, AnalysisFolverX, StatusLRZ, IgnoreFile, Study, EGAD
+# TODO: resolve 103 entries with unmatching EGAD ids
+dt.master[EGA_Dataset != EGAD]
