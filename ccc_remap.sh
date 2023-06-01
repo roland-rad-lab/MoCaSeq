@@ -47,5 +47,6 @@ ch-run $ccc_path --no-home --set-env=sample=${sample} -w --no-passwd \
 --RAM 40 \
 --GATKVersion 4.1.7.0 \
 --filtering soft \
+--QC yes \
 --artefact yes
 
