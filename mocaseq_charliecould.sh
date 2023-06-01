@@ -13,18 +13,17 @@
 #SBATCH --time=08:00:00
 module load slurm_setup
 # module load ...
-<<<<<<< HEAD
+
 # modify SLURM cluster to run on
 export SLURM\_CLUSTERS="cm2"
 # set container path
 ccc_path=${HOME}/images-live/mocaseq2/
-=======
+
 
 # set container path
 # for shared container use /gpfs/scratch/pn29ya/ga89tog2/charliecloud-containers/mocaseq2
 ccc_path=${HOME}/images-live/mocaseq2
 
->>>>>>> 9a4564f769995282364b3b92178ce76afe449147
 # specify mount path
 working_directory=/gpfs/scratch/pn29ya/ga89tog2/mocaseq-slurm
 # ref_directory=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference_bash # copied reference dir to ${working_directory}/ref
@@ -35,9 +34,6 @@ bam_path_prefix=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/
 # specify samples
 sampleT=RAMP_0008_Pa_P
 sampleN=RAMP_0008_Mu_R
-<<<<<<< HEAD
-=======
-
 
 # Using -w the dir /var/pipeline will be created for binding /var/pipeline/ref, thus the Working dir will exist at runtime.
 # ch-run $ccc_path --no-home --set-env=sampleT=${sampleT} --set-env=sampleT=${sampleN} -w --no-passwd \
@@ -46,7 +42,6 @@ sampleN=RAMP_0008_Mu_R
 # --bind ${script_directory}:/opt/MoCaSeq/ \
 # --bind ${bam_path_prefix}:/var/pipeline/raw/
 
->>>>>>> 9a4564f769995282364b3b92178ce76afe449147
 # MoCaSeq call inside charliecloud container
 # --bind ${working_directory}:/var/pipeline/ 
 # charliecloud does not allow to bind into existing bind mounts.
