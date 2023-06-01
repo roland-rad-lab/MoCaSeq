@@ -37,7 +37,6 @@ ch-run $ccc_path --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${script_directory}:/opt/MoCaSeq/ \
 --bind ${bam_path_prefix}:/var/raw-bams/ \
 -- \
-/bin/bash
 /opt/MoCaSeq/MoCaSeq_LRZ_remap.sh \
 -nb /var/raw-bams/${sample}.bam \
 --name ${sample} \
