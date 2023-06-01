@@ -5,7 +5,7 @@
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
 #SBATCH --clusters=cm2
-#SBATCH --partition=cm2_std
+#SBATCH --partition=cm2_tiny
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mem=40gb
@@ -16,11 +16,9 @@
 module load slurm_setup
 # module load ...
 
-# modify SLURM cluster to run on
-export SLURM\_CLUSTERS="cm2"
-
 # set container path
-ccc_path=/gpfs/scratch/pn29ya/ga89tog2/charliecloud-containers/mocaseq2
+# for shared container use /gpfs/scratch/pn29ya/ga89tog2/charliecloud-containers/mocaseq2
+ccc_path=${HOME}/images-live/mocaseq2
 
 # specify mount path
 working_directory=/gpfs/scratch/pn29ya/ga89tog2/mocaseq-slurm
