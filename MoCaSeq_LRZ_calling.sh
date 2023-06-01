@@ -44,7 +44,9 @@ usage()
   exit 1
 }
 
+# quick and dirty charliecloud solutions
 cd /var/pipeline
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
 
 # default parameters
 fastq_normal_1=
