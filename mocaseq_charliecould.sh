@@ -35,9 +35,11 @@ sampleT=RAMP_0008_Pa_P
 sampleN=RAMP_0008_Mu_R
 
 # MoCaSeq call inside charliecloud container
-ch-run $ccc_path --no-home --set-env=sampleT=${sampleT} --set-env=sampleN=${sampleN} -w --no-passwd \
---bind ${working_directory}:/var/wd/ \
---bind ${working_directory}/tmp:/var/pipeline/temp/ \
+# --bind ${working_directory}:/var/pipeline/ 
+# charliecloud does not allow to bind into existing bind mounts.
+# Using -w the dir /var/pipeline will be created for binding /var/pipeline/ref, thus the Working dir will exist at runtime.
+ch-run $ccc_path --no-home --set-env=sampleT=${sampleT} --set-env=sampleT=${sampleN} -w --no-passwd \
+--bind ${working_directory}/temp:/var/pipeline/temp/ \
 --bind ${ref_directory}:/var/pipeline/ref/ \
 --bind ${script_directory}:/opt/MoCaSeq/ \
 --bind ${bam_path_prefix}:/var/pipeline/raw/ \
