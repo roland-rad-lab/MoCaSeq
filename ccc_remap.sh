@@ -5,8 +5,7 @@
 #SBATCH -J RAMP_0008-test
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
-#SBATCH --clusters=cm2
-#SBATCH --partition=cm2_tiny
+#SBATCH --clusters==cm2_tiny
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mem=40gb
