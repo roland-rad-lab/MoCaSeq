@@ -31,11 +31,13 @@ bam_path_prefix=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/
 sample=PCSI_0357_St_R_1percent
 
 # MoCaSeq-remap call inside charliecloud container
+# TODO PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
 ch-run $ccc_path --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${working_directory}:/var/pipeline/ \
 --bind ${script_directory}:/opt/MoCaSeq/ \
 --bind ${bam_path_prefix}:/var/raw-bams/ \
 -- \
+/bin/bash
 /opt/MoCaSeq/MoCaSeq_LRZ_remap.sh \
 -nb /var/raw-bams/${sample}.bam \
 --name ${sample} \
