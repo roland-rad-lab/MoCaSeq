@@ -44,6 +44,7 @@ usage()
   exit 1
 }
 
+cd /var/pipeline
 
 # default parameters
 fastq_normal_1=
