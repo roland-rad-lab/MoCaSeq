@@ -6,6 +6,9 @@ library(dplyr)
 library(tidyr)
 library(splitstackshape)
 
+# read master table from Niklas
+dt.master <- fread('EGA_mastertable.txt')
+
 # read AllEgaFiles table
 dt.info <- fread('../../AllCompassAssociatedEgadFiles_2022-02-24.csv')
 dt.info[Downloaded == 'corrupted-2021-12', Downloaded := 'corrupted_2021-12']
