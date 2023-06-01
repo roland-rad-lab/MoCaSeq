@@ -317,7 +317,7 @@ echo '---- Creating directories ----'
 echo -e "$(date) \t timestamp: $(date +%s)"
 mkdir -p $name/results/QC
 mkdir -p $name/results/bam
-mkdir -p $name/results/fastq
+mkdir -p $name/fastq
 
 
 # log memory and cpu usage
