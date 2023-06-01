@@ -2,7 +2,7 @@
 # SLURM template to remap samples for MoCaSeq from hg19 to hg38 using charliecloud container (aka ccc)
 # @author: marcus.wagner@tum.de
 
-#SBATCH -J RAMP_0008-test
+#SBATCH -J remapping-test
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
 #SBATCH --clusters=cm2_tiny
@@ -36,7 +36,7 @@ ch-run $ccc_path --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${script_directory}:/opt/MoCaSeq/ \
 --bind ${bam_path_prefix}:/var/raw-bams/ \
 -- \
-/opt/MoCaSeq/MoCaSeq_COMPASS_WGS.sh \
+/opt/MoCaSeq/MoCaSeq_LRZ_remap.sh \
 -nb /var/raw-bams/${sample}.bam \
 --name ${sample} \
 --species Human \
