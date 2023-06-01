@@ -5,6 +5,7 @@
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
 #SBATCH --clusters=cm2_tiny
+#SBATCH --partition=cm2_tiny
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mem=40gb
@@ -23,7 +24,7 @@ ccc_path=${HOME}/images-live/mocaseq2/
 
 # specify mount path
 working_directory=/gpfs/scratch/pn29ya/ga89tog2/mocaseq-slurm
-ref_directory=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference
+ref_directory=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference_bash
 script_directory=/dss/dsshome1/0F/ga89tog2/.nextflow/assets/roland-rad-lab/MoCaSeq
 # TODO: asseble full bam path in pipeline: RAMP_0008_Pa_P/results/bam_remap/
 bam_path_prefix=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/
@@ -49,10 +50,16 @@ ch-run $ccc_path --no-home --set-env -w --no-passwd \
 --repeat_mapping no \
 --sequencing_type WGS \
 --quality_control no \
---threads 28 \
+--threads 40 \
 --RAM 40 \
+--GATKVersion 4.1.7.0 \
 --filtering soft \
 --artefact yes \
 --Mutect2 yes \
 --CNVKit yes \
---para
+--Delly no \
+--BubbleTree yes \
+--Absolute yes \
+--Facets yes \
+--Titan yes
+# --para
