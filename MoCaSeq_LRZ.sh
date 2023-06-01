@@ -315,6 +315,7 @@ mkdir -p $name/results/bam
 mkdir -p $name/results/Manta
 mkdir -p $name/results/Strelka
 mkdir -p $name/results/msisensor
+exit 1
 
 # log memory and cpu usage
 logstats(){
