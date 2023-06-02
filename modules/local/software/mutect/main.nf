@@ -3,6 +3,7 @@ params.gatk = [:]
 
 process mutect_single {
 	tag "${meta.sampleName}"
+	maxForks 1
 
 	input:
 		val (genome_build)
@@ -47,6 +48,7 @@ touch ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
 
 process mutect_matched {
 	 tag "${meta.sampleName}"
+	 maxForks 1
 
 	input:
 		val (genome_build)
