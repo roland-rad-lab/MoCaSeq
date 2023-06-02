@@ -5,14 +5,15 @@
 #SBATCH -J analysis-test
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
-#SBATCH --clusters=cm2_tiny
+#SBATCH --clusters=inter
+#SBATCH --partition=cm2_inter
 #SBATCH --nodes=1
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mem=40gb
 #SBATCH --mail-user=marcus.wagner@tum.de
 #SBATCH --export=NONE
-#SBATCH --time=08:00:00
+#SBATCH --time=02:00:00
 
 module load slurm_setup
 
