@@ -12,7 +12,7 @@
 #SBATCH --mem=40gb
 #SBATCH --mail-user=marcus.wagner@tum.de
 #SBATCH --export=NONE
-#SBATCH --time=240:00:00
+#SBATCH --time=08:00:00
 
 module load slurm_setup
 
