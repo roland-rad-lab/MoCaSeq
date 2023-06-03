@@ -160,10 +160,10 @@ fi
 discvrseq_file=$(basename $discvrseq_dir)
 
 java -jar $GATK_dir/gatk.jar IndexFeatureFile \
--V $name/results/Mutect2/"$name".m2.filt.vcf
+-F $name/results/Mutect2/"$name".m2.filt.vcf
 
 java -jar $GATK_dir/gatk.jar IndexFeatureFile \
--V $name/results/Mutect2/"$name".Mutect2.vcf
+-F $name/results/Mutect2/"$name".Mutect2.vcf
 
 java -Xmx16g -jar $discvrseq_dir"/"$discvrseq_file".jar" VariantQC \
 -R $genome_file \
