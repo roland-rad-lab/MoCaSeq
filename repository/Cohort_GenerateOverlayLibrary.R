@@ -198,7 +198,7 @@ ReformatOverlayMat = function()
                       }
                       
 
-PlotOverlay = function(format="",Suffix="",Ylim="",Save_path="")
+PlotOverlay = function(format="",Suffix="",Ylim="",Save_path="",Method="")
                {
                if (Save_path=="") { 
                PathPrefix=paste0(getwd(),"/") } else { 
@@ -208,7 +208,16 @@ PlotOverlay = function(format="",Suffix="",Ylim="",Save_path="")
                Xcords = OverlayMat$Start
                Xcords = c(0,Xcords,0)
                YcordsGain = c(YcordsGain[1],YcordsGain,rev(YcordsGain)[1])
-               YcordsDel = c(YcordsDel[1],YcordsDel,rev(YcordsDel)[1])    
+               YcordsDel = c(YcordsDel[1],YcordsDel,rev(YcordsDel)[1])  
+               if(Method == "CNVKit"){
+               len <- length(YcordsDel)
+               YcordsDel[(len-1)] <- 0
+               YcordsDel[(len)] <- 0
+               YcordsGain[(len-1)] <- 0
+               YcordsGain[(len)] <- 0
+               }
+               
+               par(las=1)  ......  
                if(SummaryStat=="Mean")
                    {
                    Ylim=as.numeric(Ylim)
@@ -252,5 +261,5 @@ RunOverlayAnalysis = function(Samples,Paths="",Save_path="",species="Mouse",Meth
                          fillOverlayMat(Samples,Paths=Paths,AberrationCutoff=AberrationCutoff,SummaryStat=SummaryStat)
                          print(ChromLength)
                          ReformatOverlayMat()
-                         PlotOverlay(format=format,Ylim=Ylim,Suffix=Suffix,Save_path=Save_path)
+                         PlotOverlay(format=format,Ylim=Ylim,Suffix=Suffix,Save_path=Save_path,Method="")
                          }
