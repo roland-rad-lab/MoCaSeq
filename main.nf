@@ -268,25 +268,25 @@ workflow HUMAN_WGS
 		ch_bam.view()
 	}
 
-	MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
-	STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
+	// MANTA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, GENOME_ANNOTATION.out.snpeff_version)
+	// STRELKA (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.interval_bed, ch_bam, MANTA.out.indel)
 	MUTECT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out._chrom_n, ch_bam)
 	MUTECT_ANNOTATE (params.genome_build.human, PREPARE_GENOME.out.fasta, MUTECT.out.full, GENOME_ANNOTATION.out.snpeff_version, GENOME_ANNOTATION.out.all_vcf, GENOME_ANNOTATION.out.common_vcf, GENOME_ANNOTATION.out.dbnsfp, GENOME_ANNOTATION.out.sift_sources, GENOME_ANNOTATION.out.sift_fields)
 	MUTECT_RESULT_RARE (params.genome_build.human, MUTECT_ANNOTATE.out.post_process, MUTECT_ANNOTATE.out.result, GENOME_ANNOTATION.out.cgc, GENOME_ANNOTATION.out.tru_sight)
-	DELLY (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_bam)
+	// DELLY (params.genome_build.human, PREPARE_GENOME.out.fasta, ch_bam)
 	HMM_COPY (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gc_wig, GENOME_ANNOTATION.out.map_wig, ch_bam)
 	LOH (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.chrom_names_auto, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.alt_haplotype, GENOME_ANNOTATION.out.centromere, GENOME_ANNOTATION.out.mappability, MUTECT.out.result)
-	MSI_SENSOR (params.genome_build.human, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
+	// MSI_SENSOR (params.genome_build.human, GENOME_ANNOTATION.out.micro_satellite, ch_bam)
 
 	if ( params.pon_dir == null )
 	{
 		CNV_KIT (params.genome_build.human, PREPARE_GENOME.out.fasta, PREPARE_GENOME.out.fasta_index, GENOME_ANNOTATION.out.ref_flat, PREPARE_GENOME.out.interval_bed, GENOME_ANNOTATION.out.gencode_genes_bed, ch_bam)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, HMM_COPY.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.result, BUBBLE_TREE.out.result)
+		// JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, HMM_COPY.out.result, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.call)
+			// IGV_TRACK_CNS (params.genome_build.human, CNV_KIT.out.call)
 		}
 	}
 	else
@@ -307,24 +307,24 @@ workflow HUMAN_WGS
 		CNV_KIT_FIX (params.genome_build.human, Channel.fromPath ("${params.pon_dir}/${params.genome_build.human}_PON/${params.genome_build.human}.reference.cnn").first (), CNV_KIT_COVERAGE.out.result)
 		CNV_KIT_SEGMENT (params.genome_build.human, PREPARE_GENOME.out.interval_bed, ch_centre, CNV_KIT_FIX.out.cnr)
 		BUBBLE_TREE (params.genome_build.human, PREPARE_GENOME.out.chrom_names_auto, CNV_KIT_SEGMENT.out.call, LOH.out.result)
-		JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_SEGMENT.out.result, BUBBLE_TREE.out.result)
+		// JABBA (params.genome_build.human, PREPARE_GENOME.out.chrom_names, MANTA.out.vcf, CNV_KIT_SEGMENT.out.result, BUBBLE_TREE.out.result)
 
 		if ( params.track_cn )
 		{
-			IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_SEGMENT.out.cnr)
+			/*IGV_TRACK_CNR_cnv_kit (params.genome_build.human,  PREPARE_GENOME.out.interval_bed, CNV_KIT_SEGMENT.out.cnr)
 			IGV_TRACK_CNR_hmm_copy (params.genome_build.human, PREPARE_GENOME.out.interval_bed, HMM_COPY.out.cnr)
-			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.call)
+			IGV_TRACK_CNS_cnv_kit (params.genome_build.human, CNV_KIT_SEGMENT.out.call)*/
 		}
 		if ( params.track_sv )
 		{
-			IGV_TRACK_VCF_SV_jabba (params.genome_build.human, JABBA.out.vcf.map { [ it[0], "JaBbA", it[1] ] })
-			IGV_TRACK_VCF_SV_manta (params.genome_build.human, MANTA.out.vcf.map { [ it[0], "Manta", it[1] ] })
+			/*IGV_TRACK_VCF_SV_jabba (params.genome_build.human, JABBA.out.vcf.map { [ it[0], "JaBbA", it[1] ] })
+			IGV_TRACK_VCF_SV_manta (params.genome_build.human, MANTA.out.vcf.map { [ it[0], "Manta", it[1] ] })*/
 		}
 	}
 
 	if ( params.track_read )
 	{
-		IGV_TRACK_READ (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_bam)
+		// IGV_TRACK_READ (params.genome_build.human, PREPARE_GENOME.out.chrom_names, PREPARE_GENOME.out.interval_bed, ch_bam)
 	}
 }
 
