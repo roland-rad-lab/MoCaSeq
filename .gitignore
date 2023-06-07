@@ -4,4 +4,6 @@
 
 # input tables and launch scripts
 input/
-launch/
+launch/*
+!launch/ccc_remap_wrapper.sh
+
