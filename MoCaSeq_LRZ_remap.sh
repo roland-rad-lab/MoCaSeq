@@ -354,14 +354,6 @@ fi
 # || exit 1 will exit if the secondary script fails and itself calls "exit 1"
 $repository_dir/CheckReferenceFiles.sh $FileList  || exit 1
 
-# print debug info 
-echo $repository_dir
-ls $repository_dir
-
-echo "/var/pipeline/ref"
-ls /var/pipeline/ref
-exit 1 # debugging charliecloud sym link
-
 # CREATE SUBDIRS
 if [ ! -d $temp_dir ]; then
   mkdir -p $temp_dir/
