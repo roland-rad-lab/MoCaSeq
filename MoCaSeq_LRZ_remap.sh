@@ -356,7 +356,7 @@ $repository_dir/CheckReferenceFiles.sh $FileList  || exit 1
 
 # print debug info 
 echo $repository_dir
-ls $rerepository_dir
+ls $repository_dir
 
 echo "/var/pipeline/ref"
 ls /var/pipeline/ref
