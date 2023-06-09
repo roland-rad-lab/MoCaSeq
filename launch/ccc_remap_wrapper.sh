@@ -8,6 +8,7 @@ usage()
 	echo "  Usage: $0 "
 	echo "	-ccc	--charliecloud_continer	Path to charliecloud continer to use."
 	echo "	-wd	--working_directory	Path to working directory."
+	echo "	-rd	--references_directory	Path to directory with genome references."
 	echo "	-m	--mocaseq		Path to MoCaSeq git repository clone."
 	echo "	-s	--sample		Sample name, used for naming output and intermediate files."
 	echo "	-bd	--bam_dir		Path to bam input file for remapping."
@@ -20,6 +21,7 @@ usage()
 # default parameters
 cccDir=
 workingDir=
+referencesDir=
 mocaseqDir=
 bamDir=
 bamName=
@@ -34,6 +36,7 @@ while [ "$1" != "" ]; do case $1 in
 	-bf|--bam_file) shift;bamName="$1";;
 	-bd|--bam_dir) shift;bamDir="$1";;
 	-wd|--working_directory) shift;workingDir="$1";;
+	-rd|--references_directory) shift;referencesDir="$1";;
 	-m|--mocaseq) shift;mocaseqDir="$1";;
 	-t|--tumor) shift;type="tumor";;
     --help) usage;shift;;
@@ -47,6 +50,7 @@ then
 --bind ${workingDir}:/var/pipeline/ \
 --bind ${mocaseqDir}:/opt/MoCaSeq/ \
 --bind ${bamDir}:/var/raw-bams/ \
+--bind $referencesDir:$referencesDir \
 -- \
 /opt/MoCaSeq/MoCaSeq_LRZ_remap.sh \
 -nb /var/raw-bams/${bamName} \
@@ -65,6 +69,7 @@ else
 --bind ${workingDir}:/var/pipeline/ \
 --bind ${mocaseqDir}:/opt/MoCaSeq/ \
 --bind ${bamDir}:/var/raw-bams/ \
+--bind $referencesDir:$referencesDir \
 -- \
 /opt/MoCaSeq/MoCaSeq_LRZ_remap.sh \
 -tb /var/raw-bams/${bamName} \
