@@ -7,7 +7,7 @@ library(tidyr)
 library(splitstackshape)
 
 # read master table from Niklas
-dt.master <- fread('EGA_mastertable.txt')
+dt.master <- fread('EGA_mastertable.tsv')
 
 # read AllEgaFiles table
 dt.info <- fread('../../AllCompassAssociatedEgadFiles_2022-02-24.csv')
