@@ -26,7 +26,7 @@ mocaseqDir=
 bamDir=
 bamName=
 sample=
-type="normal"
+type=
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -38,13 +38,13 @@ while [ "$1" != "" ]; do case $1 in
 	-wd|--working_directory) shift;workingDir="$1";;
 	-rd|--references_directory) shift;referencesDir="$1";;
 	-m|--mocaseq) shift;mocaseqDir="$1";;
-	-t|--tumor) shift;type="tumor";;
+	-t|--tumor) shift;type="$1";;
     --help) usage;shift;;
 	*) usage;shift;;
 esac; shift; done
 
 # charliecloud call
-if [[ $type == "normal" ]]
+if [[ $type == "Normal" ]]
 then
 	ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${workingDir}:/var/pipeline/ \
