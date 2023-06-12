@@ -323,7 +323,7 @@ touch ${meta.sampleName}.${type}.ratio.${resolution}.cnr
 
 process cnv_kit_segment {
 	tag "${meta.sampleName}"
-	maxForks ${params.max_parallel}
+	maxForks "${params.max_parallel}"
 
 	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/CNVKit", mode: "copy", pattern: "*.cns"
 

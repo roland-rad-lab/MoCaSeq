@@ -1,7 +1,7 @@
 
 process hmm_copy_wig {
 	tag "${meta.sampleName}"
-	maxForks ${params.max_parallel}
+	maxForks "${params.max_parallel}"
 
 	input:
 		val (genome_build)
