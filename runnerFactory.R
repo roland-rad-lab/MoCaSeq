@@ -85,7 +85,7 @@ for (s_group in sample_groups) {
   write.table(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2], 
                        .(Sample_Name, Sample_Group, Library_ID, Lane,
                          Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM)],
-            file = file.path('input', 'remap', paste0(s_group, '.tsv')),
+            file = file.path('launch', 'remap', paste0(s_group, '.tsv')),
             sep = '\t', row.names = F, quote = F)
   
   # write caller script file by Sample_Group
@@ -122,7 +122,7 @@ for (s_group in sample_groups) {
   write.table(dt.mocaseq[Sample_Group == strsplit(s_group, '-')[[1]][2], 
                          .(Sample_Name, Sample_Group, Library_ID, Lane,
                            Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM)],
-            file = file.path('input', 'mocaseq', paste0(s_group, '.tsv')),
+            file = file.path('launch', 'mocaseq', paste0(s_group, '.tsv')),
             sep = '\t', row.names = F, quote = F)
   
   # write caller script file by Sample_Group
