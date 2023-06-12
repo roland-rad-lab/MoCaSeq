@@ -1,6 +1,9 @@
 # script to pull git repo on LRZ and set permissions automatically
 git pull
 
+# set permissions for self
+chmod 775 pullLRZ.sh
+
 # set permissions for main .sh files
 chmod 775 MoCaSeq.sh MoCaSeq_LRZ_remap.sh MoCaSeq_LRZ_calling.sh
 
