@@ -11,7 +11,14 @@ launch/*
 
 # include specific remap sample dirs
 launch/remap/*
+!launch/remap/batch02-ASHPC_0019/
+!launch/remap/batch02-PCSI_0357/
 !launch/remap/batch02-PCSI_0410/
+!launch/remap/batch02-PCSI_0654/
+!launch/remap/batch03-PCSI_0662/
+!launch/remap/batch02-PCSI_0683/
+!launch/remap/batch03-PCSI_0665/
+!launch/remap/batch02-PCSI_0705/
 
 # exclude all .nextflow* data
 **/.nextflow/
