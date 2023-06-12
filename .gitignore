@@ -1,9 +1,18 @@
-
+# exclude project metadata
 .DS_Store
 .Rproj.user
+.Rhistory
+MoCaSeq.Rproj
 
-# input tables and launch scripts
-input/
+# wrappers and launch scripts
 launch/*
 !launch/ccc_remap_wrapper.sh
+!launch/remap/
+
+# include specific remap sample dirs
+launch/remap/*
+!launch/remap/batch02-PCSI_0410/
+
+# exclude all .nextflow* data
+**/.nextflow/
 
