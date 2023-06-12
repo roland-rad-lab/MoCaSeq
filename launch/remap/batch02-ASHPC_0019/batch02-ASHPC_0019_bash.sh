@@ -29,7 +29,6 @@ cccDir=${HOME}/images-live/mocaseq2
 
 # specify mount paths
 workingDir=/gpfs/scratch/pn29ya/$USER/mocaseq-slurm/remap
-# ref_directory=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/reference_bash # copied reference dir to ${working_directory}/ref
 mocaseqDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/MoCaSeq/
 referencesDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/references/bashMoCaSeq/
 # make sure the working dir exists and create a symbolic link to the references named "ref" inside working directory
