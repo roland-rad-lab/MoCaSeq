@@ -22,5 +22,5 @@ launch/remap/*
 
 # exclude all .nextflow* data
 **/.nextflow/
-**/.nextflow.log*
+**/*nextflow.log*
 
