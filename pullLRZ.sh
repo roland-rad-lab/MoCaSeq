@@ -14,4 +14,5 @@ chmod 775 repository/all_RunBubbleTree.R repository/SNV_SelectOutput.R repositor
 chmod 775 launch/ccc_remap_wrapper.sh
 chmod 775 launch/remap/*.sh
 chmod 775 launch/mocaseq/*.sh
+chmod 775 launch/remap/batch0[23]-[A-Z]{4,5}_[0-9]{4}/*.sh
 
