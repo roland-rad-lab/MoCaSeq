@@ -33,19 +33,38 @@ referencesDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/references/bashMoCaSeq/
 mkdir -p $workingDir
 ln -s -t $workingDir $referencesDir
 
+# specify sample
+sample=ASHPC_0019_Pa_P_5262
+bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//input/GRCh37_bam/batch02/
+bamName=EGAZ00001379792_PCSI_wgs_bam_ASHPC_0019_Pa_P_5262.bam
+bamType="Tumor"
+# submit subjob for sample remapping
+srun --ntasks=1 --exclusive --mem 44.5gb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+sleep 4
 
-# specify sample1
-sample1=ASHPC_0019_Pa_P_5262
-bamName1=EGAZ00001379792_PCSI_wgs_bam_ASHPC_0019_Pa_P_5262.bam
-
-# mini job farming
-srun -n 1 -c 30 --mem 45gb -J ASHPC_0019_Pa_P_5262 -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName1 -s $sample1 -rd $referencesDir -t > ${sample1}-remap.out &
-
-# specify sample2
-sample2=ASHPC_0019_Pa_R
-bamName2=EGAZ00001379793_PCSI_wgs_bam_ASHPC_0019_Pa_R.bam
-
-srun -n 1 -c 30 --mem 45gb -J ASHPC_0019_Pa_R -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName2 -s $sample2 -rd $referencesDir > ${sample2}-remap.out &
+# specify sample
+sample=ASHPC_0019_Pa_R
+bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//input/GRCh37_bam/batch02/
+bamName=EGAZ00001379793_PCSI_wgs_bam_ASHPC_0019_Pa_R.bam
+# submit subjob for sample remapping
+srun --ntasks=1 --exclusive --mem 44.5gb -J $sample -o ./%x.%j.%N.out ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
+--bind ${workingDir}:/var/pipeline/ \
+--bind ${mocaseqDir}:/opt/MoCaSeq/ \
+--bind ${bamDir}:/var/raw-bams/ \
+--bind $referencesDir:$referencesDir \
+-- \
+/opt/MoCaSeq/MoCaSeq_LRZ_remap_postprocess.sh \
+-nb /var/raw-bams/${bamName} \
+--name ${sample} \
+--species Human \
+--repeat_mapping yes \
+--sequencing_type WGS \
+--quality_control yes \
+--threads 30 \
+--RAM 45 \
+--GATKVersion 4.1.7.0 \
+--filtering soft \
+--artefact yes > ${sample}-remap.out & 
 
 wait # for completion of background tasks
 
