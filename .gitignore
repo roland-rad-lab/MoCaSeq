@@ -8,6 +8,7 @@ MoCaSeq.Rproj
 launch/*
 !launch/ccc_remap_wrapper.sh
 !launch/remap/
+!launch/mocaseq/
 
 # include specific remap sample dirs
 launch/remap/*
@@ -19,6 +20,17 @@ launch/remap/*
 !launch/remap/batch02-PCSI_0683/
 !launch/remap/batch03-PCSI_0665/
 !launch/remap/batch02-PCSI_0705/
+
+# include specific MoCaSeq sample dirs
+launch/mocaseq/*
+!launch/mocaseq/batch02-ASHPC_0019/
+!launch/mocaseq/batch02-PCSI_0357/
+!launch/mocaseq/batch02-PCSI_0410/
+!launch/mocaseq/batch02-PCSI_0654/
+!launch/mocaseq/batch03-PCSI_0662/
+!launch/mocaseq/batch02-PCSI_0683/
+!launch/mocaseq/batch03-PCSI_0665/
+!launch/mocaseq/batch02-PCSI_0705/
 
 # exclude all .nextflow* data
 **/.nextflow/
