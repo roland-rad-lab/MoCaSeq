@@ -13,7 +13,9 @@ usage()
 	echo "	-s	--sample		Sample name, used for naming output and intermediate files."
 	echo "	-bd	--bam_dir		Path to bam input file for remapping."
 	echo "	-bf	--bam_file		.bam input file name."
-	echo "	-t	--tumor			Tumor sample flag."
+	echo "	-t	--type			Sample type, one of 'Tumor' or 'Normal'."
+	echo "	-@	--threads		Threads to use for MoCaSeq call."
+	echo "	-r	--ram			RAM to use for MoCaSeq call in gb."
 	echo "	-h	--help			Display this message."
   exit 1
 }
@@ -27,6 +29,8 @@ bamDir=
 bamName=
 sample=
 type=
+threads=30
+ram=44
 
 # parse parameters
 if [ "$1" = "" ]; then usage; fi
@@ -38,7 +42,9 @@ while [ "$1" != "" ]; do case $1 in
 	-wd|--working_directory) shift;workingDir="$1";;
 	-rd|--references_directory) shift;referencesDir="$1";;
 	-m|--mocaseq) shift;mocaseqDir="$1";;
-	-t|--tumor) shift;type="$1";;
+	-t|--type) shift;type="$1";;
+	-@|--threads) shift;threads="$1";;
+	-r|--ram) shift;ram="$1";;
     --help) usage;shift;;
 	*) usage;shift;;
 esac; shift; done
@@ -59,8 +65,8 @@ then
 --repeat_mapping yes \
 --sequencing_type WGS \
 --quality_control yes \
---threads 30 \
---RAM 45 \
+--threads ${threads} \
+--RAM ${ram} \
 --GATKVersion 4.1.7.0 \
 --filtering soft \
 --artefact yes
@@ -78,8 +84,8 @@ else
 --repeat_mapping yes \
 --sequencing_type WGS \
 --quality_control yes \
---threads 30 \
---RAM 45 \
+--threads ${threads} \
+--RAM ${ram} \
 --GATKVersion 4.1.7.0 \
 --filtering soft \
 --artefact yes

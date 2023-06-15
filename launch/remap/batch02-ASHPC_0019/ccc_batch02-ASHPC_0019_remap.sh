@@ -39,7 +39,7 @@ bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WG
 bamName=EGAZ00001379792_PCSI_wgs_bam_ASHPC_0019_Pa_P_5262.bam
 bamType="Tumor"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 44.5gb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
 sleep 4
 
 # specify sample
@@ -47,7 +47,7 @@ sample=ASHPC_0019_Pa_R
 bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//input/GRCh37_bam/batch02/
 bamName=EGAZ00001379793_PCSI_wgs_bam_ASHPC_0019_Pa_R.bam
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 44.5gb -J $sample -o ./%x.%j.%N.out ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
+srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${workingDir}:/var/pipeline/ \
 --bind ${mocaseqDir}:/opt/MoCaSeq/ \
 --bind ${bamDir}:/var/raw-bams/ \
@@ -61,7 +61,7 @@ srun --ntasks=1 --exclusive --mem 44.5gb -J $sample -o ./%x.%j.%N.out ch-run $cc
 --sequencing_type WGS \
 --quality_control yes \
 --threads 30 \
---RAM 45 \
+--RAM 44 \
 --GATKVersion 4.1.7.0 \
 --filtering soft \
 --artefact yes > ${sample}-remap.out & 
