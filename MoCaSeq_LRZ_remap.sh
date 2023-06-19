@@ -418,7 +418,7 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 echo '---- Copying raw data ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-checkR1fq=$name/fastq/$name.${types}.R1.fastq.gz
+checkR1fq=$name/fastq/${name}.${types}.R1.fastq.gz
 checkR2fq=$name/fastq/${name}.${types}.R2.fastq.gz
 if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
 	echo -e "skipping sam2fasq step, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
@@ -530,21 +530,21 @@ fi
 # 2. remap fastq
 if [ $repeat_mapping = "yes" ]; then
 
-	checkR1fq=$temp_dir/$name.$type.R1.passed.fastq.gz
-	checkR2fq=$temp_dir/$name.$type.R2.passed.fastq.gz
+	checkR1fq=$temp_dir/$name.${types}.R1.passed.fastq.gz
+	checkR2fq=$temp_dir/$name.${types}.R2.passed.fastq.gz
 	if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
 		echo -e "skipping fastQC and trimming steps, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
 	else
-		echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
-		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-		for type in $types;
-		do
-		md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
-		md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
-		done
+		# echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
+		# echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		# for type in $types;
+		# do
+		# md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
+		# md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
+		# done
 
-		wait $PIDS
-		PIDS=""
+		# wait $PIDS
+		# PIDS=""
 
 		echo '---- Running FastQC before trimming ----' | tee -a $name/results/QC/$name.report.txt
 		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -621,7 +621,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	
 	
-	checkBam=$temp_dir/$name.$type.cleaned.bam
+	checkBam=$temp_dir/$name.${types}.cleaned.bam
 	if [ -f "${checkBam}" ]; then
 		echo -e "skipping mapping step, found pre-existing file:\n ${checkBam}"
 	else
@@ -645,7 +645,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	fi
 	
-	checkBam=$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
+	checkBam=$temp_dir/$name.${types}.cleaned.sorted.readgroups.marked.bam
 	if [ -f "${checkBam}" ]; then
 		echo -e "skipping Postprocessing I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n ${checkBam}"
 	else
@@ -698,7 +698,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	fi
 
-	checkRecalTable=$name/results/QC/$name.$type.GATK4.post.recal.table
+	checkRecalTable=$name/results/QC/$name.${types}.GATK4.post.recal.table
 	if [ -f "${checkRecalTable}" ]; then
 		echo -e "skipping postprocessing II (Base recalibration), found pre-existing files:\n ${checkRecalTable}"
 	else
@@ -748,14 +748,14 @@ rm -rf '?'
 echo '---- removing intermediate files ----'
 find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} +
 find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} +
-rm -f $temp_dir/$name.$types.cleaned.bam
-rm -f $temp_dir/$name.$types.cleaned.sorted.bam
-rm -f $temp_dir/$name.$types.cleaned.sorted.bam.bai
-rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam
-rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam.bam
-rm -f $temp_dir/$name.$types.cleaned.sorted.readgroups.bam
-rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
-rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai
+# rm -f $temp_dir/$name.$types.cleaned.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.bam.bai
+# rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.readgroups.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.readgroups.marked.bam
+# rm -f $temp_dir/$name.$types.cleaned.sorted.readgroups.marked.bam.bai
 
 echo '---- Finished analysis of sample '$name' ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
