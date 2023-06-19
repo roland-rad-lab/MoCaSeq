@@ -647,7 +647,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	checkBam=$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
 	if [ -f "${checkBam}" ]; then
-		echo -e "skipping postprocession I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n ${checkBam}"
+		echo -e "skipping Postprocessing I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n ${checkBam}"
 	else
 		# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
 		# find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + # moved to end of pipeline
