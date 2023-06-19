@@ -1,25 +1,24 @@
 #!/bin/bash
-#SBATCH -J batch02-ASHPC_0019-remap
+#SBATCH -J PCSI_0705-remap
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
-#SBATCH --clusters=mpp3
-#SBATCH --partition=mpp3_batch
-#SBATCH --nodes=1
-#SBATCH --time=48:00:00
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=91136mb
+#SBATCH --clusters=cm2_tiny
+#SBATCH --nodes=2
+#SBATCH --time=72:00:00
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=28
+#SBATCH --mem=56320mb
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mail-user=marcus.wagner@tum.de
 #SBATCH --export=NONE
 
-# SLURM script for remapping sample group batch02-ASHPC_0019 .bam files hg19 -> hg38.
-# Execution on a single node of CoolMUC-3 cluster.
-# ClusterInfo: mpp3_batch: max 48h, 90GB, 64 CPUs, jobs(50,dynamic)
+# SLURM script for remapping sample group batch02-PCSI_0705 .bam files hg19 -> hg38.
+# Execution on two nodes of CoolMUC-2 cluster cm2_tiny partition.
+# ClusterInfo: cm2_tiny: max 72h, 55GB RAM, 28 CPUs, jobs(10,50)
 # See https://doku.lrz.de/job-processing-on-the-linux-cluster-10745970.html
 # !!! Please check:
-# - you have the omcaseq2 charldiecloud container in $HOME/images-live
+# - you have the mocaseq2 charldiecloud container in $HOME/images-live
 # - all paths are accessible, expecially the reference path 
 
 module load slurm_setup
@@ -38,21 +37,21 @@ ln -s $referencesDir ref
 mv ref $workingDir
 
 # specify sample
-sample=ASHPC_0019_Pa_P_5262
+sample=PCSI_0705_Ly_R
 bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//input/GRCh37_bam/batch02
-bamName=EGAZ00001379792_PCSI_wgs_bam_ASHPC_0019_Pa_P_5262.bam
-bamType="Tumor"
+bamName=EGAZ00001383215_PCSI_wgs_bam_PCSI_0705_Ly_R.bam
+bamType="Normal"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 # specify sample
-sample=ASHPC_0019_Pa_R
+sample=PCSI_0705_Pa_P_526
 bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//input/GRCh37_bam/batch02
-bamName=EGAZ00001379793_PCSI_wgs_bam_ASHPC_0019_Pa_R.bam
-bamType="Normal"
+bamName=EGAZ00001383216_PCSI_wgs_bam_PCSI_0705_Pa_P_526.bam
+bamType="Tumor"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 wait # for completion of background tasks
