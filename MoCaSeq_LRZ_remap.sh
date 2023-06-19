@@ -418,297 +418,344 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 echo '---- Copying raw data ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-# 1. this will either copy fastqs to location OR do sam2fastq
-if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
+checkR1fq=$name/fastq/$name.${types}.R1.fastq.gz
+checkR2fq=$name/fastq/${name}.${types}.R2.fastq.gz
+if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
+	echo -e "skipping sam2fasq step, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
+else
+	# 1. this will either copy fastqs to location OR do sam2fastq
+	if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
 
-	echo '---- Copying FASTQs ----' | tee -a $name/results/QC/$name.report.txt
+		echo '---- Copying FASTQs ----' | tee -a $name/results/QC/$name.report.txt
 
-	if [ $runmode = 'MS' ]; then
-	cp $fastq_normal_1 $name/fastq/$name.Normal.R1.fastq.gz
-	cp $fastq_normal_2 $name/fastq/$name.Normal.R2.fastq.gz
-	cp $fastq_tumor_1 $name/fastq/$name.Tumor.R1.fastq.gz
-	cp $fastq_tumor_2 $name/fastq/$name.Tumor.R2.fastq.gz
+		if [ $runmode = 'MS' ]; then
+		cp $fastq_normal_1 $name/fastq/$name.Normal.R1.fastq.gz
+		cp $fastq_normal_2 $name/fastq/$name.Normal.R2.fastq.gz
+		cp $fastq_tumor_1 $name/fastq/$name.Tumor.R1.fastq.gz
+		cp $fastq_tumor_2 $name/fastq/$name.Tumor.R2.fastq.gz
 
-	elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
-	cp $fastq_tumor_1 $name/fastq/$name.$types.R1.fastq.gz
-	cp $fastq_tumor_2 $name/fastq/$name.$types.R2.fastq.gz
+		elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
+		cp $fastq_tumor_1 $name/fastq/$name.$types.R1.fastq.gz
+		cp $fastq_tumor_2 $name/fastq/$name.$types.R2.fastq.gz
 
-	elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
-	cp $fastq_normal_1 $name/fastq/$name.$types.R1.fastq.gz
-	cp $fastq_normal_2 $name/fastq/$name.$types.R2.fastq.gz
-	fi
-
-elif [ $repeat_mapping = "yes" ]; then
-	echo '     ---- Converting Bam to Fastq ----' | tee -a $name/results/QC/$name.report.txt
-
-	# remove unmapped reads (to avoid "Mapq Should Be 0 For Unmapped Read")
-	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
-	#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
-
-	# BAM files have to be sorted! We will assume they are (because of runtime) but this would be the code to fix it:
-	# samtools sort $bam_tumor > $temp_dir/${name}.Tumor.raw.sorted.bam
-	# samtools index $temp_dir/${name}.Tumor.raw.sorted.bam
-	# bam_tumor=${name}.Tumor.sorted.bam
-	# samtools sort $bam_normal > $temp_dir/${name}.Normal.raw.sorted.bam
-	# samtools index $temp_dir/${name}.Normal.raw.sorted.bam
-	# bam_normal=${name}.Normal.sorted.bam
-
-	if [ $runmode = 'MS' ]; then
-	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
-	-INPUT $bam_tumor \
-	-FASTQ $name/fastq/$name.Tumor.R1.fastq.gz \
-	-SECOND_END_FASTQ $name/fastq/$name.Tumor.R2.fastq.gz \
-	-INCLUDE_NON_PF_READS true \
-	-VALIDATION_STRINGENCY LENIENT
-
-	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
-	-INPUT $bam_normal \
-	-FASTQ $name/fastq/$name.Normal.R1.fastq.gz \
-	-SECOND_END_FASTQ $name/fastq/$name.Normal.R2.fastq.gz \
-	-INCLUDE_NON_PF_READS true \
-	-VALIDATION_STRINGENCY LENIENT
-
-	elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
-	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
-	-INPUT $bam_tumor \
-	-FASTQ $name/fastq/$name.Tumor.R1.fastq.gz \
-	-SECOND_END_FASTQ $name/fastq/$name.Tumor.R2.fastq.gz \
-	-INCLUDE_NON_PF_READS true \
-	-VALIDATION_STRINGENCY LENIENT
-
-	elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
-	java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
-	-INPUT $bam_normal \
-	-FASTQ $name/fastq/$name.Normal.R1.fastq.gz \
-	-SECOND_END_FASTQ $name/fastq/$name.Normal.R2.fastq.gz \
-	-INCLUDE_NON_PF_READS true \
-	-VALIDATION_STRINGENCY LENIENT
-	fi
-elif [ $repeat_mapping = "no" ]; then
-
-	# in case that one wants to repeat certain steps with the existing BAM files, we do not want to copy
-	if [ $runmode = 'MS' ]; then
-
-		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
-			cp $bam_normal $name/results/bam/$name.Normal.bam
-			samtools index -@ $threads $name/results/bam/$name.Normal.bam
-			cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
+		elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
+		cp $fastq_normal_1 $name/fastq/$name.$types.R1.fastq.gz
+		cp $fastq_normal_2 $name/fastq/$name.$types.R2.fastq.gz
 		fi
 
-		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
-			cp $bam_tumor $name/results/bam/$name.Tumor.bam
-			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
-			cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
+	elif [ $repeat_mapping = "yes" ]; then
+		echo '     ---- Converting Bam to Fastq ----' | tee -a $name/results/QC/$name.report.txt
+
+		# remove unmapped reads (to avoid "Mapq Should Be 0 For Unmapped Read")
+		#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
+		#samtools view -bF 4 /var/fastqs/EGAF00001721862/PCSI_0612_Ag_M_526.bam > filtered.bam
+
+		# BAM files have to be sorted! We will assume they are (because of runtime) but this would be the code to fix it:
+		# samtools sort $bam_tumor > $temp_dir/${name}.Tumor.raw.sorted.bam
+		# samtools index $temp_dir/${name}.Tumor.raw.sorted.bam
+		# bam_tumor=${name}.Tumor.sorted.bam
+		# samtools sort $bam_normal > $temp_dir/${name}.Normal.raw.sorted.bam
+		# samtools index $temp_dir/${name}.Normal.raw.sorted.bam
+		# bam_normal=${name}.Normal.sorted.bam
+
+		if [ $runmode = 'MS' ]; then
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
+		-INPUT $bam_tumor \
+		-FASTQ $name/fastq/$name.Tumor.R1.fastq.gz \
+		-SECOND_END_FASTQ $name/fastq/$name.Tumor.R2.fastq.gz \
+		-INCLUDE_NON_PF_READS true \
+		-VALIDATION_STRINGENCY LENIENT
+
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
+		-INPUT $bam_normal \
+		-FASTQ $name/fastq/$name.Normal.R1.fastq.gz \
+		-SECOND_END_FASTQ $name/fastq/$name.Normal.R2.fastq.gz \
+		-INCLUDE_NON_PF_READS true \
+		-VALIDATION_STRINGENCY LENIENT
+
+		elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
+		-INPUT $bam_tumor \
+		-FASTQ $name/fastq/$name.Tumor.R1.fastq.gz \
+		-SECOND_END_FASTQ $name/fastq/$name.Tumor.R2.fastq.gz \
+		-INCLUDE_NON_PF_READS true \
+		-VALIDATION_STRINGENCY LENIENT
+
+		elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar SamToFastq \
+		-INPUT $bam_normal \
+		-FASTQ $name/fastq/$name.Normal.R1.fastq.gz \
+		-SECOND_END_FASTQ $name/fastq/$name.Normal.R2.fastq.gz \
+		-INCLUDE_NON_PF_READS true \
+		-VALIDATION_STRINGENCY LENIENT
 		fi
+	elif [ $repeat_mapping = "no" ]; then
 
-	elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
+		# in case that one wants to repeat certain steps with the existing BAM files, we do not want to copy
+		if [ $runmode = 'MS' ]; then
 
-		if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
-			cp $bam_tumor $name/results/bam/$name.Tumor.bam
-			samtools index -@ $threads $name/results/bam/$name.Tumor.bam
-			cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
+			if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
+				cp $bam_normal $name/results/bam/$name.Normal.bam
+				samtools index -@ $threads $name/results/bam/$name.Normal.bam
+				cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
+			fi
+
+			if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
+				cp $bam_tumor $name/results/bam/$name.Tumor.bam
+				samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+				cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
+			fi
+
+		elif [ $runmode = 'SS' ] && [ $types = 'Tumor' ]; then
+
+			if [ ! -f "$name/results/bam/$name.Tumor.bam" ]; then
+				cp $bam_tumor $name/results/bam/$name.Tumor.bam
+				samtools index -@ $threads $name/results/bam/$name.Tumor.bam
+				cp $name/results/bam/$name.Tumor.bai $name/results/bam/$name.Tumor.bam.bai
+			fi
+
+		elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
+
+			if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
+				cp $bam_normal $name/results/bam/$name.Normal.bam
+				samtools index -@ $threads $name/results/bam/$name.Normal.bam
+				cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
+			fi
+
 		fi
-
-	elif [ $runmode = 'SS' ] && [ $types = 'Normal' ]; then
-
-		if [ ! -f "$name/results/bam/$name.Normal.bam" ]; then
-			cp $bam_normal $name/results/bam/$name.Normal.bam
-			samtools index -@ $threads $name/results/bam/$name.Normal.bam
-			cp $name/results/bam/$name.Normal.bai $name/results/bam/$name.Normal.bam.bai
-		fi
-
 	fi
 fi
+
 
 # 2. remap fastq
 if [ $repeat_mapping = "yes" ]; then
-	echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-	for type in $types;
-	do
-	md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
-	md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
-	done
 
-	wait $PIDS
-	PIDS=""
+	checkR1fq=$temp_dir/$name.$type.R1.passed.fastq.gz
+	checkR2fq=$temp_dir/$name.$type.R2.passed.fastq.gz
+	if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
+		echo -e "skipping fastQC and trimming steps, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
+	else
+		echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		for type in $types;
+		do
+		md5sum $name/fastq/$name.$type.R1.fastq.gz > $name/fastq/$name.$type.R1.fastq.gz.md5 & PIDS="$PIDS $!"
+		md5sum $name/fastq/$name.$type.R2.fastq.gz > $name/fastq/$name.$type.R2.fastq.gz.md5 & PIDS="$PIDS $!"
+		done
 
-	echo '---- Running FastQC before trimming ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		wait $PIDS
+		PIDS=""
 
-	for type in $types;
-	do
-	fastqc -t $threads \
-	$name/fastq/$name.$type.R1.fastq.gz \
-	$name/fastq/$name.$type.R2.fastq.gz \
-	--outdir=$name/results/QC & PIDS="$PIDS $!"
-	done
+		echo '---- Running FastQC before trimming ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	wait $PIDS
-	PIDS=""
+		for type in $types;
+		do
+		fastqc -t $threads \
+		$name/fastq/$name.$type.R1.fastq.gz \
+		$name/fastq/$name.$type.R2.fastq.gz \
+		--outdir=$name/results/QC & PIDS="$PIDS $!"
+		done
 
-	echo '---- Trimming reads ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		wait $PIDS
+		PIDS=""
 
-	# FastQC has to be executed! all_DeterminePhred.sh will grep for the score in the QC output files
-	for type in $types;
-	do
+		echo '---- Trimming reads ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	# check if the needed file exists
-	fastqc_file=$name/results/QC/$name.$type.R1_fastqc.zip
-	if [[ ! -f "$fastqc_file" ]]; then
-	echo "FastQC file not found! Check if FastQC finished successfully and generated this file: $fastqc_file"
-	exit 1
+		# FastQC has to be executed! all_DeterminePhred.sh will grep for the score in the QC output files
+		for type in $types;
+		do
+
+		# check if the needed file exists
+		fastqc_file=$name/results/QC/$name.$type.R1_fastqc.zip
+		if [[ ! -f "$fastqc_file" ]]; then
+		echo "FastQC file not found! Check if FastQC finished successfully and generated this file: $fastqc_file"
+		exit 1
+		fi
+
+		trimmomatic_file=$(basename $trimmomatic_dir)
+		if [ -z $phred ]; then phred=$(sh $repository_dir/all_DeterminePhred.sh $name $type); fi
+		echo "Determined phred score for trimming: $phred"
+
+		java -Xmx${RAM}G -jar $trimmomatic_dir"/"$trimmomatic_file".jar" PE \
+		-threads $threads -$phred \
+		$name/fastq/$name.$type.R1.fastq.gz \
+		$name/fastq/$name.$type.R2.fastq.gz \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R1.not_passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.not_passed.fastq.gz \
+		LEADING:25 TRAILING:25 MINLEN:50 \
+		SLIDINGWINDOW:10:25 \
+		ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
+		done
+		# output (in temp dir): _not_passed.fastq.gz, passed.fastq.gz for each type
+
+		wait $PIDS
+		PIDS=""
+
+		echo '---- Running FastQC after trimming ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+		for type in $types;
+		do
+		fastqc -t $threads \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
+		--outdir=$name/results/QC & PIDS="$PIDS $!"
+		done
+
+		wait $PIDS
+		PIDS=""
+
+		# echo '---- Removing fastq files ----' | tee -a $name/results/QC/$name.report.txt
+		# echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+		# moved to end of pipeline
+		# find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
+
+		# wait $PIDS
+		# PIDS=""
+	fi
+	
+	
+	
+	checkBam=$temp_dir/$name.$type.cleaned.bam
+	if [ -f "${checkBam}" ]; then
+		echo -e "skipping mapping step, found pre-existing file:\n ${checkBam}"
+	else
+	
+		echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+		for type in $types;
+		do
+		bwa mem -t $threads $genomeindex_dir \
+		-Y -K $bwainputbases -v 1 \
+		$temp_dir/$name.$type.R1.passed.fastq.gz \
+		$temp_dir/$name.$type.R2.passed.fastq.gz \
+		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-jar $picard_dir/picard.jar CleanSam \
+		-I /dev/stdin \
+		-O $temp_dir/$name.$type.cleaned.bam \
+		-VALIDATION_STRINGENCY LENIENT
+		done
+		# output (in temp dir): .cleaned.bam for each type
+	
+	fi
+	
+	checkBam=$temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
+	if [ -f "${checkBam}" ]; then
+		echo -e "skipping postprocession I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n ${checkBam}"
+	else
+		# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
+		# find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + # moved to end of pipeline
+
+		echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+
+		for type in $types;
+		do
+			echo "Postprocessing I: Marking duplicates for $type" | tee -a $name/results/QC/$name.report.txt &&
+
+			# this will take the mapped bam, sort it by QNAME, convert to SAM
+			# next give it to SAMBLASTER for read dup marking, followed by sorting back to coordinates and format to BAM
+			/opt/bin/sambamba sort \
+			--sort-by-name \
+			-t $threads -m ${RAM}GB --tmpdir $temp_dir \
+			-o /dev/stdout $temp_dir/$name.$type.cleaned.bam | samtools view -h | /opt/samblaster-0.1.26/samblaster | samtools view -Sb | /opt/bin/sambamba sort \
+			-t $threads -m ${RAM}GB --tmpdir $temp_dir \
+			-o $temp_dir/$name.$type.cleaned.sorted.marked.bam /dev/stdin &&
+
+			# moved to end of pipeline
+			# rm -f $temp_dir/$name.$type.cleaned.bam &&
+
+			echo "Postprocessing I: Adding read groups for $type" | tee -a $name/results/QC/$name.report.txt &&
+			java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+			-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
+			-I $temp_dir/$name.$type.cleaned.sorted.marked.bam \
+			-O $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+			-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
+			-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM & PIDS="$PIDS $!"
+
+			# moved to end of pipeline
+			# rm -f $temp_dir/$name.$type.cleaned.sorted.bam &&
+			# rm -f $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
+			# rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam &&
+			# rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam.bai &&
+			# rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
+		done
+
+		wait $PIDS
+		PIDS=""
+
+		# sambamba tends to break occasionally, so we check the files to stop Mutect2 from working on broken files
+		for type in $types;
+		do
+			CheckFile $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
+		done
+	
 	fi
 
-	trimmomatic_file=$(basename $trimmomatic_dir)
-	if [ -z $phred ]; then phred=$(sh $repository_dir/all_DeterminePhred.sh $name $type); fi
-	echo "Determined phred score for trimming: $phred"
+	checkRecalTable=$name/results/QC/$name.$type.GATK4.post.recal.table
+	if [ -f "${checkRecalTable}" ]; then
+		echo -e "skipping postprocessing II (Base recalibration), found pre-existing files:\n ${checkRecalTable}"
+	else
+	
+		echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
 
-	java -Xmx${RAM}G -jar $trimmomatic_dir"/"$trimmomatic_file".jar" PE \
-	-threads $threads -$phred \
-	$name/fastq/$name.$type.R1.fastq.gz \
-	$name/fastq/$name.$type.R2.fastq.gz \
-	$temp_dir/$name.$type.R1.passed.fastq.gz \
-	$temp_dir/$name.$type.R1.not_passed.fastq.gz \
-	$temp_dir/$name.$type.R2.passed.fastq.gz \
-	$temp_dir/$name.$type.R2.not_passed.fastq.gz \
-	LEADING:25 TRAILING:25 MINLEN:50 \
-	SLIDINGWINDOW:10:25 \
-	ILLUMINACLIP:$trimmomatic_dir/adapters/TruSeq3-PE-2.fa:2:30:10 & PIDS="$PIDS $!"
-	done
-	# output (in temp dir): _not_passed.fastq.gz, passed.fastq.gz for each type
+		for type in $types;
+		do
+		echo "Postprocessing II for $type"  | tee -a $name/results/QC/$name.report.txt &&
+		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
+		-R $genome_file \
+		-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+		--known-sites $snp_file \
+		--use-original-qualities \
+		-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	wait $PIDS
-	PIDS=""
+		# this will also generate a bam index (.bai)
+		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
+		-R $genome_file \
+		-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
+		-O $name/results/bam/$name.$type.bam \
+		-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
 
-	echo '---- Running FastQC after trimming ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		# moved to end of pipeline
+		# rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
+		# rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
 
-	for type in $types;
-	do
-	fastqc -t $threads \
-	$temp_dir/$name.$type.R1.passed.fastq.gz \
-	$temp_dir/$name.$type.R2.passed.fastq.gz \
-	--outdir=$name/results/QC & PIDS="$PIDS $!"
-	done
+		java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
+		-R $genome_file \
+		-I $name/results/bam/$name.$type.bam \
+		--known-sites $snp_file \
+		--use-original-qualities \
+		-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
 
-	wait $PIDS
-	PIDS=""
+		cp $name/results/bam/$name.$type.bai $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
+		done
 
-	echo '---- Removing fastq files ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} + & PIDS="$PIDS $!"
-
-	wait $PIDS
-	PIDS=""
-
-	echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	for type in $types;
-	do
-	bwa mem -t $threads $genomeindex_dir \
-	-Y -K $bwainputbases -v 1 \
-	$temp_dir/$name.$type.R1.passed.fastq.gz \
-	$temp_dir/$name.$type.R2.passed.fastq.gz \
-	| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-	-jar $picard_dir/picard.jar CleanSam \
-	-I /dev/stdin \
-	-O $temp_dir/$name.$type.cleaned.bam \
-	-VALIDATION_STRINGENCY LENIENT
-	done
-	# output (in temp dir): .cleaned.bam for each type
-
-	# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
-	find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} +
-
-	echo '---- Postprocessing I (Sorting, fixing read groups and marking duplicates) ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	for type in $types;
-	do
-		echo "Postprocessing I: Marking duplicates for $type" | tee -a $name/results/QC/$name.report.txt &&
-
-		# this will take the mapped bam, sort it by QNAME, convert to SAM
-		# next give it to SAMBLASTER for read dup marking, followed by sorting back to coordinates and format to BAM
-		/opt/bin/sambamba sort \
-		--sort-by-name \
-		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
-		-o /dev/stdout $temp_dir/$name.$type.cleaned.bam | samtools view -h | /opt/samblaster-0.1.26/samblaster | samtools view -Sb | /opt/bin/sambamba sort \
-		-t $threads -m ${RAM}GB --tmpdir $temp_dir \
-		-o $temp_dir/$name.$type.cleaned.sorted.marked.bam /dev/stdin &&
-
-		rm -f $temp_dir/$name.$type.cleaned.bam &&
-
-		echo "Postprocessing I: Adding read groups for $type" | tee -a $name/results/QC/$name.report.txt &&
-		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
-		-jar $picard_dir/picard.jar AddOrReplaceReadGroups \
-		-I $temp_dir/$name.$type.cleaned.sorted.marked.bam \
-		-O $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-		-ID 1 -LB Lib1 -PL ILLUMINA -PU Run1 -SM $type \
-		-MAX_RECORDS_IN_RAM $MAX_RECORDS_IN_RAM &&
-
-		rm -f $temp_dir/$name.$type.cleaned.sorted.bam &&
-		rm -f $temp_dir/$name.$type.cleaned.sorted.bam.bai &&
-		rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam &&
-		rm -f $temp_dir/$name.$type.cleaned.sorted.marked.bam.bai &&
-		rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.bam & PIDS="$PIDS $!"
-	done
-
-	wait $PIDS
-	PIDS=""
-
-	# sambamba tends to break occasionally, so we check the files to stop Mutect2 from working on broken files
-	for type in $types;
-	do
-		CheckFile $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
-	done
-
-	echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
-	echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
-
-	for type in $types;
-	do
-	echo "Postprocessing II for $type"  | tee -a $name/results/QC/$name.report.txt &&
-	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
-	-R $genome_file \
-	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-	--known-sites $snp_file \
-	--use-original-qualities \
-	-O $name/results/QC/$name.$type.GATK4.pre.recal.table &&
-
-	# this will also generate a bam index (.bai)
-	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar ApplyBQSR \
-	-R $genome_file \
-	-I $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam \
-	-O $name/results/bam/$name.$type.bam \
-	-bqsr $name/results/QC/$name.$type.GATK4.pre.recal.table &&
-
-	rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam &&
-	rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai &&
-
-	java -Xmx${RAM}G -jar $GATK_dir/gatk.jar BaseRecalibrator \
-	-R $genome_file \
-	-I $name/results/bam/$name.$type.bam \
-	--known-sites $snp_file \
-	--use-original-qualities \
-	-O $name/results/QC/$name.$type.GATK4.post.recal.table &&
-
-	# /opt/bin/sambamba index \
-	# -t $threads \
-	# $name/results/bam/$name.$type.bam \
-	# $name/results/bam/$name.$type.bai &&
-
-	cp $name/results/bam/$name.$type.bai $name/results/bam/$name.$type.bam.bai & PIDS="$PIDS $!"
-	done
-
-	wait $PIDS
-	PIDS=""
+		wait $PIDS
+		PIDS=""
+	
+	fi
 fi
 
 rm -rf '?'
+
+echo '---- removing intermediate files ----'
+find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} +
+find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} +
+rm -f $temp_dir/$name.$types.cleaned.bam
+rm -f $temp_dir/$name.$types.cleaned.sorted.bam
+rm -f $temp_dir/$name.$types.cleaned.sorted.bam.bai
+rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam
+rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam.bam
+rm -f $temp_dir/$name.$types.cleaned.sorted.readgroups.bam
+rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam
+rm -f $temp_dir/$name.$type.cleaned.sorted.readgroups.marked.bam.bai
 
 echo '---- Finished analysis of sample '$name' ----' | tee -a $name/results/QC/$name.report.txt
 echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
