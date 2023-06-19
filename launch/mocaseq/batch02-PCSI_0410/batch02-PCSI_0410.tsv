@@ -1,0 +1,10 @@
+Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
+PCSI_0410_Ag_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Ag_M_526/results/bam/PCSI_0410_Ag_M_526.Tumor.bam
+PCSI_0410_Di_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Di_M_526/results/bam/PCSI_0410_Di_M_526.Tumor.bam
+PCSI_0410_Hr_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Hr_M_526/results/bam/PCSI_0410_Hr_M_526.Tumor.bam
+PCSI_0410_Ln_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Ln_M_526/results/bam/PCSI_0410_Ln_M_526.Tumor.bam
+PCSI_0410_Lu_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Lu_M_526/results/bam/PCSI_0410_Lu_M_526.Tumor.bam
+PCSI_0410_Lu_M_5262	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Lu_M_5262/results/bam/PCSI_0410_Lu_M_5262.Tumor.bam
+PCSI_0410_Lv_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Lv_M_526/results/bam/PCSI_0410_Lv_M_526.Tumor.bam
+PCSI_0410_Om_M_526	PCSI_0410	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Om_M_526/results/bam/PCSI_0410_Om_M_526.Tumor.bam
+PCSI_0410_Sp_R	PCSI_0410	?	?	?	wgs	Human	Normal	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch02/PCSI_0410_Sp_R/results/bam/PCSI_0410_Sp_R.Normal.bam
