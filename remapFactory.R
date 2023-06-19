@@ -110,7 +110,7 @@ for (s_group in sample_groups) {
 # ClusterInfo: mpp3_batch: max 48h, 90GB, 64 CPUs, jobs(50,dynamic)
 # See https://doku.lrz.de/job-processing-on-the-linux-cluster-10745970.html
 # !!! Please check:
-# - you have the omcaseq2 charldiecloud container in $HOME/images-live
+# - you have the mocaseq2 charldiecloud container in $HOME/images-live
 # - all paths are accessible, expecially the reference path 
 
 module load slurm_setup
