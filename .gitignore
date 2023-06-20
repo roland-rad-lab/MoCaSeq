@@ -32,7 +32,8 @@ launch/mocaseq/*
 !launch/mocaseq/batch03-PCSI_0665/
 !launch/mocaseq/batch02-PCSI_0705/
 
-# exclude all .nextflow* data
+# exclude all .nextflow* and .out data
 **/.nextflow/
 **/*nextflow.log*
+**/*.out
 
