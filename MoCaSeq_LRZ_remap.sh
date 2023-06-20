@@ -621,27 +621,38 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	
 	
-	checkBam=$temp_dir/$name.${types}.cleaned.bam
-	if [ -f "${checkBam}" ]; then
-		echo -e "skipping mapping step, found pre-existing file:\n ${checkBam}"
+	checkSam=$temp_dir/$name.$type.mapped.sam
+	if [ -f "${checkSam}" ]; then
+		echo -e "skipping mapping step, found pre-existing file:\n ${checkSam}"
 	else
 	
 		echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
 		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		
+		type=$types
 
-		for type in $types;
-		do
 		bwa mem -t $threads $genomeindex_dir \
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		| java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
+		-O $temp_dir/$name.$type.mapped.sam
+	
+	fi
+	
+	checkBam=$temp_dir/$name.${types}.cleaned.bam
+	if [ -f "${checkBam}" ]; then
+		echo -e "skipping mapping step, found pre-existing file:\n ${checkBam}"
+	else
+		echo '---- Cleaning mapped sam ----' | tee -a $name/results/QC/$name.report.txt
+		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
+		
+		type=$types
+		
+		java -Xmx${RAM}G -Dpicard.useLegacyParser=false \
 		-jar $picard_dir/picard.jar CleanSam \
-		-I /dev/stdin \
+		-I $temp_dir/$name.$type.mapped.sam \
 		-O $temp_dir/$name.$type.cleaned.bam \
 		-VALIDATION_STRINGENCY LENIENT
-		done
-		# output (in temp dir): .cleaned.bam for each type
 	
 	fi
 	
@@ -749,6 +760,7 @@ echo '---- removing intermediate files ----'
 find $name/fastq/ -type f -name "$name*fastq.gz" -exec rm -r {} +
 find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} +
 # rm -f $temp_dir/$name.$types.cleaned.bam
+# rm -f $temp_dir/$name.$type.mapped.sam
 # rm -f $temp_dir/$name.$types.cleaned.sorted.bam
 # rm -f $temp_dir/$name.$types.cleaned.sorted.bam.bai
 # rm -f $temp_dir/$name.$types.cleaned.sorted.marked.bam
