@@ -1,24 +1,23 @@
 #!/bin/bash
 #SBATCH -J batch02-PCSI_0683-remap
 #SBATCH -D ./
-#SBATCH --clusters=mpp3
-#SBATCH --partition=mpp3_batch
-#SBATCH --nodes=1
-#SBATCH --time=48:00:00
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=91136mb
+#SBATCH --clusters=cm2_tiny
+#SBATCH --nodes=2
+#SBATCH --time=72:00:00
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=28
+#SBATCH --mem=56320mb
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mail-user=marcus.wagner@tum.de
 #SBATCH --export=NONE
 
 # SLURM script for remapping sample group batch02-PCSI_0683 .bam files hg19 -> hg38.
-# Execution on a single node of CoolMUC-3 cluster.
-# ClusterInfo: mpp3_batch: max 48h, 90GB, 64 CPUs, jobs(50,dynamic)
+# Execution on two nodes of CoolMUC-2 cluster cm2_tiny partition.
+# ClusterInfo: cm2_tiny: max 72h, 55GB RAM, 28 CPUs, jobs(10,50)
 # See https://doku.lrz.de/job-processing-on-the-linux-cluster-10745970.html
 # !!! Please check:
-# - you have the omcaseq2 charldiecloud container in $HOME/images-live
+# - you have the mocaseq2 charldiecloud container in $HOME/images-live
 # - all paths are accessible, expecially the reference path 
 
 module load slurm_setup
@@ -42,7 +41,7 @@ bamDir=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA
 bamName=PCSI_0683_Pa_P_5262.bam
 bamType="Tumor"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun -N 1 --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./PCSI_0683_Pa_P_5262.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 # specify sample
@@ -51,7 +50,7 @@ bamDir=/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA
 bamName=PCSI_0683_Si_R.bam
 bamType="Normal"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun -N 1 --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./PCSI_0683_Si_R.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 wait # for completion of background tasks
