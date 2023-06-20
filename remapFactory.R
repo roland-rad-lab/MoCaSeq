@@ -76,7 +76,8 @@ bamDir=',dirname(dt$R1),'
 bamName=',basename(dt$R1),'
 bamType="',dt$Type,'"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./', dt$Sample_Name,
+'.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
 sleep 4')
 }
 
