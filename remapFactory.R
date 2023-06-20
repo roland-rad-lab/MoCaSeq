@@ -147,7 +147,7 @@ wait # for completion of background tasks
   
   # nextflow call
   # write caller script file by Sample_Group
-  cat(paste0('# MoCaSeq launch script for sample group', s_group, '\n'),
+  cat(paste0('# MoCaSeq launch script for sample group ', s_group, '\n'),
       paste0('projectDir=', project_dir, '\n'),
       paste0('workDir=', work_dir, '\n'),
       paste0('nextflow run ', file.path(repo_dir, 'main.nf'),
