@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -J batch02-ASHPC_0019-remap
-#SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
 #SBATCH --clusters=mpp3
 #SBATCH --partition=mpp3_batch
@@ -43,7 +42,7 @@ bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WG
 bamName=EGAZ00001379792_PCSI_wgs_bam_ASHPC_0019_Pa_P_5262.bam
 bamType="Tumor"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./ASHPC_0019_Pa_P_5262.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
 sleep 4
 
 # specify sample
@@ -52,7 +51,7 @@ bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WG
 bamName=EGAZ00001379793_PCSI_wgs_bam_ASHPC_0019_Pa_R.bam
 bamType="Normal"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./%x.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 45568mb -J $sample -o ./ASHPC_0019_Pa_R.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType > ${sample}-remap.out & 
 sleep 4
 
 wait # for completion of background tasks
