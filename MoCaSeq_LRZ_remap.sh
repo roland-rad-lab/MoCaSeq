@@ -421,7 +421,7 @@ echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.repo
 checkR1fq=$name/fastq/${name}.${types}.R1.fastq.gz
 checkR2fq=$name/fastq/${name}.${types}.R2.fastq.gz
 if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
-	echo -e "skipping sam2fasq step, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
+	echo -e "skipping sam2fasq step, found pre-existing files:\n${checkR1fq}\n${checkR2fq}" | tee -a $name/results/QC/$name.report.txt
 else
 	# 1. this will either copy fastqs to location OR do sam2fastq
 	if [ -z $bam_normal ] && [ -z $bam_tumor ]; then
@@ -533,7 +533,7 @@ if [ $repeat_mapping = "yes" ]; then
 	checkR1fq=$temp_dir/$name.${types}.R1.passed.fastq.gz
 	checkR2fq=$temp_dir/$name.${types}.R2.passed.fastq.gz
 	if [ -f "${checkR1fq}" ] && [ -f "${checkR2fq}" ]; then
-		echo -e "skipping fastQC and trimming steps, found pre-existing files:\n ${checkR1fq}\n${checkR2fq}"
+		echo -e "skipping fastQC and trimming steps, found pre-existing files:\n${checkR1fq}\n${checkR2fq}"  | tee -a $name/results/QC/$name.report.txt
 	else
 		# echo '---- Calculating md5-sums ----' | tee -a $name/results/QC/$name.report.txt
 		# echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -623,7 +623,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	checkSam=$temp_dir/$name.$type.mapped.sam
 	if [ -f "${checkSam}" ]; then
-		echo -e "skipping mapping step, found pre-existing file:\n ${checkSam}"
+		echo -e "skipping mapping step, found pre-existing file:\n${checkSam}"  | tee -a $name/results/QC/$name.report.txt
 	else
 	
 		echo '---- Mapping trimmed reads ----' | tee -a $name/results/QC/$name.report.txt
@@ -641,7 +641,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	checkBam=$temp_dir/$name.${types}.cleaned.bam
 	if [ -f "${checkBam}" ]; then
-		echo -e "skipping cleaning mapped sam step, found pre-existing file:\n ${checkBam}"
+		echo -e "skipping cleaning mapped sam step, found pre-existing file:\n${checkBam}"  | tee -a $name/results/QC/$name.report.txt
 	else
 		echo '---- Cleaning mapped sam ----' | tee -a $name/results/QC/$name.report.txt
 		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
@@ -658,7 +658,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	checkBam=$temp_dir/$name.${types}.cleaned.sorted.readgroups.marked.bam
 	if [ -f "${checkBam}" ]; then
-		echo -e "skipping Postprocessing I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n ${checkBam}"
+		echo -e "skipping Postprocessing I (Sorting, fixing read groups and marking duplicates), found pre-existing files:\n${checkBam}"  | tee -a $name/results/QC/$name.report.txt
 	else
 		# remove all fastqs based on runname + fastq.gz (should be passed and not_passed from trimmomatic in between)
 		# find $temp_dir -type f -name "$name*fastq.gz" -exec rm -r {} + # moved to end of pipeline
@@ -711,7 +711,7 @@ if [ $repeat_mapping = "yes" ]; then
 
 	checkRecalTable=$name/results/QC/$name.${types}.GATK4.post.recal.table
 	if [ -f "${checkRecalTable}" ]; then
-		echo -e "skipping postprocessing II (Base recalibration), found pre-existing files:\n ${checkRecalTable}"
+		echo -e "skipping postprocessing II (Base recalibration), found pre-existing files:\n${checkRecalTable}"  | tee -a $name/results/QC/$name.report.txt
 	else
 	
 		echo '---- Postprocessing II (Base recalibration) ----' | tee -a $name/results/QC/$name.report.txt
