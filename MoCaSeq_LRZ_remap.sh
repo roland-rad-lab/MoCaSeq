@@ -635,13 +635,13 @@ if [ $repeat_mapping = "yes" ]; then
 		-Y -K $bwainputbases -v 1 \
 		$temp_dir/$name.$type.R1.passed.fastq.gz \
 		$temp_dir/$name.$type.R2.passed.fastq.gz \
-		-O $temp_dir/$name.$type.mapped.sam
+		-o $temp_dir/$name.$type.mapped.sam
 	
 	fi
 	
 	checkBam=$temp_dir/$name.${types}.cleaned.bam
 	if [ -f "${checkBam}" ]; then
-		echo -e "skipping mapping step, found pre-existing file:\n ${checkBam}"
+		echo -e "skipping cleaning mapped sam step, found pre-existing file:\n ${checkBam}"
 	else
 		echo '---- Cleaning mapped sam ----' | tee -a $name/results/QC/$name.report.txt
 		echo -e "$(date) \t timestamp: $(date +%s)" | tee -a $name/results/QC/$name.report.txt
