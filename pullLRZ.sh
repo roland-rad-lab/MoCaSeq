@@ -16,5 +16,5 @@ chmod 775 launch/remap/*.sh
 chmod 775 launch/remap/batch0[2-3]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
 
 # set permissions for MoCaSeq launcher files
-# chmod 775 launch/mocaseq/*.sh
+chmod 775 launch/mocaseq/*.sh
 

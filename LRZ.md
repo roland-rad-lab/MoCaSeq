@@ -133,6 +133,13 @@ tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/mocaseq2.tar.gz
 tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/structural-variation-jabba.tar.gz -C structural-variation-jabba
 tar -xzf /dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/images/quay.io%biocontainers%cnvkit:0.9.9--pyhdfd78af_0.tar.gz -C cnv-kit-0.9.9
 
+# Now enter the mocsaeq container and install missing R package PSCBS for LOH analysis:
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("aroma.light")
+
+install.packages('PSCBS')
+
 # The final thing we need to do is to ensure that we have mount points for important resources
 # (At some point this should be incorporated into the container images)
 mkdir -p mocaseq2/var/pipeline
