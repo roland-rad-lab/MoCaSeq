@@ -621,7 +621,7 @@ if [ $repeat_mapping = "yes" ]; then
 	
 	
 	
-	checkSam=$temp_dir/$name.$type.mapped.sam
+	checkSam=$temp_dir/$name.${types}.mapped.sam
 	if [ -f "${checkSam}" ]; then
 		echo -e "skipping mapping step, found pre-existing file:\n${checkSam}"  | tee -a $name/results/QC/$name.report.txt
 	else
