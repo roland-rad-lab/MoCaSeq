@@ -20,6 +20,7 @@ launch/remap/*
 !launch/remap/batch02-PCSI_0683/
 !launch/remap/batch03-PCSI_0665/
 !launch/remap/batch02-PCSI_0705/
+!launch/remap/batch04-ASHPC_0016/
 
 # include specific MoCaSeq sample dirs
 launch/mocaseq/*
