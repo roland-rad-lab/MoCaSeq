@@ -45,7 +45,9 @@ dt.master[, SampleID := gsub('.bam', '', FileName)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
-dt.remap <- dt.master[Batch %in% c('batch02', 'batch03') & remaped == F, .(SampleID, Batch, DonorName, hg19bam, userMAP)]
+# TODO dt.master[BatchSub %in% c('4d', '4e', '4f') & !is.na(hg19bam)]
+dt.remap <- dt.master[BatchSub %in% c('4d', '4e', '4f') & !is.na(hg19bam) & remaped == F,
+                      .(SampleID, Batch, DonorName, hg19bam, userREMAP)]
 
 # input table columns
 # Sample_Name, Sample_Group, Library_ID, Lane, Colour_Chemistry, SeqType, Organism, Type, R1, R2, BAM
@@ -132,11 +134,11 @@ mv ref $workingDir
 
 wait # for completion of background tasks
 '),
-      file = file.path(sample_remap_dir, paste0(s_group, '_bash.sh')))
+      file = file.path(sample_remap_dir, paste0(s_group, '_cm3.sh')))
   
   # make runner file executable for user
   system(paste0("chmod ug+x ",
-                file.path(sample_remap_dir, paste0(s_group, '_bash.sh'))))
+                file.path(sample_remap_dir, paste0(s_group, '_cm3.sh'))))
   
   # .tsv file for nextflow remap
   write.table(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2], 
