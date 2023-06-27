@@ -1,0 +1,5 @@
+Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
+RAMP_0008_Ln_M_526	RAMP_0008	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0008_Ln_M_526/results/bam_remap/RAMP_0008_Ln_M_526.Tumor.bam
+RAMP_0008_Lv_M_526	RAMP_0008	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0008_Lv_M_526/results/bam_remap/RAMP_0008_Lv_M_526.Tumor.bam
+RAMP_0008_Mu_R	RAMP_0008	?	?	?	wgs	Human	Normal	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0008_Mu_R/results/bam_remap/RAMP_0008_Mu_R.Normal.bam
+RAMP_0008_Pa_P	RAMP_0008	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs02/lwp-dss-0001/pn29ya/pn29ya-dss-0000/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12_bam/batch01/RAMP_0008_Pa_P/results/bam_remap/RAMP_0008_Pa_P.Tumor.bam

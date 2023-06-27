@@ -24,6 +24,7 @@ launch/remap/*
 
 # include specific MoCaSeq sample dirs
 launch/mocaseq/*
+!launch/mocaseq/batch01-RAMP_0008/
 !launch/mocaseq/batch02-ASHPC_0019/
 !launch/mocaseq/batch02-PCSI_0357/
 !launch/mocaseq/batch02-PCSI_0410/
