@@ -13,8 +13,8 @@ chmod 775 repository/all_RunBubbleTree.R repository/SNV_SelectOutput.R repositor
 # set permissions for remap launcher files
 chmod 775 launch/ccc_remap_wrapper.sh
 chmod 775 launch/remap/*.sh
-chmod 775 launch/remap/batch0[2-3]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
+chmod 775 launch/remap/batch0[1-4]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
 
 # set permissions for MoCaSeq launcher files
-chmod 775 launch/mocaseq/batch0[2-3]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
+chmod 775 launch/mocaseq/batch0[1-4]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
 
