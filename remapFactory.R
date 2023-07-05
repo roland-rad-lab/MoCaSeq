@@ -153,7 +153,7 @@ wait # for completion of background tasks
       paste0('projectDir=', project_dir, '\n'),
       paste0('workDir=', work_dir, '\n'),
       paste0('nextflow run ', file.path(repo_dir, 'main.nf'),
-             ' -profile charliecloud,slurm', ' -entry MAP',
+             ' -profile charliecloud,slurm', ' -entry MAP', ' -with-report -with-timeline'
              ' -work-dir ', file.path('${workDir}', 'remap', 'work'),
              ' --output_base ', file.path('${projectDir}', 'input'),
              ' --genome_build.human ', genome_build.human,

@@ -84,7 +84,7 @@ for (s_group in sample_groups) {
       paste0('# path to working dir\n workDir=', work_dir, '\n'),
       paste0('# nextflow needs this variable to get SLURM job status\n export SLURM\\_CLUSTERS="serial"\n\n'),
       paste0('nextflow run ', file.path('${repoDir}', 'main.nf'),
-             ' -profile charliecloud,slurm',
+             ' -profile charliecloud,slurm -with-report -with-timeline',
              ' -work-dir ', '${workDir}', 
              ' --output_base ', file.path('${projectDir}', 'output'), 
              ' --genome_build.human ', genome_build.human,
