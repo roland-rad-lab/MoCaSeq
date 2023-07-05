@@ -6,8 +6,8 @@
 #SBATCH --partition=cm2_inter_large_mem
 #SBATCH --nodes=1
 #SBATCH --time=96:00:00
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=96
+#SBATCH --ntasks-per-node=2
+#SBATCH --cpus-per-task=48
 #SBATCH --mem=117760mb
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
