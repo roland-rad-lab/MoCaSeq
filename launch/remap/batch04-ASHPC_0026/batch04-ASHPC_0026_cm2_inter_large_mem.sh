@@ -4,11 +4,11 @@
 #SBATCH -D ./
 #SBATCH --clusters=inter
 #SBATCH --partition=cm2_inter_large_mem
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --time=96:00:00
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=48
-#SBATCH --mem=117760mb
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=28
+#SBATCH --mem=56320mb
 #SBATCH --get-user-env
 #SBATCH --mail-type=end
 #SBATCH --mail-user=marcus.wagner@tum.de
@@ -43,7 +43,7 @@ bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WG
 bamName=EGAZ00001379800_PCSI_wgs_bam_ASHPC_0026_Pa_P.bam
 bamType="Tumor"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 58880mb -J $sample -o ./ASHPC_0026_Pa_P.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 57 -@ 48 > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./ASHPC_0026_Pa_P.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 # specify sample
@@ -52,7 +52,7 @@ bamDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WG
 bamName=EGAZ00001379801_PCSI_wgs_bam_ASHPC_0026_Pa_R.bam
 bamType="Normal"
 # submit subjob for sample remapping
-srun --ntasks=1 --exclusive --mem 58880mb -J $sample -o ./ASHPC_0026_Pa_R.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 57 -@ 48 > ${sample}-remap.out & 
+srun --ntasks=1 --exclusive --mem 56320mb -J $sample -o ./ASHPC_0026_Pa_R.%j.%N.out ${mocaseqDir}/launch/ccc_remap_wrapper.sh -ccc $cccDir -wd $workingDir -m $mocaseqDir -bd $bamDir -bf $bamName -s $sample -rd $referencesDir -t $bamType -r 55 -@ 28 > ${sample}-remap.out & 
 sleep 4
 
 wait # for completion of background tasks
