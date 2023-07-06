@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J batch02-PCSI_0654-remap
+#SBATCH -J batch04-ASHPC_0026-remap
 #SBATCH -o ./%x.%j.%N.out
 #SBATCH -D ./
 #SBATCH --clusters=inter
