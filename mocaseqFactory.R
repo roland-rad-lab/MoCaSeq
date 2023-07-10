@@ -42,7 +42,7 @@ dt.master[, SampleID := gsub('.bam', '', FileName)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
-dt.mocaseq <- dt.master[Batch %in% c('batch02', 'batch03') & mocaseqed == F,
+dt.mocaseq <- dt.master[Batch %in% c('batch04') & mocaseqed == F & remaped == T,
                         .(SampleID, Batch, DonorName, hg38bam, userMoCaSeq)]
 
 # input table columns
@@ -79,11 +79,12 @@ for (s_group in sample_groups) {
   
   # write caller script file by Sample_Group
   cat(paste0('# MoCaSeq launch script for sample group', s_group, '\n'),
-      paste0('# path to DSS project folder\n projectDir=', project_dir, '\n'),
-      paste0('# path to MoCaSeq git repo\n repoDir=', repo_dir, '\n'),
-      paste0('# path to working dir\n workDir=', work_dir, '\n'),
-      paste0('# nextflow needs this variable to get SLURM job status\n export SLURM\\_CLUSTERS="serial"\n\n'),
-      paste0('nextflow run ', file.path('${repoDir}', 'main.nf'),
+      paste0('# path to DSS project folder\n','projectDir=', project_dir, '\n'),
+      paste0('# path to MoCaSeq git repo\n', 'repoDir=', repo_dir, '\n'),
+      paste0('# path to working dir\n', 'workDir=', work_dir, '\n'),
+      paste0('# nextflow needs this variable to get SLURM job status\n',
+             'export SLURM\\_CLUSTERS="serial"\n'),
+      paste0('\n','nextflow run ', file.path('${repoDir}', 'main.nf'),
              ' -profile charliecloud,slurm -with-report -with-timeline',
              ' -work-dir ', '${workDir}', 
              ' --output_base ', file.path('${projectDir}', 'output'), 
