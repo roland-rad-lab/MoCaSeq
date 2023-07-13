@@ -23,10 +23,10 @@ module load slurm_setup
 # -> writing "ps" output (snapshot) to log files for each node
 #==========================================================================
 NODEMONITOR=1             # enable (1) or disable (0) monitoring
-MONPATH=./serial/monitor  # storage location for log files
-DELAY=5                   # intervall (in s) to take snapshots of table of running processes
+MONPATH=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/MoCaSeq/log  # storage location for log files
+DELAY=60                  # intervall (in s) to take snapshots of table of running processes
 MAXSNAPSHOTS=1000         # MAXIMUM NUMBER OF SNAPSHOTS TO AVOID CREATING A HUGE LOG FILE!!!
-COMMAND=MYAPP             # name of command (running on the node) to be checked
+COMMAND=ch-run             # name of command (running on the node) to be checked
 
 if (( NODEMONITOR != 0 )); then
     # prepare monitoring
