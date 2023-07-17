@@ -110,6 +110,7 @@ export SLURM\_CLUSTERS="serial"
 alias fairshare='sshare --clusters=serial --user=$USER'
 # this command gives you details on a certain job, please provide a job number like: jobdetails xxxxxxx
 alias jobdetails='sacct --format=JobID%8,JobName%20,user%8,Partition,NNodes%6,AllocCPUS%9,Time,Start,End,State%11,Elapsed,ExitCode,Reason,MaxRSS,Nodelist%18 --clusters=serial,cm2,cm2_tiny,mpp3 -u ${USER} -j $1'
+alias sbash="salloc -pcm2_inter --time=01:00:00 -n 1 srun --pty bash -i"
 ```
 
 

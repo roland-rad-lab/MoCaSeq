@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -o ./cm2/%x.%j.%N.out
-#SBATCH -e ./cm2/%x.%j.%N.err
+#SBATCH -o ./debug/%x.%j.%N.out
+#SBATCH -e ./debug/%x.%j.%N.err
 #SBATCH -D ./
 #SBATCH -J MutectPostprocessMonitor
 #SBATCH --get-user-env
@@ -9,10 +9,8 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:10:00
-
-#SBATCH --clusters=serial
-#SBATCH --partition=serial_std
-#SBATCH --reservation=gen_seq
+#SBATCH --clusters=mpp3
+#SBATCH --partition=mpp3_batch
 
 module load slurm_setup
 
@@ -74,7 +72,8 @@ ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
 --bind ${outDir} \
 --bind ${referencesDir} \
 -c $outDir/batch02 \
--- /bin/bash $mocaseqDir/launch/ccc_Mutect_Postprocessing.sh
+-- /bin/bash $mocaseqDir/launch/ccc_Mutect_Postprocessing.sh \
+	$name $species $config_file $filtering $artefact_type $GATK $type
 
 #==========================================================================
 # TERMINATE MONITORING (IF STILL RUNNING)
