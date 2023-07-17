@@ -9,8 +9,9 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:10:00
-#SBATCH --clusters=mpp3
-#SBATCH --partition=mpp3_batch
+#SBATCH --clusters=serial
+#SBATCH --partition=serial_std
+#SBATCH --reservation=gen_seq
 
 module load slurm_setup
 
