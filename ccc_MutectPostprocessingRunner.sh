@@ -57,23 +57,16 @@ ln -s $referencesDir ref
 mv ref $workingDir
 
 # postprocessing variables
-name=PCSI_0410_Ln_M_526
-species=Human
-config_file=/opt/MoCaSeq/config.sh
-filtering="soft"
-artefact_type="yes"
-GATK=4.1.7.0
-type=matched
-repository_dir=/opt/MoCaSeq/repository
+name=PCSI_0410_Ag_M_526
 
 # MoCaSeq call inside charliecloud container
-ch-run $cccDir --no-home --set-env=sample=${sample} -w --no-passwd \
+ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
 --bind ${workingDir}:/var/pipeline/ \
 --bind ${mocaseqDir}:/opt/MoCaSeq/ \
 --bind ${outDir} \
 --bind ${referencesDir} \
 -c $outDir/batch02 \
--- /bin/bash $mocaseqDir/launch/ccc_Mutect_Postprocessing.sh \
+-- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh \
 	$name $species $config_file $filtering $artefact_type $GATK $type
 
 #==========================================================================
