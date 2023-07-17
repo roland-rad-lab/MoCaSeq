@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=00:10:00
+#SBATCH --time=01:00:00
 #SBATCH --clusters=serial
 #SBATCH --partition=serial_std
 #SBATCH --reservation=gen_seq
