@@ -57,7 +57,8 @@ ln -s $referencesDir ref
 mv ref $workingDir
 
 # postprocessing variables
-name=PCSI_0410_Ag_M_526
+name=$1
+echo "${name} Mutect2 postprocessing"
 
 # MoCaSeq call inside charliecloud container
 ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
