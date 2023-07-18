@@ -66,8 +66,7 @@ ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
 --bind ${outDir} \
 --bind ${referencesDir} \
 -c $outDir/batch02 \
--- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh \
-	$name $species $config_file $filtering $artefact_type $GATK $type
+-- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh $name
 
 #==========================================================================
 # TERMINATE MONITORING (IF STILL RUNNING)

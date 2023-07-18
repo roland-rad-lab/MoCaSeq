@@ -1,4 +1,5 @@
 #!/bin/bash
+name=$1
 species=Human
 config_file=/opt/MoCaSeq/config.sh
 filtering="soft"
