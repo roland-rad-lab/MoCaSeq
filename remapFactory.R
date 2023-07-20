@@ -40,13 +40,13 @@ out_base <- file.path(project_dir, 'input')
 #                   "RAMP_0008_Lv_M_526", "RAMP_0008_Mu_R", "RAMP_0008_Pa_P")
 
 # read master table
-dt.master <- read_xlsx('EGA_mastertable.xlsx') %>% as.data.table()
+dt.master <- read_xlsx('data/data/EGA_mastertable.xlsx') %>% as.data.table()
 dt.master[, SampleID := gsub('.bam', '', FileName)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
 # TODO dt.master[BatchSub %in% c('4d', '4e', '4f') & !is.na(hg19bam)]
-dt.remap <- dt.master[BatchSub %in% c('4d', '4e', '4f') & !is.na(hg19bam) & remaped == F,
+dt.remap <- dt.master[DonorName %in% c('PCSI_0654', 'PCSI_0662', 'ASHPC_0019') & !is.na(hg19bam),
                       .(SampleID, Batch, DonorName, hg19bam, userREMAP)]
 
 # input table columns
@@ -92,53 +92,53 @@ for (s_group in sample_groups) {
   sample_remap_dir <- file.path(getwd(), 'launch', 'remap', s_group)
   system(paste0('mkdir -p ', sample_remap_dir))
   
-  # write caller script file by Sample_Group for bash MoCaSeq
-  cat(paste0('#!/bin/bash
-#SBATCH -J ', s_group, '-remap
-#SBATCH -D ./
-#SBATCH --clusters=mpp3
-#SBATCH --partition=mpp3_batch
-#SBATCH --nodes=1
-#SBATCH --time=48:00:00
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=91136mb
-#SBATCH --get-user-env
-#SBATCH --mail-type=end
-#SBATCH --mail-user=marcus.wagner@tum.de
-#SBATCH --export=NONE
-
-# SLURM script for remapping sample group ', s_group, ' .bam files hg19 -> hg38.
-# Execution on a single node of CoolMUC-3 cluster.
-# ClusterInfo: mpp3_batch: max 48h, 90GB, 64 CPUs, jobs(50,dynamic)
-# See https://doku.lrz.de/job-processing-on-the-linux-cluster-10745970.html
-# !!! Please check:
-# - you have the mocaseq2 charldiecloud container in $HOME/images-live
-# - all paths are accessible, expecially the reference path 
-
-module load slurm_setup
-
-# set container path
-cccDir=${HOME}/images-live/mocaseq2
-
-# specify mount paths
-workingDir=/gpfs/scratch/pn29ya/$USER/mocaseq-slurm/remap
-mocaseqDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/MoCaSeq/
-referencesDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/references/bashMoCaSeq/
-# make sure the working dir exists and create a symbolic link to the references named "ref" inside working directory
-mkdir -p $workingDir
-mkdir -p /gpfs/scratch/pn29ya/$USER/tmp
-ln -s $referencesDir ref
-mv ref $workingDir
-', paste0(sample_call(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2]]), collapse = '\n'),'
-
-wait # for completion of background tasks
-'),
-      file = file.path(sample_remap_dir, paste0(s_group, '_cm3.sh')))
-  
-  # make runner file executable for user
-  system(paste0("chmod ug+x ",
-                file.path(sample_remap_dir, paste0(s_group, '_cm3.sh'))))
+#   # write caller script file by Sample_Group for bash MoCaSeq
+#   cat(paste0('#!/bin/bash
+# #SBATCH -J ', s_group, '-remap
+# #SBATCH -D ./
+# #SBATCH --clusters=mpp3
+# #SBATCH --partition=mpp3_batch
+# #SBATCH --nodes=1
+# #SBATCH --time=48:00:00
+# #SBATCH --ntasks-per-node=2
+# #SBATCH --cpus-per-task=32
+# #SBATCH --mem=91136mb
+# #SBATCH --get-user-env
+# #SBATCH --mail-type=end
+# #SBATCH --mail-user=marcus.wagner@tum.de
+# #SBATCH --export=NONE
+# 
+# # SLURM script for remapping sample group ', s_group, ' .bam files hg19 -> hg38.
+# # Execution on a single node of CoolMUC-3 cluster.
+# # ClusterInfo: mpp3_batch: max 48h, 90GB, 64 CPUs, jobs(50,dynamic)
+# # See https://doku.lrz.de/job-processing-on-the-linux-cluster-10745970.html
+# # !!! Please check:
+# # - you have the mocaseq2 charldiecloud container in $HOME/images-live
+# # - all paths are accessible, expecially the reference path 
+# 
+# module load slurm_setup
+# 
+# # set container path
+# cccDir=${HOME}/images-live/mocaseq2
+# 
+# # specify mount paths
+# workingDir=/gpfs/scratch/pn29ya/$USER/mocaseq-slurm/remap
+# mocaseqDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/MoCaSeq/
+# referencesDir=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/references/bashMoCaSeq/
+# # make sure the working dir exists and create a symbolic link to the references named "ref" inside working directory
+# mkdir -p $workingDir
+# mkdir -p /gpfs/scratch/pn29ya/$USER/tmp
+# ln -s $referencesDir ref
+# mv ref $workingDir
+# ', paste0(sample_call(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2]]), collapse = '\n'),'
+# 
+# wait # for completion of background tasks
+# '),
+#       file = file.path(sample_remap_dir, paste0(s_group, '_cm3.sh')))
+#   
+#   # make runner file executable for user
+#   system(paste0("chmod ug+x ",
+#                 file.path(sample_remap_dir, paste0(s_group, '_cm3.sh'))))
   
   # .tsv file for nextflow remap
   write.table(dt.remap[Sample_Group == strsplit(s_group, '-')[[1]][2], 
@@ -153,7 +153,7 @@ wait # for completion of background tasks
       paste0('projectDir=', project_dir, '\n'),
       paste0('workDir=', work_dir, '\n'),
       paste0('nextflow run ', file.path(repo_dir, 'main.nf'),
-             ' -profile charliecloud,slurm', ' -entry MAP', ' -with-report -with-timeline'
+             ' -profile charliecloud,slurm', ' -entry MAP', ' -with-report -with-timeline',
              ' -work-dir ', file.path('${workDir}', 'remap', 'work'),
              ' --output_base ', file.path('${projectDir}', 'input'),
              ' --genome_build.human ', genome_build.human,
