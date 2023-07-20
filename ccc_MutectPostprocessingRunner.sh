@@ -1,45 +1,19 @@
 #!/bin/bash
-#SBATCH -o ./debug/%x.%j.%N.out
-#SBATCH -e ./debug/%x.%j.%N.err
+#SBATCH -o %x.%j.%N.out
+#SBATCH -e %x.%j.%N.err
 #SBATCH -D ./
-#SBATCH -J MutectPostprocessMonitor
+#SBATCH -J MutectPost
 #SBATCH --get-user-env
 #SBATCH --export=NONE
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 #SBATCH --clusters=serial
 #SBATCH --partition=serial_std
 #SBATCH --reservation=gen_seq
 
 module load slurm_setup
-
-#==========================================================================
-# MONITORING
-# -> create a log file for each node to be monitored
-# -> periodically running "ps" on all compute nodes of this job to get CPU load and memory usage
-# -> writing "ps" output (snapshot) to log files for each node
-#==========================================================================
-NODEMONITOR=1             # enable (1) or disable (0) monitoring
-MONPATH=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/MoCaSeq/log  # storage location for log files
-DELAY=60                  # intervall (in s) to take snapshots of table of running processes
-MAXSNAPSHOTS=1000         # MAXIMUM NUMBER OF SNAPSHOTS TO AVOID CREATING A HUGE LOG FILE!!!
-COMMAND=ch-run             # name of command (running on the node) to be checked
-
-if (( NODEMONITOR != 0 )); then
-    # prepare monitoring
-    if [ -d $MONPATH ]; then rm -rf $MONPATH/*; else mkdir -p $MONPATH; fi
-    mpiexec hostname | sort -u > $MONPATH/mpi_hostfile
-    # run monitoring script in the background
-    mpiexec -f $MONPATH/mpi_hostfile -ppn 1 ./monitor_ps.sh \
-                                              $MONPATH $COMMAND $DELAY $MAXSNAPSHOTS &
-fi
-
-#==========================================================================
-# RUN USER APPLICATION
-#==========================================================================
-# EDIT HERE: put all your job script stuff here
 
 # run charliecloud container to do Mutect2 post processing
 # set container path
@@ -58,7 +32,8 @@ mv ref $workingDir
 
 # postprocessing variables
 name=$1
-echo "${name} Mutect2 postprocessing"
+type=$2
+echo "${name} Mutect2 postprocessing for $type case"
 
 # MoCaSeq call inside charliecloud container
 ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
@@ -67,12 +42,5 @@ ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
 --bind ${outDir} \
 --bind ${referencesDir} \
 -c $outDir/batch02 \
--- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh $name
-
-#==========================================================================
-# TERMINATE MONITORING (IF STILL RUNNING)
-#==========================================================================
-if (( NODEMONITOR != 0 )); then
-    mpiexec -f $MONPATH/mpi_hostfile -ppn 1 killall -u $USER -e monitor_ps.sh
-fi
+-- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh -t $type
 
