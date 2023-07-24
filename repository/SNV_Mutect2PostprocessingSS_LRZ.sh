@@ -176,4 +176,5 @@ elif [ $species = 'Mouse' ]; then
 
 fi
 
-sh $repository_dir/SNV_CleanUp.sh $name SS $type $species
+# do not remove the read orientation model
+# sh $repository_dir/SNV_CleanUp.sh $name SS $type $species

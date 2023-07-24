@@ -198,4 +198,5 @@ java -Xmx16g -jar $discvrseq_dir"/"$discvrseq_file".jar" VariantQC \
 
 #ls $name/results/Mutect2/
 
-sh $repository_dir/SNV_CleanUp.sh $name MS $type $species
+# do not remove intermediate files
+# sh $repository_dir/SNV_CleanUp.sh $name MS $type $species
