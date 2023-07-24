@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=03:00:00
+#SBATCH --time=24:00:00
 #SBATCH --clusters=mpp3
 #SBATCH --partition=mpp3_batch
 
