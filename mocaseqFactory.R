@@ -37,12 +37,12 @@ out_base <- file.path(project_dir, 'output')
 #                   "RAMP_0008_Lv_M_526", "RAMP_0008_Mu_R", "RAMP_0008_Pa_P")
 
 # read master table
-dt.master <- read_xlsx('EGA_mastertable.xlsx') %>% as.data.table()
+dt.master <- read_xlsx('data/data/EGA_mastertable.xlsx') %>% as.data.table()
 dt.master[, SampleID := gsub('.bam', '', FileName)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
-dt.mocaseq <- dt.master[Batch %in% c('batch04') & mocaseqed == F & remaped == T,
+dt.mocaseq <- dt.master[Batch %in% c('batch04') & mocaseqed == F & remaped == T & !is.na(hg38bam),
                         .(SampleID, Batch, DonorName, hg38bam, userMoCaSeq)]
 
 # input table columns
