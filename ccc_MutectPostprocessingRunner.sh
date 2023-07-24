@@ -9,9 +9,8 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=03:00:00
-#SBATCH --clusters=serial
-#SBATCH --partition=serial_std
-#SBATCH --reservation=gen_seq
+#SBATCH --clusters=mpp3
+#SBATCH --partition=mpp3_batch
 
 module load slurm_setup
 
@@ -33,6 +32,7 @@ mv ref $workingDir
 # postprocessing variables
 name=$1
 type=$2
+startDir=$3
 echo "${name} Mutect2 postprocessing for $type case"
 
 # MoCaSeq call inside charliecloud container
@@ -41,6 +41,6 @@ ch-run $cccDir --no-home --set-env=name=${name} -w --no-passwd \
 --bind ${mocaseqDir}:/opt/MoCaSeq/ \
 --bind ${outDir} \
 --bind ${referencesDir} \
--c $outDir/batch02 \
+-c $startDir \
 -- /bin/bash /opt/MoCaSeq/launch/ccc_Mutect_Postprocessing.sh -t $type
 
