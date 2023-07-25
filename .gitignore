@@ -8,6 +8,7 @@ MoCaSeq.Rproj
 launch/*
 !launch/ccc_remap_wrapper.sh
 !launch/ccc_Mutect_Postprocessing.sh
+!launch/ccc_LearnReadOrientationModel.sh
 !launch/remap/
 !launch/mocaseq/
 
