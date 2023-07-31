@@ -4,6 +4,8 @@ params.gatk = [:]
 process mutect_single {
 	tag "${meta.sampleName}"
 	// maxForks "${params.max_parallel}"
+	
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
 
 	input:
 		val (genome_build)
@@ -47,8 +49,10 @@ touch ${meta.sampleName}.${type}.m2.${interval}.f1r2.tar.gz .
 }
 
 process mutect_matched {
-	 tag "${meta.sampleName}"
-	 // maxForks "${params.max_parallel}"
+	tag "${meta.sampleName}"
+	// maxForks "${params.max_parallel}"
+	 
+	publishDir "${params.output_base}/${genome_build}/${meta.sampleName}/results/Mutect2", mode: "copy"
 
 	input:
 		val (genome_build)
