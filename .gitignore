@@ -14,7 +14,6 @@ launch/*
 
 # include specific remap sample dirs
 launch/remap/*
-!launch/remap/batch02-ASHPC_0019/
 !launch/remap/batch02-PCSI_0357/
 !launch/remap/batch02-PCSI_0410/
 !launch/remap/batch02-PCSI_0654/
@@ -23,21 +22,22 @@ launch/remap/*
 !launch/remap/batch03-PCSI_0665/
 !launch/remap/batch02-PCSI_0705/
 !launch/remap/batch04-ASHPC_0016/
-!launch/remap/batch04-ASHPC_0022/
-!launch/remap/batch04-ASHPC_0027/
-!launch/remap/batch04-ASHPC_0030/
 !launch/remap/batch04-ASHPC_0017/
-!launch/remap/batch04-ASHPC_0025/
-!launch/remap/batch04-ASHPC_0028/
-!launch/remap/batch04-ASHPC_0031/
 !launch/remap/batch04-ASHPC_0018/
+!launch/remap/batch02-ASHPC_0019/
+!launch/remap/batch04-ASHPC_0022/
+!launch/remap/batch04-ASHPC_0023/
+!launch/remap/batch04-ASHPC_0025/
 !launch/remap/batch04-ASHPC_0026/
+!launch/remap/batch04-ASHPC_0027/
+!launch/remap/batch04-ASHPC_0028/
 !launch/remap/batch04-ASHPC_0029/
+!launch/remap/batch04-ASHPC_0030/
+!launch/remap/batch04-ASHPC_0031/
 
 # include specific MoCaSeq sample dirs
 launch/mocaseq/*
 !launch/mocaseq/batch01-RAMP_0008/
-!launch/mocaseq/batch02-ASHPC_0019/
 !launch/mocaseq/batch02-PCSI_0357/
 !launch/mocaseq/batch02-PCSI_0410/
 !launch/mocaseq/batch02-PCSI_0654/
@@ -46,16 +46,18 @@ launch/mocaseq/*
 !launch/mocaseq/batch03-PCSI_0665/
 !launch/mocaseq/batch02-PCSI_0705/
 !launch/mocaseq/batch04-ASHPC_0016/
-!launch/mocaseq/batch04-ASHPC_0022/
-!launch/mocaseq/batch04-ASHPC_0027/
-!launch/mocaseq/batch04-ASHPC_0030/
 !launch/mocaseq/batch04-ASHPC_0017/
-!launch/mocaseq/batch04-ASHPC_0025/
-!launch/mocaseq/batch04-ASHPC_0028/
-!launch/mocaseq/batch04-ASHPC_0031/
 !launch/mocaseq/batch04-ASHPC_0018/
+!launch/mocaseq/batch02-ASHPC_0019/
+!launch/mocaseq/batch04-ASHPC_0022/
+!launch/mocaseq/batch04-ASHPC_0023/
+!launch/mocaseq/batch04-ASHPC_0025/
 !launch/mocaseq/batch04-ASHPC_0026/
+!launch/mocaseq/batch04-ASHPC_0027/
+!launch/mocaseq/batch04-ASHPC_0028/
 !launch/mocaseq/batch04-ASHPC_0029/
+!launch/mocaseq/batch04-ASHPC_0030/
+!launch/mocaseq/batch04-ASHPC_0031/
 
 # exclude all .nextflow* and .out data
 **/.nextflow/

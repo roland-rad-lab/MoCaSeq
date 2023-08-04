@@ -42,7 +42,7 @@ dt.master[, SampleID := gsub('.bam', '', FileName)]
 
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
-dt.mocaseq <- dt.master[Batch %in% c('batch04') & mocaseqed == F & remaped == T & !is.na(hg38bam),
+dt.mocaseq <- dt.master[ !is.na(hg38bam) & mocaseqed == F & remaped == T,
                         .(SampleID, Batch, DonorName, hg38bam, userMoCaSeq)]
 
 # input table columns
