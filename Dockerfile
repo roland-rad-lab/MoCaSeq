@@ -488,7 +488,7 @@ RUN g++ -std=c++11 /usr/local/lib/R/site-library/facets/extcode/snp-pileup.cpp -
 WORKDIR /var/pipeline/
 
 RUN cd ${PACKAGE_DIR} \
-	&& git clone https://github.com/roland-rad-lab/MoCaSeq.git \
+	&& git clone --branch human-pipeline https://github.com/roland-rad-lab/MoCaSeq.git \
 	&& cd ${PACKAGE_DIR}/MoCaSeq/ \
     && chmod 775 entrypoint.sh \
     && chmod 775 MoCaSeq.sh \
