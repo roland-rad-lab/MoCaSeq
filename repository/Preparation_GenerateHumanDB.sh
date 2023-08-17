@@ -73,7 +73,7 @@ tabix ref/"$VersionHuman"/GRCh38.CosmicNonCodingVariants.v88.vcf.gz
 tabix ref/"$VersionHuman"/GRCh38.CosmicCodingMuts.v88.vcf.gz
 
 echo "Downloading dbNSFP4.4a.zip (~30GB, this can take a while)"
-wget -nv -P "ref/"$VersionHuman"/" ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFP4.4a.zip
+wget -nv -P "ref/"$VersionHuman"/" https://dbnsfp.s3.amazonaws.com/dbNSFP4.4a.zip
 cd "ref/"$VersionHuman"/"
 unzip dbNSFP4.4a.zip
 (zcat dbNSFP4.4a_variant.chr1 | head -n 1; zcat dbNSFP4.4a_variant.chr* | grep -v "^#" ) > dbNSFP4.4a.txt
