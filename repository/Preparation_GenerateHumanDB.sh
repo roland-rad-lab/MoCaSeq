@@ -45,8 +45,8 @@ rm "ref/"$VersionHuman"/gnomad.exomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz.tbi"
 tabix -p vcf "ref/"$VersionHuman"/gnomad.genomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz"
 tabix -p vcf "ref/"$VersionHuman"/gnomad.exomes.r2.0.1.sites.GRCh38.noVEP.vcf.gz"
 
-wget -nv -P "ref/"$VersionHuman"/" https://storage.googleapis.com/gnomad-public/release/3.0/vcf/genomes/gnomad.genomes.r3.0.sites.vcf.bgz
-wget -nv -P "ref/"$VersionHuman"/" https://storage.googleapis.com/gnomad-public/release/3.0/vcf/genomes/gnomad.genomes.r3.0.sites.vcf.bgz.tbi
+wget -nv -P "ref/"$VersionHuman"/" https://storage.googleapis.com/gcp-public-data--gnomad/release/3.0/vcf/genomes/gnomad.genomes.r3.0.sites.vcf.bgz
+wget -nv -P "ref/"$VersionHuman"/" https://storage.googleapis.com/gcp-public-data--gnomad/release/3.0/vcf/genomes/gnomad.genomes.r3.0.sites.vcf.bgz.tbi
 
 wget -nv -P "ref/"$VersionHuman"/" ftp://ftp.ncbi.nlm.nih.gov//pub/clinvar/vcf_GRCh38/clinvar.vcf.gz
 wget -nv -P "ref/"$VersionHuman"/" ftp://ftp.ncbi.nlm.nih.gov//pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi
