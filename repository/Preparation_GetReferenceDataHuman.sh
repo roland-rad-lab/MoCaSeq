@@ -114,7 +114,7 @@ sh $repository_dir/Preparation_GenerateBWAIndex.sh $VersionHuman $config_file $s
 echo '---- Generate sequence dictionary ----' | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
 date | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
 
-FINISHED AND TESTED
+# FINISHED AND TESTED
 java -Dpicard.useLegacyParser=false -jar $picard_dir/picard.jar CreateSequenceDictionary \
 -O "ref/"$VersionHuman"/"$VersionHuman".dict" \
 -R "ref/"$VersionHuman"/"$VersionHuman".fna"
