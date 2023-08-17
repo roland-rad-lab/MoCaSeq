@@ -140,9 +140,11 @@ date | tee -a "ref/"$VersionHuman"/GetReferenceData.txt"
 
 # FINISHED AND TESTED
 wget -nv -P "ref/"$VersionHuman"/VEP" ftp://ftp.ensembl.org/pub/release-96/variation/indexed_vep_cache/homo_sapiens_vep_96_GRCh38.tar.gz
-tar -xzf "ref/"$VersionHuman"/VEP/homo_sapiens_vep_96_GRCh38.tar.gz"
-mv homo_sapiens "ref/"$VersionHuman"/VEP/"
-rm "ref/"$VersionHuman"/VEP/mus_musculus_vep_96_GRCm38.tar.gz"
+cd ref
+tar -xzf $VersionHuman"/VEP/homo_sapiens_vep_96_GRCh38.tar.gz"
+mv homo_sapiens $VersionHuman"/VEP/"
+rm $VersionHuman"/VEP/mus_musculus_vep_96_GRCm38.tar.gz"
+cd ..
 
 
 
