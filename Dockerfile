@@ -45,7 +45,9 @@ RUN	apt update \
 		fonts-texgyre \
 		gpg-agent \
 		software-properties-common \
-		gosu \
+		gosu \ 
+                libharfbuzz-dev \
+                libfribidi-dev \
 	&& apt -y --no-install-recommends upgrade \
 	&& apt install -y --no-install-recommends \
 		apt-transport-https \
