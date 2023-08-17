@@ -27,8 +27,8 @@ mv "ref/"$VersionHuman"/00-common_all_nochr.vcf" "ref/"$VersionHuman"/00-common_
 bgzip "ref/"$VersionHuman"/00-common_all.vcf"
 tabix -p vcf "ref/"$VersionHuman"/00-common_all.vcf.gz"
 
-mv "ref/"$VersionHuman"/00-All_nochr.vcf" "ref/"$VersionHuman"/00-all.vcf"
 rm "ref/"$VersionHuman"/00-All.vcf"
+mv "ref/"$VersionHuman"/00-All_nochr.vcf" "ref/"$VersionHuman"/00-all.vcf"
 bgzip "ref/"$VersionHuman"/00-all.vcf"
 tabix -p vcf "ref/"$VersionHuman"/00-all.vcf.gz"
 
