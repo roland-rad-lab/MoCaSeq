@@ -143,7 +143,7 @@ wget -nv -P "ref/"$VersionHuman"/VEP" ftp://ftp.ensembl.org/pub/release-96/varia
 cd ref
 tar -xzf $VersionHuman"/VEP/homo_sapiens_vep_96_GRCh38.tar.gz"
 mv homo_sapiens $VersionHuman"/VEP/"
-rm $VersionHuman"/VEP/mus_musculus_vep_96_GRCm38.tar.gz"
+rm $VersionHuman"/VEP/homo_sapiens_vep_96_GRCh38.tar.gz"
 cd ..
 
 
