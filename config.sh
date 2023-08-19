@@ -83,7 +83,7 @@ if [ $species = 'Human' ]; then
 
 	# needed for SNV_[Mutect2/Strelka]Postprocessing
 	dbsnp_file=$genome_dir/00-all.vcf.gz
-	dbnsfp_file=$genome_dir/dbNSFP4.1a.txt.gz
+	dbnsfp_file=$genome_dir/dbNSFP4.4a.txt.gz
 	cosmiccoding_file=$genome_dir/GRCh38.CosmicCodingMuts.v88.vcf.gz
 	cosmicnoncoding_file=$genome_dir/GRCh38.CosmicNonCodingVariants.v88.vcf.gz
 	clinvar_file=$genome_dir/GRCh38.clinvar.vcf.gz
