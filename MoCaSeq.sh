@@ -22,7 +22,7 @@ usage()
 	echo "	-rm, --repeat_mapping    If -nb or -tb are specified, determines whether mapping is re-done ('yes') or whether the complete mapping procedure is skipped ('no')."
 	echo "	-st, --sequencing_type   Set to 'WES' or 'WGS'. Defaults to WES."
 	echo "	-c, --config             Path to configuration file. Optional."
-	echo "	-qc, --quality_control   Determines whether QC is done ('yes') or skipped ('no'). Optional."
+	echo "	-rq, --quality_control   Determines whether QC is done ('yes') or skipped ('no'). Optional."
 	echo "	-t, --threads            Number of CPU threads. Optional. Defaults to 8."
 	echo "	-r, --RAM                Amount of Gb RAM. Optional. Defaults to 32."
 	echo "	-temp, --temp_dir        Path to temporary directory. Optional. Defaults to current working directory."
