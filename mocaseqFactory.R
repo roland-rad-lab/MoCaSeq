@@ -83,7 +83,7 @@ for (s_group in sample_groups) {
       paste0('# path to MoCaSeq git repo\n', 'repoDir=', repo_dir, '\n'),
       paste0('# path to working dir\n', 'workDir=', work_dir, '\n'),
       paste0('# nextflow needs this variable to get SLURM job status\n',
-             'export SLURM\\_CLUSTERS="serial"\n'),
+             'export SLURM\\_CLUSTERS="', strsplit(custom_config_version, '-')[[1]][1], '"\n'),
       paste0('\n','nextflow run ', file.path('${repoDir}', 'main.nf'),
              ' -profile charliecloud,slurm -with-report -with-timeline',
              ' -work-dir ', '${workDir}', 
