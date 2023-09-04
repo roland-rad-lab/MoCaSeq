@@ -1,0 +1,4 @@
+Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
+PCSI_0102_Ly_R	PCSI_0102	?	?	?	wgs	Human	Normal	NA	NA	NA
+PCSI_0102_Pa_P	PCSI_0102	?	?	?	wgs	Human	Tumor	NA	NA	NA
+PCSI_0102_Pa_P_526	PCSI_0102	?	?	?	wgs	Human	Tumor	NA	NA	NA
