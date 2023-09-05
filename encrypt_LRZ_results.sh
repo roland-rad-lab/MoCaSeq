@@ -26,7 +26,7 @@ function CheckEncryption {
     fi
 }
 
-function encrypt{
+function encrypt {
   file_to_encrypt=$1
   
   if [ -f $file_to_encrypt ]
