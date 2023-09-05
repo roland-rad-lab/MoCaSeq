@@ -3,6 +3,8 @@
 name=$1
 password=$2
 type=$3 # Tumor or Normal
+# use e.g.
+# for samp in *R/; do /dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS//software/MoCaSeq/encrypt_LRZ_results.sh ${samp:0:-1} 'Rad1-COMPASS!' Normal; done
 
 echo "Sample: $name";
 export C4GH_PASSPHRASE=$password
