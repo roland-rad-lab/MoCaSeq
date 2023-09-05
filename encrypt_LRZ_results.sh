@@ -87,7 +87,7 @@ done
 
 
 elif [[ $type == "Tumor" ]]
-
+then
 # TUMOR file encryption
 ## bam files
 bam_files=(${name}/results/bam/${name}.Tumor.bam 
