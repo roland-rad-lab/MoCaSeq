@@ -14,15 +14,15 @@ pkFile=~/c4ghKeys/COMPASS_c4gh.pub
 # function to check if a file was successfully encrypted or not
 # check if c4gh is valid (i.e. larger than 1 Byte) (i.e. not delete if the given password was wrong)
 function CheckEncryption {
-  file_to_encrypt=$1
+  file_to_check=$1
 
-    if [ -n "$(find "$file_to_encrypt.c4gh" -prune -size +1c)" ]; then
-        echo "File successfully encrypted: ${file_to_encrypt}"
-        rm ${file_to_encrypt}
+    if [ -n "$(find "$file_to_check.c4gh" -prune -size +1c)" ]; then
+        echo "File successfully encrypted: ${file_to_check}"
+        rm ${file_to_check}
     else
-        echo "File was NOT successfully encrypted: ${file_to_encrypt}"
+        echo "File was NOT successfully encrypted: ${file_to_check}"
         echo "This file was NOT encrypted! (maybe the password in argument 2 is wrong?)"
-        rm ${file_to_encrypt}.c4gh # remove empty file 
+        rm ${file_to_check}.c4gh # remove empty file 
     fi
 }
 
@@ -31,7 +31,7 @@ function encrypt{
   
   if [ -f $file_to_encrypt ]
   then
-  encrypt $file_to_encrypt
+  ~/.local/bin/crypt4gh encrypt --sk COMPASS_c4gh.sec --recipient_pk COMPASS_c4gh.pub < ${file_to_encrypt} > ${file_to_encrypt}.c4gh
   CheckEncryption $file_to_encrypt
   else
   echo "File NOT found: $file_to_encrypt"
