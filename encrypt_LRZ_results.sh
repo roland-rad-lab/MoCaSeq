@@ -57,11 +57,11 @@ encrypt $file_to_encrypt
 
 # vcfs
 # vcfs
-vcf_files=(${name}/results/Mutect2/${name}.*.m2.vcf.gz
-${name}/results/Mutect2/${name}.*.m2.filtered.vcf.gz 
-${name}/results/Mutect2/${name}.*.Mutect2.vcf.gz
-${name}/results/Mutect2/${name}.*.Mutect2.vep.vcf
-${name}/results/Mutect2/${name}.*.Mutect2.annotated.vcf.gz)
+vcf_files=(${name}/results/Mutect2/${name}.Normal.m2.vcf.gz
+${name}/results/Mutect2/${name}.Normal.m2.filtered.vcf.gz 
+${name}/results/Mutect2/${name}.Normal.Mutect2.vcf.gz
+${name}/results/Mutect2/${name}.Normal.Mutect2.vep.vcf
+${name}/results/Mutect2/${name}.Normal.Mutect2.annotated.vcf.gz)
 # these files are not created by the nextflow version of MoCaSeq
 # ${name}/results/Mutect2/${name}.Normal.Mutect2.mergeid.vcf
 # ${name}/results/Mutect2/${name}.Normal.m2.filt.selected.vcf
@@ -73,12 +73,12 @@ encrypt $file_to_encrypt;
 done
 
 # custom vcf style txt files
-txt_files=(${name}/results/Mutect2/${name}.*.Mutect2.txt
-${name}/results/Mutect2/${name}.*.Mutect2.Positions.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
+txt_files=(${name}/results/Mutect2/${name}.Normal.Mutect2.txt
+${name}/results/Mutect2/${name}.Normal.Mutect2.Positions.txt
+${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.txt
+${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.txt
+${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
+${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
 
 for file_to_encrypt in ${txt_files[@]};
 do
@@ -128,10 +128,10 @@ done
 # custom vcf style txt files
 txt_files=(${name}/results/Mutect2/${name}.*.Mutect2.txt
 ${name}/results/Mutect2/${name}.*.Mutect2.Positions.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
+${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.txt
+${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.txt
+${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
+${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
 
 for file_to_encrypt in ${txt_files[@]};
 do
