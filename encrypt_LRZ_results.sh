@@ -31,7 +31,7 @@ function encrypt {
   
   if [ -f $file_to_encrypt ]
   then
-  ~/.local/bin/crypt4gh encrypt --sk COMPASS_c4gh.sec --recipient_pk COMPASS_c4gh.pub < ${file_to_encrypt} > ${file_to_encrypt}.c4gh
+  ~/.local/bin/crypt4gh encrypt --sk $skFile --recipient_pk $pkFile < ${file_to_encrypt} > ${file_to_encrypt}.c4gh
   CheckEncryption $file_to_encrypt
   else
   echo "File NOT found: $file_to_encrypt"
