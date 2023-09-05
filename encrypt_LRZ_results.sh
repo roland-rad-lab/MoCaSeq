@@ -48,163 +48,102 @@ if [[ $type == "Normal" ]]
 then
 
 # NORMAL file encryption
-## Normal bam file
+# bam files
 file_to_encrypt=${name}/results/bam/${name}.Normal.bam
 encrypt $file_to_encrypt
-
-## Normal Mutect files
 file_to_encrypt=${name}/results/Mutect2/${name}.Normal.m2.bam
 encrypt $file_to_encrypt
 
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.m2.vcf
-encrypt $file_to_encrypt
 
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.txt
-encrypt $file_to_encrypt
+# vcfs
+# vcfs
+vcf_files=(${name}/results/Mutect2/${name}.*.m2.vcf.gz
+${name}/results/Mutect2/${name}.*.m2.filtered.vcf.gz 
+${name}/results/Mutect2/${name}.*.Mutect2.vcf.gz
+${name}/results/Mutect2/${name}.*.Mutect2.vep.vcf
+${name}/results/Mutect2/${name}.*.Mutect2.annotated.vcf.gz)
+# these files are not created by the nextflow version of MoCaSeq
+# ${name}/results/Mutect2/${name}.Normal.Mutect2.mergeid.vcf
+# ${name}/results/Mutect2/${name}.Normal.m2.filt.selected.vcf
+# ${name}/results/Mutect2/${name}.Normal.Mutect2.annotated.one.vcf -> ${name}/results/Mutect2/${name}.*.Mutect2.annotated.vcf.gz
 
+for file_to_encrypt in ${vcf_files[@]};
+do
+encrypt $file_to_encrypt;
+done
 
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.vcf
-encrypt $file_to_encrypt
+# custom vcf style txt files
+txt_files=(${name}/results/Mutect2/${name}.*.Mutect2.txt
+${name}/results/Mutect2/${name}.*.Mutect2.Positions.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
 
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.vep.maf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.vep.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.mergeid.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.m2.filt.selected.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.Positions.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.annotated.one.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt
-encrypt $file_to_encrypt
+for file_to_encrypt in ${txt_files[@]};
+do
+encrypt $file_to_encrypt;
+done
 
 
 elif [[ $type == "Tumor" ]]
 
 # TUMOR file encryption
-## Tumor bam file
-file_to_encrypt=${name}/results/bam/${name}.Tumor.bam
-encrypt $file_to_encrypt
+## bam files
+bam_files=(${name}/results/bam/${name}.Tumor.bam 
+${name}/results/Mutect2/${name}.m2.bam
+${name}/results/Mutect2/${name}.Tumor.m2.bam)
+
+for file_to_encrypt in ${bam_files[@]};
+do
+encrypt $file_to_encrypt;
+done
 
 
 # LOH
 file_to_encrypt=${name}/results/LOH/${name}.VariantsForLOH.txt
 encrypt $file_to_encrypt
 
-
 file_to_encrypt=${name}/results/LOH/${name}.VariantsForLOHGermline.txt
 encrypt $file_to_encrypt
 
 
 # PURITY
-file_to_encrypt=${name}/results/InhousePurity/${name}_corrected_LOH_values.tsv.gz
-encrypt $file_to_encrypt
+# these are pre-deleted by Niklas
+#${name}/results/InhousePurity/${name}_corrected_LOH_values.tsv.gz
+#${name}/results/InhousePurity/Flex/${name}_corrected_LOH_values.tsv.gz
 
-file_to_encrypt=${name}/results/InhousePurity/Flex/${name}_corrected_LOH_values.tsv.gz
-encrypt $file_to_encrypt
+# vcfs
+vcf_files=(${name}/results/Mutect2/${name}.*.m2.vcf.gz
+${name}/results/Mutect2/${name}.*.m2.filtered.vcf.gz 
+${name}/results/Mutect2/${name}.*.Mutect2.vcf.gz
+${name}/results/Mutect2/${name}.*.Mutect2.vep.vcf
+${name}/results/Mutect2/${name}.*.Mutect2.annotated.vcf.gz)
 
-# ALL THE MUTECT2 FILES
+for file_to_encrypt in ${vcf_files[@]};
+do
+encrypt $file_to_encrypt;
+done
 
-# COMBINED
-file_to_encrypt=${name}/results/Mutect2/${name}.m2.bam
-encrypt $file_to_encrypt
+# custom vcf style txt files
+txt_files=(${name}/results/Mutect2/${name}.*.Mutect2.txt
+${name}/results/Mutect2/${name}.*.Mutect2.Positions.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
+${name}/results/Mutect2/${name}.*.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
 
+for file_to_encrypt in ${txt_files[@]};
+do
+encrypt $file_to_encrypt;
+done
 
-file_to_encrypt=${name}/results/Mutect2/${name}.m2.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.m2.filt.vcf
-encrypt $file_to_encrypt
-
-
-# TUMOR
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.m2.bam
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.m2.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.vcf
-encrypt $file_to_encrypt
-
-
+# maf
 file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.vep.maf
 encrypt $file_to_encrypt
 
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.vep.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.mergeid.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.m2.filt.selected.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.Positions.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.annotated.one.vcf
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-encrypt $file_to_encrypt
-
-
-file_to_encrypt=${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt
-encrypt $file_to_encrypt
-
-
 else
-echo "invalid type: $type"
+echo "Invalid type: $type"
 exit 1
 
 fi
