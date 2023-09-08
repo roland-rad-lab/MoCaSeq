@@ -28,12 +28,13 @@ do
 	cd $mocaseqDir/batch0$batch
 
 	# 4. encrypt sensitive files
-	if [ $(echo $samp | grep '_R') == $samp ]
+	if [[ $(echo $samp | grep '_R') == $samp ]]
 	then
 	echo "Encrypting Normal sample: $samp"
 	$repoDir/encrypt_LRZ_results.sh $samp 'Rad1-COMPASS!' "Normal"
-	elif [ $(echo $samp | grep -E '_(P|M|X)') == $samp ]
+	elif [[ $(echo $samp | grep -E '_(P|M|X)') == $samp ]]
 	then
+	echo "Encrypting Tumor sample: $samp"
 	
 	# 3. collect LOH, Mutect and HMMCopy results for purity analysis
 	# TODO: how to handle bash Postprocessing?
@@ -60,7 +61,6 @@ do
         	rm ${file_to_check}.c4gh # remove empty file 
     	fi
 	
-	echo "Encrypting Tumor sample: $samp"
 	$repoDir/encrypt_LRZ_results.sh $samp 'Rad1-COMPASS!' "Tumor"
 	else
 	echo "Error: cannot detect sample type in $samp. Will not encrypt."
