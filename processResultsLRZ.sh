@@ -27,6 +27,14 @@ do
 	mv -v $(find $mocaseqDir -name $samp -type d) $mocaseqDir/batch0$batch
 	cd $mocaseqDir/batch0$batch
 
+	# 4. encrypt sensitive files
+	if [ $(echo $samp | grep '_R') == $samp ]
+	then
+	echo "Encrypting Normal sample: $samp"
+	$repoDir/encrypt_LRZ_results.sh $samp 'Rad1-COMPASS!' "Normal"
+	elif [ $(echo $samp | grep -E '_(P|M|X)') == $samp ]
+	then
+	
 	# 3. collect LOH, Mutect and HMMCopy results for purity analysis
 	# TODO: how to handle bash Postprocessing?
 	
@@ -40,14 +48,18 @@ do
 	     ${samp}/results/HMMCopy/${samp}.HMMCopy.20000.segments.txt
 
 	~/.local/bin/crypt4gh encrypt --sk $skFile --recipient_pk $pkFile < ${samp}_PURITYDATA.tar.gz > ${samp}_PURITYDATA.tar.gz.c4gh
-
-	# 4. encrypt sensitive files
-	if [ $(echo $samp | grep '_R') == $samp ]
-	then
-	echo "Encrypting Normal sample: $samp"
-	$repoDir/encrypt_LRZ_results.sh $samp 'Rad1-COMPASS!' "Normal"
-	elif [ $(echo $samp | grep -E '_(P|M|X)') == $samp ]
-	then
+	
+	# check encryption
+	file_to_check=${samp}_PURITYDATA.tar.gz
+	if [ -n "$(find "$file_to_check.c4gh" -prune -size +1c)" ]; then
+        	echo "File successfully encrypted: ${file_to_check}"
+        	rm ${file_to_check}
+    	else
+        	echo "File was NOT successfully encrypted: ${file_to_check}"
+        	echo "This file was NOT encrypted! (maybe the password in argument 2 is wrong?)"
+        	rm ${file_to_check}.c4gh # remove empty file 
+    	fi
+	
 	echo "Encrypting Tumor sample: $samp"
 	$repoDir/encrypt_LRZ_results.sh $samp 'Rad1-COMPASS!' "Tumor"
 	else
