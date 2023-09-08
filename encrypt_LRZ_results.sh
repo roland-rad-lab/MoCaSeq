@@ -80,7 +80,7 @@ ${name}/results/Mutect2/${name}.Normal.Mutect2.Positions.txt
 ${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.txt
 ${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.txt
 ${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
+${name}/results/Mutect2/${name}.Normal.Mutect2.NoCommonSNPs.OnlyImpact.*.TruSight.txt)
 
 for file_to_encrypt in ${txt_files[@]};
 do
@@ -133,7 +133,7 @@ ${name}/results/Mutect2/${name}.*.Mutect2.Positions.txt
 ${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.txt
 ${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.txt
 ${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.CGC.txt
-${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.TruSight.txt)
+${name}/results/Mutect2/${name}.Tumor.Mutect2.NoCommonSNPs.OnlyImpact.*.TruSight.txt)
 
 for file_to_encrypt in ${txt_files[@]};
 do
