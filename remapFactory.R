@@ -159,7 +159,7 @@ for (s_group in sample_groups) {
              ' --genome_build.human ', genome_build.human,
              ' --custom_config_version ', custom_config_version,
              ' --custom_config_base ', file.path(repo_dir, 'conf'),
-             ' --input ', paste0(s_group, '.tsv')),
+             ' --input ', paste0(s_group, '.tsv\n')),
       file = file.path(sample_remap_dir, paste0(s_group, '_nf.sh')))
   
   # make runner file executable for user
