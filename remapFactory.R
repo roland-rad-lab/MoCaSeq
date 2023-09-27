@@ -46,7 +46,7 @@ dt.master[, SampleID := gsub('.bam', '', FileName)]
 # get only samples that are currently present on LRZ
 # alternatively filter for samples here
 # TODO dt.master[BatchSub %in% c('4d', '4e', '4f') & !is.na(hg19bam)]
-dt.remap <- dt.master[!is.na(hg19bam) & !remaped,
+dt.remap <- dt.master[!is.na(hg19bam) & !remaped & Batch != "corrupted",
                       .(SampleID, Batch, DonorName, hg19bam, userREMAP)]
 
 # input table columns
