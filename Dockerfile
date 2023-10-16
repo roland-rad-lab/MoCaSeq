@@ -24,7 +24,7 @@ ENV LC_ALL=en_US.UTF-8
 
 ENV PATH ${PATH}:${PACKAGE_DIR}/bin
 
-ENV PERL5LIB ${PACKAGE_DIR}/vep-96:${PERL5LIB}
+ENV PERL5LIB ${PACKAGE_DIR}/vep-96:${PACKAGE_DIR}/vep-102:${PERL5LIB}
 
 ## Configure default locale, mostly to avoid problems with R (sorting etc.),
 ## see https://github.com/rocker-org/rocker/issues/19
@@ -380,6 +380,32 @@ RUN	cd ${TEMP_DIR} \
 	&& rm snpEff_v4_3_GRCm38.86.zip \
 	&& rm -r snpEff_v4_3_GRCm38.86
 
+# SnpEff mouse database update
+RUN	cd ${TEMP_DIR} \
+    && wget -nv http://ftp.ensembl.org/pub/release-102/gtf/mus_musculus/Mus_musculus.GRCm38.102.gtf.gz \
+    && mkdir -p ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102 \
+    && mv Mus_musculus.GRCm38.102.gtf.gz ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/genes.gtf.gz \
+    && wget -nv http://ftp.ensembl.org/pub/release-102/fasta/mus_musculus/pep/Mus_musculus.GRCm38.pep.all.fa.gz \
+    && mv Mus_musculus.GRCm38.pep.all.fa.gz ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/protein.fa.gz \
+    && wget -nv http://ftp.ensembl.org/pub/release-102/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz \
+    && mv Mus_musculus.GRCm38.cdna.all.fa.gz ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/cds.fa.gz \
+    && wget -nv http://ftp.ensembl.org/pub/release-102/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.toplevel.fa.gz \
+    && mv Mus_musculus.GRCm38.dna.toplevel.fa.gz ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/sequences.fa.gz \
+    && gunzip ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/*.gz \
+#	&& curl -H 'Accept: text/pfm' -X GET "https://jaspar.genereg.net/api/v1/species/10090/?version=1&release=2022&page=1&page_size=1000&collection=CORE" > pfm_all_mouse.txt \
+#	&& gzip -c pfm_all_mouse.txt > ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/pwms.bin \
+#	&& wget -nv http://ftp.ensembl.org/pub/release-102/regulation/mus_musculus/MotifFeatures/Mus_musculus.GRCm38.motif_features.gff.gz \
+#	&& mv Mus_musculus.GRCm38.motif_features.gff.gz ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/motif.gff.gz \
+#	&& gunzip ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/motif.gff.gz \
+    && echo 'GRCm38.102.genome : Mus_musculus' >> ${PACKAGE_DIR}/snpEff-4.3T/snpEff.config \
+    && echo 'GRCm38.102.reference : ftp://ftp.ensembl.org/pub/release-102/gtf/mus_musculus/' >> ${PACKAGE_DIR}/snpEff-4.3T/snpEff.config \
+    && java -Xmx20g -jar ${PACKAGE_DIR}/snpEff-4.3T/snpEff.jar build -v GRCm38.102 \
+	&& rm ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/genes.gtf \
+	&& rm ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/protein.fa \
+	&& rm ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/cds.fa \
+	&& rm ${PACKAGE_DIR}/snpEff-4.3T/data/GRCm38.102/sequences.fa
+#	&& rm pfm_all_mouse.txt
+
 # Trimmomatic v0.39 (http://www.usadellab.org)
 RUN	cd ${TEMP_DIR} \
 	&& wget -nv 'http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.39.zip' \
@@ -473,6 +499,15 @@ RUN	cd ${TEMP_DIR} \
 	&& cd ${TEMP_DIR} \
 	&& mv ensembl-vep ${PACKAGE_DIR}/vep-96 \
 	&& perl ${PACKAGE_DIR}/vep-96/INSTALL.pl --AUTO a --DESTDIR ${PACKAGE_DIR}/vep-96 --NO_UPDATE --NO_TEST --NO_HTSLIB
+
+# Ensembl VEP 102.0 (https://github.com/Ensembl/ensembl-vep.git)
+RUN     cd ${TEMP_DIR} \
+        && git clone 'https://github.com/Ensembl/ensembl-vep.git' \
+        && cd ensembl-vep \
+        && git checkout 'release/102.0' \
+        && cd ${TEMP_DIR} \
+        && mv ensembl-vep ${PACKAGE_DIR}/vep-102 \
+        && perl ${PACKAGE_DIR}/vep-102/INSTALL.pl --AUTO a --DESTDIR ${PACKAGE_DIR}/vep-102 --NO_UPDATE --NO_TEST --NO_HTSLIB
 
 # vcf2maf 1.6.17 (https://github.com/mskcc/vcf2maf/archive/v1.6.17.tar.gz)
 RUN	cpanm --notest LWP::Simple Archive::Zip Archive::Extract HTTP::Tiny Test::Simple File::Copy::Recursive Perl::OSType Module::Metadata version TAP::Harness CGI Encode CPAN::Meta JSON DBD::SQLite Set::IntervalTree Archive::Tar Time::HiRes Module::Build Bio::Root::Version \
