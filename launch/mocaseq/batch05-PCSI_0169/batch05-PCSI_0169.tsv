@@ -1,0 +1,3 @@
+Sample_Name	Sample_Group	Library_ID	Lane	Colour_Chemistry	SeqType	Organism	Type	R1	R2	BAM
+PCSI_0169_Pa_P_526	PCSI_0169	?	?	?	wgs	Human	Tumor	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12/batch05/PCSI_0169_Pa_P_526/results/bam/PCSI_0169_Pa_P_526.Tumor.bam
+PCSI_0169_Si_R_526	PCSI_0169	?	?	?	wgs	Human	Normal	NA	NA	/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/input/GRCh38.p12/batch05/PCSI_0169_Si_R_526/results/bam/PCSI_0169_Si_R_526.Normal.bam
