@@ -32,25 +32,25 @@ cd $mocaseqDir/batch0$batch
 
 # remove chromosome wise .vcf files
 # check genome wide vcf file exits and has reasonable size (= size larger than header)
-size_threshold=34635
-if [ $(ls -la $(find $donor* -name $donor*\.Tumor\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ] && [ $(ls -la $(find $donor* -name $donor*\.Normal\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ] && [ $(ls -la $(find $donor* -name $donor*\.matched\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ]
-then
-	echo "Normal, Tumor and matched .vcf.gz files are larger than header size, removing chromosome wise .vcf files"
-	# check there are exactly 72 files matched (24 Tumor, 24 Normal, 24 matched)
-	if [ $(find $donor* -name *.m2\.*\.vcf | wc -l) == 72 ]
-	then
-		echo "Found exactly 72 files matching $donor*.m2\.*\.vcf, removing those chromosome wise .vcf files"
-		# remove chromosome wise .vcf and .vcf.stats
-		rm -v $(find $donor* -name *.m2\.*\.vcf)
-		rm -v $(find $donor* -name *.m2\.*\.vcf.stats)
-	else
-		echo "$donor*.m2\.*\.vcf matches not 72 files, won't remove these files, because some file is missing or too much."
-		ls -la $(find $donor* -name *.m2\.*\.vcf)
-	fi
-else
-	echo "One of Normal, Tumor and matched .vcf.gz is unusualy small, won't remove chromosome wise .vcf files:"
-	ls -la $(find $donor* -name $donor*\.*\.Mutect2\.vcf.gz.c4gh)
-fi 
+# size_threshold=34635
+# if [ $(ls -la $(find $donor* -name $donor*\.Tumor\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ] && [ $(ls -la $(find $donor* -name $donor*\.Normal\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ] && [ $(ls -la $(find $donor* -name $donor*\.matched\.Mutect2\.vcf.gz.c4gh) | cut -f 5 -d ' ') > $size_threshold ]
+# then
+# 	echo "Normal, Tumor and matched .vcf.gz files are larger than header size, removing chromosome wise .vcf files"
+# 	# check there are exactly 72 files matched (24 Tumor, 24 Normal, 24 matched)
+# 	if [ $(find $donor* -name *.m2\.*\.vcf | wc -l) == 72 ]
+# 	then
+# 		echo "Found exactly 72 files matching $donor*.m2\.*\.vcf, removing those chromosome wise .vcf files"
+# 		# remove chromosome wise .vcf and .vcf.stats
+# 		rm -v $(find $donor* -name *.m2\.*\.vcf)
+# 		rm -v $(find $donor* -name *.m2\.*\.vcf.stats)
+# 	else
+# 		echo "$donor*.m2\.*\.vcf matches not 72 files, won't remove these files, because some file is missing or too much."
+# 		ls -la $(find $donor* -name *.m2\.*\.vcf)
+# 	fi
+# else
+# 	echo "One of Normal, Tumor and matched .vcf.gz is unusualy small, won't remove chromosome wise .vcf files:"
+# 	ls -la $(find $donor* -name $donor*\.*\.Mutect2\.vcf.gz.c4gh)
+# fi 
 
 for samp in $samples
 do
