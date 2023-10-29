@@ -14,8 +14,8 @@ chmod 754 repository/all_RunBubbleTree.R repository/SNV_SelectOutput.R repositor
 chmod 754 launch/ccc_remap_wrapper.sh
 chmod 754 launch/ccc_Mutect_Postprocessing.sh
 # chmod 754 launch/remap/*.sh
-chmod 754 launch/remap/batch0[1-4]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
+chmod 754 launch/remap/batch0[1-6]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
 
 # set permissions for MoCaSeq launcher files
-chmod 754 launch/mocaseq/batch0[1-4]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
+chmod 754 launch/mocaseq/batch0[1-6]-[A-Z][A-Z][A-Z][A-Z]*_[0-9][0-9][0-9][0-9]/*.sh
 
