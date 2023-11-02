@@ -8,4 +8,4 @@ workDir=/gpfs/scratch/pn29ya/$USER/mocaseq-nextflow/mocaseq
  # nextflow needs this variable to get SLURM job status
 export SLURM\_CLUSTERS="serial"
  
-nextflow run ${repoDir}/main.nf -profile charliecloud,slurm -with-report -with-timeline -work-dir ${workDir} --output_base ${projectDir}/output --genome_build.human GRCh38.p12 --custom_config_version serial-std --custom_config_base ${repoDir}/conf --input batch05-PCSI_0083.tsv
+nextflow run ${repoDir}/main.nf -profile charliecloud,slurm -with-report -with-timeline -work-dir ${workDir} --output_base ${projectDir}/output --genome_build.human GRCh38.p12 --custom_config_version serial-std --custom_config_base ${repoDir}/conf --input batch05-PCSI_0083.tsv -N marcus@mpwagner.net
