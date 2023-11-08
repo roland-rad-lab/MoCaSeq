@@ -91,8 +91,7 @@ for (s_group in sample_groups) {
              ' --genome_build.human ', genome_build.human,
              ' --custom_config_version ', custom_config_version,
              ' --custom_config_base ', file.path('${repoDir}', 'conf'), 
-             ' --input ', paste0(s_group, '.tsv'),
-             ' -N marcus.wagner@tum.de\n'),
+             ' -N marcus.wagner@tum.de --input ', paste0(s_group, '.tsv\n')),
       file = file.path(sample_mocaseq_dir, paste0(s_group, '_nf.sh')))
   
   # make runner file executable for user

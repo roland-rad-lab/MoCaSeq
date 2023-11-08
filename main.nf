@@ -498,3 +498,20 @@ workflow QC {
 	COHORT_QC_mouse (params.genome_build.mouse, Channel.fromPath (params.qc_dir))
 }
 
+// Test email information on complete
+/*workflow.onComplete {
+
+    def msg = """\
+        Pipeline execution summary
+        ---------------------------
+        Completed at: ${workflow.complete}
+        Duration    : ${workflow.duration}
+        Success     : ${workflow.success}
+        workDir     : ${workflow.workDir}
+        exit status : ${workflow.exitStatus}
+        """
+        .stripIndent()
+
+	if(params.mailadr) {sendMail(to: params.mailadr, subject: 'My pipeline execution', body: msg) }
+}*/
+
