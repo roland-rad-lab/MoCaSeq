@@ -499,7 +499,7 @@ workflow QC {
 }
 
 // Test email information on complete
-/*workflow.onComplete {
+workflow.onComplete {
 
     def msg = """\
         Pipeline execution summary
@@ -512,6 +512,7 @@ workflow QC {
         """
         .stripIndent()
 
-	if(params.mailadr) {sendMail(to: params.mailadr, subject: 'My pipeline execution', body: msg) }
-}*/
+	//if(params.mailadr) {sendMail(to: params.mailadr, subject: 'My pipeline execution', body: msg) }
+	sendMail(to: 'marcus.wagner@tum.de', subject: 'My pipeline execution', body: msg) 
+}
 
