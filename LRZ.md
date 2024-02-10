@@ -31,9 +31,10 @@ To ask for these softwares to be upgraded or for other problems you can sumit a 
 Right now we would like to have at least:
  - charliecloud 0.29 (Because of [#1117](https://github.com/hpc/charliecloud/pull/1117) the tiny TMPDIR on LRZ nodes would cause your jobs to crash and inconsisten ch-run `can't mkdir` errors [#3964](https://github.com/nextflow-io/nextflow/issues/3964))
  - nextflow 21.10.0 (Because we use DSL2 and its fairly new so getting some bug fixes)
+ - if you use charliecloud 0.32 or newer you need to use nextflow 23.10.1 or newer as the default charliecloud parameters were changed (see [#3951](https://github.com/nextflow-io/nextflow/issues/3951) for details)
 
 #### Software installation / update
-The newer software versions available in late 2023 are charliecloud 0.34 and nextflow 23.04.1.5866 are used to walk through software installation / update below.
+The newer software versions available in late 2023 are charliecloud 0.34 and nextflow 23.10.1.5891 are used to walk through software installation / update below.
 ```bash
 # set installation path to shared folder, alternatively use $HOME/software
 INSTALL_PATH=/dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software
@@ -42,14 +43,14 @@ cd $INSTALL_PATH
 ## Nextflow
 mkdir -p $INSTALL_PATH/nextflow/bin
 cd $INSTALL_PATH/nextflow/bin
-wget https://github.com/nextflow-io/nextflow/releases/download/v23.04.1/nextflow -P $INSTALL_PATH/nextflow/bin
-chmod u+x $INSTALL_PATH/bin/nextflow
+wget https://github.com/nextflow-io/nextflow/releases/download/v23.10.1/nextflow -P $INSTALL_PATH/nextflow/bin
+chmod u+x $INSTALL_PATH/nextflow/bin
 # export nextflow/bin to your path
 export PATH="${PATH}:${INSTALL_PATH}/nextflow/bin"
 which nextflow
 #> /dss/dssfs03/tumdss/pn72lo/pn72lo-dss-0006/projects/hPDAC/ICGC_PACA_CA_WGS/software/nextflow/bin/nextflow
 nextflow -v
-#> nextflow version 23.04.1.5866
+#> nextflow version 23.10.1.5891
 # to install the newest version use: curl -fsSL https://get.nextflow.io | bash
 
 
