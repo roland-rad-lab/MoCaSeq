@@ -53,7 +53,7 @@ if (cnv_method=="Copywriter"){
 	colnames(segments)=c("Chromosome", "Start", "End", "Num_Probes", "Segment_Mean")
 	write.table(segments, paste0(name,"/results/ABSOLUTE/",name,".HMMCopy.20000.segments.txt.fn"), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
 	seg.dat.fn <- file.path(paste0(name,"/results/ABSOLUTE/",name,".HMMCopy.20000.segments.txt.fn"))
-} else if(cnv_methood == "CNVKit"){
+} else if(cnv_method == "CNVKit"){
   
   if(runmode == "MS"){
     segfile <- paste0(name,"/results/CNVKit/matched/",name,".cns")
